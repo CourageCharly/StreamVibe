@@ -8,14 +8,10 @@ export default function Devices() {
       <SectionHeading
         title={
           <>
-            {/* Mobile: fixed 2-line break */}
-            <span className="sm:hidden">
-              We Provide you streaming
-              <br />
+            {/* Mobile: exactly 2 lines · Desktop: one line */}
+            <span className="block sm:inline">We Provide you streaming </span>
+            <span className="block sm:inline">
               experience across various devices.
-            </span>
-            <span className="hidden sm:inline">
-              We Provide you streaming experience across various devices.
             </span>
           </>
         }

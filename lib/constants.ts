@@ -269,7 +269,14 @@ export const DEVICES = [
   },
 ];
 
-export const FAQS = [
+/** FAQ items — optional questionLines force a clean 2-line break on mobile */
+export const FAQS: {
+  id: string;
+  question: string;
+  /** Mobile-only 2-line title [line1, line2]; desktop uses `question` */
+  questionLines?: [string, string];
+  answer: string;
+}[] = [
   {
     id: "01",
     question: "What is StreamVibe?",
@@ -285,6 +292,10 @@ export const FAQS = [
   {
     id: "03",
     question: "What content is available on StreamVibe?",
+    questionLines: [
+      "What content is available",
+      "on StreamVibe?",
+    ],
     answer:
       "StreamVibe features the latest blockbusters, classic movies, popular TV shows, exclusive originals, and more across many genres.",
   },
@@ -297,24 +308,34 @@ export const FAQS = [
   {
     id: "05",
     question: "How do I sign up for StreamVibe?",
+    questionLines: ["How do I sign up", "for StreamVibe?"],
     answer:
       "Click Start Watching Now or Start Free Trial, create an account with your email, choose a plan, and start streaming in minutes.",
   },
   {
     id: "06",
     question: "What is the StreamVibe free trial?",
+    questionLines: ["What is the StreamVibe", "free trial?"],
     answer:
       "New users can start a free trial to explore StreamVibe’s full library before committing to a paid subscription.",
   },
   {
     id: "07",
     question: "How do I contact StreamVibe customer support?",
+    questionLines: [
+      "How do I contact StreamVibe",
+      "customer support?",
+    ],
     answer:
       "Reach our support team through the Support page, email, or in-app help center. We’re available to assist with billing, playback, and account questions.",
   },
   {
     id: "08",
     question: "What are the StreamVibe payment methods?",
+    questionLines: [
+      "What are the StreamVibe",
+      "payment methods?",
+    ],
     answer:
       "We accept major credit and debit cards, PayPal, and other local payment methods depending on your region.",
   },

@@ -33,9 +33,10 @@ export default function SectionHeading({
         <h2
           className={[
             "min-w-0 text-[clamp(1.25rem,3.5vw,28px)] font-bold leading-tight text-white",
+            /* No text-balance — it overrides intentional mobile line breaks */
             singleLine
-              ? "whitespace-nowrap max-sm:whitespace-normal max-sm:text-balance"
-              : "text-balance",
+              ? "whitespace-nowrap max-sm:whitespace-normal"
+              : "whitespace-normal",
           ].join(" ")}
         >
           {title}

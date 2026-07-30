@@ -34,8 +34,9 @@ export default function Categories({ categoryMovies }: Props) {
       <SectionHeading
         title={
           <>
-            Explore our wide variety of
-            <br className="sm:hidden" /> categories
+            {/* Mobile: exactly 2 lines · Desktop: one line */}
+            <span className="block sm:inline">Explore our wide variety of </span>
+            <span className="block sm:inline">categories</span>
           </>
         }
         description="Whether you're looking for a comedy to make you laugh, a drama to make you think, or a documentary to learn something new"

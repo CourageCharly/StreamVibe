@@ -37,8 +37,20 @@ export default function FAQ({ askHref = "/support" }: Props) {
           </span>
           <div className="min-w-0 flex-1 pt-1.5 sm:pt-2.5">
             <div className="flex items-start justify-between gap-3">
-              <span className="text-balance text-base font-medium text-white sm:text-lg">
-                {item.question}
+              <span className="min-w-0 flex-1 whitespace-normal text-base font-medium leading-snug text-white sm:text-lg">
+                {item.questionLines ? (
+                  <>
+                    {/* Mobile: fixed 2 lines · Desktop: one line */}
+                    <span className="block sm:inline">
+                      {item.questionLines[0]}{" "}
+                    </span>
+                    <span className="block sm:inline">
+                      {item.questionLines[1]}
+                    </span>
+                  </>
+                ) : (
+                  item.question
+                )}
               </span>
               <span className="mt-0.5 shrink-0 text-white" aria-hidden>
                 {open ? (

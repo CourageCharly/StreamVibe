@@ -50,15 +50,11 @@ export default function Pricing({
       <SectionHeading
         title={
           <>
-            {/* Mobile: fixed 2-line break */}
-            <span className="sm:hidden">
-              Choose the plan that&apos;s right
-              <br />
-              for you
+            {/* Mobile: exactly 2 lines · Desktop: one line */}
+            <span className="block sm:inline">
+              Choose the plan that&apos;s right{" "}
             </span>
-            <span className="hidden sm:inline">
-              Choose the plan that&apos;s right for you
-            </span>
+            <span className="block sm:inline">for you</span>
           </>
         }
         description="Join StreamVibe and select from our flexible subscription options tailored to suit your viewing preferences. Get ready for non-stop entertainment!"
