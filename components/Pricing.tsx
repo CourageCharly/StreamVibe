@@ -48,7 +48,19 @@ export default function Pricing({
       className={["page-section", className].filter(Boolean).join(" ")}
     >
       <SectionHeading
-        title="Choose the plan that's right for you"
+        title={
+          <>
+            {/* Mobile: fixed 2-line structure (same pattern as other sections) */}
+            <span className="sm:hidden">
+              Choose the plan that&apos;s
+              <br />
+              right for you
+            </span>
+            <span className="hidden sm:inline">
+              Choose the plan that&apos;s right for you
+            </span>
+          </>
+        }
         description="Join StreamVibe and select from our flexible subscription options tailored to suit your viewing preferences. Get ready for non-stop entertainment!"
         action={
           <div
@@ -106,18 +118,19 @@ export default function Pricing({
                   /{period}
                 </span>
               </p>
-              <div className="mt-6 flex flex-row flex-nowrap items-center gap-3">
+              {/* Mobile: equal-width CTAs balanced in the card; sm+ fixed 149px */}
+              <div className="mt-6 grid w-full min-w-0 grid-cols-2 gap-3 sm:flex sm:flex-row sm:items-center">
                 <Button
                   href={trialHref}
                   variant="secondary"
-                  className="shrink-0 !border-[#262626] !bg-[#0F0F0F]"
+                  className="!w-full min-w-0 max-w-none shrink sm:!w-[149px] !border-[#262626] !bg-[#0F0F0F]"
                 >
                   Start Free Trial
                 </Button>
                 <Button
                   href={choosePlanHref}
                   variant="primary"
-                  className="shrink-0"
+                  className="!w-full min-w-0 max-w-none shrink sm:!w-[149px]"
                 >
                   Choose Plan
                 </Button>
