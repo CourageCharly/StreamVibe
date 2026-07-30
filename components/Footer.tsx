@@ -10,7 +10,7 @@ const SOCIAL = [
 
 export default function Footer() {
   return (
-    <footer className="w-full min-w-0 max-w-full overflow-x-hidden border-t border-border bg-navbar">
+    <footer className="w-full min-w-0 max-w-full overflow-x-hidden bg-navbar">
       {/* Extra top pad for space below free-trial on all breakpoints */}
       <div className="page-container pt-14 pb-10 sm:pt-16 sm:pb-12 lg:pt-20">
         <div className="grid w-full min-w-0 grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-6">
