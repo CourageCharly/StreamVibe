@@ -308,7 +308,7 @@ export const FAQS: {
   {
     id: "05",
     question: "How do I sign up for StreamVibe?",
-    questionLines: ["How do I sign up", "for StreamVibe?"],
+    questionLines: ["How do I sign up for", "StreamVibe?"],
     answer:
       "Click Start Watching Now or Start Free Trial, create an account with your email, choose a plan, and start streaming in minutes.",
   },
