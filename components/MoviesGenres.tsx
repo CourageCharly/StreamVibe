@@ -72,22 +72,23 @@ export default function MoviesGenres({
               className="group flex shrink-0 flex-col overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] p-4"
               style={{ width: MEDIA_CARD_W, height: MEDIA_CARD_H }}
             >
-              <div className="grid min-h-0 flex-1 grid-cols-2 gap-1.5 overflow-hidden">
+              {/* 2×2 collage — equal cells + full-bleed overlay (iOS + Android) */}
+              <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-1.5 overflow-hidden">
                 {collage.map((movie, i) => {
                   const title = movie.title || movie.name || cat.name;
                   const imageUrl = posterUrl(movie.poster_path, "w342");
                   return (
                     <div
                       key={`${movie.id}-${i}`}
-                      className="relative min-h-0 overflow-hidden rounded-lg"
+                      className="relative h-full min-h-0 min-w-0 w-full overflow-hidden rounded-lg [transform:translateZ(0)]"
                     >
                       <PosterCard
                         title={title}
                         imageUrl={imageUrl}
                         showLabel={false}
-                        showOverlays
-                        className="!aspect-auto absolute inset-0 h-full w-full"
-                        sizes="140px"
+                        showOverlays={false}
+                        className="!absolute !inset-0 !aspect-auto !h-full !w-full !min-h-full !min-w-full !max-h-none !max-w-none !rounded-lg"
+                        sizes="(max-width: 640px) 40vw, 140px"
                       />
                       <GradientOverlay variant="poster" direction="to bottom" />
                     </div>

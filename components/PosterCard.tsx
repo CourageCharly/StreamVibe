@@ -57,12 +57,12 @@ export default function PosterCard({
           alt={title || "Poster"}
           fill
           sizes={sizes}
-          className="object-cover"
+          className="object-cover object-center"
           priority={priority}
         />
       ) : (
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 h-full w-full"
           style={placeholderStyle(title || "poster")}
           aria-hidden={!title}
           aria-label={title || undefined}

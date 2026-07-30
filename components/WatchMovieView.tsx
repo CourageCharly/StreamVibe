@@ -427,6 +427,73 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     };
   }, [fullView]);
 
+  /**
+   * Mobile full view: size the player to the real visual viewport so it
+   * adapts to every phone (notch, browser chrome, rotation, small/large).
+   */
+  useEffect(() => {
+    if (!fullView) return;
+    const el = playerShellRef.current;
+    if (!el) return;
+
+    const isMobile = () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 639px)").matches;
+
+    const clearMobileLayout = () => {
+      el.style.position = "";
+      el.style.top = "";
+      el.style.left = "";
+      el.style.right = "";
+      el.style.bottom = "";
+      el.style.width = "";
+      el.style.height = "";
+      el.style.maxWidth = "";
+      el.style.maxHeight = "";
+      el.style.margin = "";
+      el.style.borderRadius = "";
+      el.style.zIndex = "";
+    };
+
+    const apply = () => {
+      if (!isMobile()) {
+        clearMobileLayout();
+        return;
+      }
+      const vv = window.visualViewport;
+      const w = Math.max(1, Math.round(vv?.width ?? window.innerWidth));
+      const h = Math.max(1, Math.round(vv?.height ?? window.innerHeight));
+      const top = Math.round(vv?.offsetTop ?? 0);
+      const left = Math.round(vv?.offsetLeft ?? 0);
+      el.style.position = "fixed";
+      el.style.top = `${top}px`;
+      el.style.left = `${left}px`;
+      el.style.right = "auto";
+      el.style.bottom = "auto";
+      el.style.width = `${w}px`;
+      el.style.height = `${h}px`;
+      el.style.maxWidth = `${w}px`;
+      el.style.maxHeight = `${h}px`;
+      el.style.margin = "0";
+      el.style.borderRadius = "0";
+      el.style.zIndex = "200";
+    };
+
+    apply();
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", apply);
+    vv?.addEventListener("scroll", apply);
+    window.addEventListener("resize", apply);
+    window.addEventListener("orientationchange", apply);
+    return () => {
+      clearMobileLayout();
+      vv?.removeEventListener("resize", apply);
+      vv?.removeEventListener("scroll", apply);
+      window.removeEventListener("resize", apply);
+      window.removeEventListener("orientationchange", apply);
+    };
+  }, [fullView]);
+
   // Sync when user exits native fullscreen via system UI
   useEffect(() => {
     const onFsChange = () => {
@@ -578,21 +645,26 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         {/* Spacer keeps layout when player is fixed full-view on mobile */}
         {fullView ? (
           <div
-            className="h-[min(88vw,460px)] w-full sm:hidden"
+            className="h-[100svh] h-[100dvh] w-full sm:hidden"
             aria-hidden
           />
         ) : null}
 
         {/*
           Cinema hero — same mobile height idle & playing (Movies hero size).
-          When playing: video fills stage; expand to full-viewport on mobile.
+          Full view (mobile): fills visual viewport on every screen size.
         */}
         <section
           ref={playerShellRef}
           className={[
             "relative w-full min-w-0 overflow-hidden bg-black",
             fullView
-              ? "fixed inset-0 z-[200] h-[100dvh] max-h-[100dvh] rounded-none"
+              ? [
+                  "fixed inset-0 z-[200] rounded-none",
+                  /* Fallbacks for all mobile viewports; JS visualViewport refines */
+                  "h-[100svh] h-[100dvh] max-h-[100dvh]",
+                  "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
+                ].join(" ")
               : [
                   "rounded-xl sm:rounded-2xl",
                   "h-[min(88vw,460px)] sm:h-auto",
@@ -616,8 +688,15 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 className="!absolute !inset-0 !h-full !w-full !min-h-full !min-w-full"
               />
 
-              {/* Always-visible chrome: CC, language, mute, expand/collapse (web + mobile + full view) */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-30 px-2.5 pt-2.5 sm:px-5 sm:pt-4">
+              {/* Always-visible chrome — safe-area aware in mobile full view */}
+              <div
+                className={[
+                  "pointer-events-none absolute inset-x-0 top-0 z-30 px-2.5 pt-2.5 sm:px-5 sm:pt-4",
+                  fullView
+                    ? "pt-[max(0.625rem,env(safe-area-inset-top))] px-[max(0.625rem,env(safe-area-inset-right))]"
+                    : "",
+                ].join(" ")}
+              >
                 <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
                   <button
                     type="button"

@@ -10,7 +10,7 @@ type GradientOverlayProps = {
 
 /**
  * Design gradient overlays.
- * accent: very soft top-right red glow like Card1.png (low visibility).
+ * Poster: full-tile cover fade — same on iOS Safari & Android Chrome.
  */
 export default function GradientOverlay({
   direction,
@@ -20,12 +20,11 @@ export default function GradientOverlay({
   if (variant === "accent") {
     return (
       <div
-        className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+        className={`pointer-events-none absolute inset-0 h-full w-full overflow-hidden ${className}`}
         aria-hidden
       >
-        {/* Very soft top-right red glow — Card1.png */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 h-full w-full"
           style={{
             background: `
               radial-gradient(
@@ -41,13 +40,24 @@ export default function GradientOverlay({
     );
   }
 
-  // Category / poster image fade → #1A1A1A (transparent top → solid bottom)
+  // Category / poster: full bleed over the image (any aspect / screen density)
   const dir = direction ?? "to bottom";
   return (
     <div
-      className={`pointer-events-none absolute inset-0 z-[1] ${className}`}
+      className={[
+        "pointer-events-none absolute inset-0 z-[1]",
+        "h-full w-full min-h-full min-w-full",
+        /* Stable paint on mobile WebKit / Blink */
+        "[transform:translateZ(0)]",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{
-        background: `linear-gradient(${dir}, rgba(26, 26, 26, 0) 0%, rgba(26, 26, 26, 0.55) 45%, rgba(26, 26, 26, 1) 100%)`,
+        backgroundImage: `linear-gradient(${dir}, rgba(26, 26, 26, 0) 0%, rgba(26, 26, 26, 0.28) 38%, rgba(26, 26, 26, 0.72) 72%, rgba(26, 26, 26, 1) 100%)`,
+        backgroundSize: "100% 100%",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
       aria-hidden
     />
