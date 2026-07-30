@@ -1,9 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
-import PosterCard from "@/components/PosterCard";
-import GradientOverlay from "@/components/GradientOverlay";
 import SliderControls from "@/components/SliderControls";
 import { posterUrl } from "@/lib/media";
 import type { Movie } from "@/lib/types";
@@ -16,8 +15,81 @@ type Props = {
   basePath?: string;
 };
 
+const GAP = 6;
+const PAD = 16;
+const TITLE_BLOCK = 40;
+
+/** Solid bottom fade — always covers full image frame */
+const TILE_OVERLAY =
+  "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.35) 42%, rgba(26,26,26,0.88) 78%, #1A1A1A 100%)";
+
+function GenreTile({
+  movie,
+  fallbackTitle,
+  fixed,
+  cellW,
+  cellH,
+}: {
+  movie: Movie;
+  fallbackTitle: string;
+  fixed?: boolean;
+  cellW?: number;
+  cellH?: number;
+}) {
+  const title = movie.title || movie.name || fallbackTitle;
+  const imageUrl = posterUrl(movie.poster_path, "w342");
+
+  return (
+    <div
+      className={[
+        "relative overflow-hidden rounded-lg bg-[#1A1A1A]",
+        fixed ? "" : "min-h-0 min-w-0 h-full w-full",
+      ].join(" ")}
+      style={
+        fixed && cellW && cellH
+          ? { width: cellW, height: cellH, flex: "none" }
+          : undefined
+      }
+    >
+      {imageUrl ? (
+        fixed && cellW && cellH ? (
+          <Image
+            src={imageUrl}
+            alt={title}
+            width={cellW}
+            height={cellH}
+            className="block h-full w-full object-cover object-center"
+            sizes={`${cellW}px`}
+          />
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className="object-cover object-center"
+            sizes="40vw"
+          />
+        )
+      ) : (
+        <div
+          className={fixed ? "h-full w-full" : "absolute inset-0"}
+          style={{
+            background: `linear-gradient(145deg, hsl(${(movie.id * 47) % 360} 32% 18%), hsl(${(movie.id * 47) % 360} 40% 8%)`,
+          }}
+        />
+      )}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{ background: TILE_OVERLAY }}
+        aria-hidden
+      />
+    </div>
+  );
+}
+
 /**
- * Our Genres — segment count = genre card count (same model as MoviesHero).
+ * Our Genres — segment count = genre card count.
+ * Web: integer-pixel 2×2 collage so overlay covers every frame edge (no bottom gap).
  */
 export default function MoviesGenres({
   categoryMovies,
@@ -28,6 +100,12 @@ export default function MoviesGenres({
     itemCount,
     MEDIA_CARD_W + 16,
   );
+
+  const collageH = MEDIA_CARD_H - PAD * 2 - TITLE_BLOCK;
+  const cellH = Math.floor((collageH - GAP) / 2);
+  const cellW = Math.floor((MEDIA_CARD_W - PAD * 2 - GAP) / 2);
+  const collageW = cellW * 2 + GAP;
+  const collageExactH = cellH * 2 + GAP;
 
   return (
     <div className="min-w-0">
@@ -72,30 +150,44 @@ export default function MoviesGenres({
               className="group flex shrink-0 flex-col overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] p-4"
               style={{ width: MEDIA_CARD_W, height: MEDIA_CARD_H }}
             >
-              {/* 2×2 collage — equal cells + full-bleed overlay (iOS + Android) */}
-              <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-1.5 overflow-hidden">
-                {collage.map((movie, i) => {
-                  const title = movie.title || movie.name || cat.name;
-                  const imageUrl = posterUrl(movie.poster_path, "w342");
-                  return (
-                    <div
-                      key={`${movie.id}-${i}`}
-                      className="relative h-full min-h-0 min-w-0 w-full overflow-hidden rounded-lg bg-[#1A1A1A] [transform:translateZ(0)]"
-                    >
-                      <PosterCard
-                        title={title}
-                        imageUrl={imageUrl}
-                        showLabel={false}
-                        showOverlays={false}
-                        className="!absolute !inset-0 !aspect-auto !h-full !w-full !min-h-full !min-w-full !max-h-none !max-w-none !rounded-lg [&_img]:!h-full [&_img]:!w-full [&_img]:!object-cover [&_img]:!object-center sm:[&_img]:scale-[1.02]"
-                        sizes="(max-width: 640px) 40vw, 140px"
-                      />
-                      <GradientOverlay variant="poster" direction="to bottom" />
-                    </div>
-                  );
-                })}
+              {/* Mobile: fluid 2×2 */}
+              <div
+                className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 overflow-hidden sm:hidden"
+                style={{ gap: GAP }}
+              >
+                {collage.map((movie, i) => (
+                  <GenreTile
+                    key={`m-${movie.id}-${i}`}
+                    movie={movie}
+                    fallbackTitle={cat.name}
+                  />
+                ))}
               </div>
-              <div className="mt-3 flex shrink-0 items-center justify-between gap-2">
+
+              {/* Web: fixed integer-pixel 2×2 — full frame cover, no bottom gap */}
+              <div
+                className="hidden shrink-0 overflow-hidden sm:grid"
+                style={{
+                  width: collageW,
+                  height: collageExactH,
+                  gap: GAP,
+                  gridTemplateColumns: `${cellW}px ${cellW}px`,
+                  gridTemplateRows: `${cellH}px ${cellH}px`,
+                }}
+              >
+                {collage.map((movie, i) => (
+                  <GenreTile
+                    key={`d-${movie.id}-${i}`}
+                    movie={movie}
+                    fallbackTitle={cat.name}
+                    fixed
+                    cellW={cellW}
+                    cellH={cellH}
+                  />
+                ))}
+              </div>
+
+              <div className="mt-auto flex shrink-0 items-center justify-between gap-2 pt-3">
                 <span className="truncate text-[16px] font-semibold text-white">
                   {cat.name}
                 </span>
