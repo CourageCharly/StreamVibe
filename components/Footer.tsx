@@ -10,10 +10,6 @@ const SOCIAL = [
 
 export default function Footer() {
   return (
-    {/*
-      Web: same bg as page (no hard top edge / “stroke”).
-      Mobile: keep navbar fill.
-    */}
     <footer
       className="w-full min-w-0 max-w-full overflow-x-hidden border-0 border-t-0 bg-navbar shadow-none ring-0 sm:border-t-0 sm:bg-background sm:shadow-none"
       style={{ borderTop: "none", boxShadow: "none" }}
