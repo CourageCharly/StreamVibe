@@ -50,11 +50,11 @@ export default function Pricing({
       <SectionHeading
         title={
           <>
-            {/* Mobile: fixed 2-line structure (same pattern as other sections) */}
+            {/* Mobile: fixed 2-line break */}
             <span className="sm:hidden">
-              Choose the plan that&apos;s
+              Choose the plan that&apos;s right
               <br />
-              right for you
+              for you
             </span>
             <span className="hidden sm:inline">
               Choose the plan that&apos;s right for you
@@ -107,10 +107,11 @@ export default function Pricing({
               <h3 className="text-[16px] font-semibold text-white">
                 {plan.name}
               </h3>
-              <p className="mt-3 min-h-[4.5rem] flex-1 text-[14px] font-normal leading-relaxed text-[#999999]">
+              {/* Mobile: tighter stack subtext → price → CTAs; sm+ keeps original rhythm */}
+              <p className="mt-3 min-h-0 flex-1 text-[14px] font-normal leading-relaxed text-[#999999] sm:min-h-[4.5rem]">
                 {plan.description}
               </p>
-              <p className="mt-6 flex min-h-[2.75rem] flex-wrap items-baseline gap-x-1">
+              <p className="mt-3 flex min-h-0 flex-wrap items-baseline gap-x-1 sm:mt-6 sm:min-h-[2.75rem]">
                 <span className="text-[24px] font-bold tabular-nums text-white sm:text-[28px]">
                   ${price.toFixed(2)}
                 </span>
@@ -119,7 +120,7 @@ export default function Pricing({
                 </span>
               </p>
               {/* Mobile: equal-width CTAs balanced in the card; sm+ fixed 149px */}
-              <div className="mt-6 grid w-full min-w-0 grid-cols-2 gap-3 sm:flex sm:flex-row sm:items-center">
+              <div className="mt-3 grid w-full min-w-0 grid-cols-2 gap-3 sm:mt-6 sm:flex sm:flex-row sm:items-center">
                 <Button
                   href={trialHref}
                   variant="secondary"

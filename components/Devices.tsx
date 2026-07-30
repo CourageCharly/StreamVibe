@@ -6,9 +6,20 @@ export default function Devices() {
   return (
     <section id="devices" className="page-section">
       <SectionHeading
-        title="We Provide you streaming experience across various devices."
+        title={
+          <>
+            {/* Mobile: fixed 2-line break */}
+            <span className="sm:hidden">
+              We Provide you streaming
+              <br />
+              experience across various devices.
+            </span>
+            <span className="hidden sm:inline">
+              We Provide you streaming experience across various devices.
+            </span>
+          </>
+        }
         description="With StreamVibe, you can enjoy your favorite movies and TV shows anytime, anywhere."
-        singleLine
       />
 
       <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">

@@ -41,12 +41,37 @@ function HeaderInner() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Mobile menu open: freeze page scroll until X is used (iOS + Android)
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyWidth: body.style.width,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+    };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
     return () => {
-      document.body.style.overflow = prev;
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.position = prev.bodyPosition;
+      body.style.top = prev.bodyTop;
+      body.style.left = prev.bodyLeft;
+      body.style.right = prev.bodyRight;
+      body.style.width = prev.bodyWidth;
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -212,8 +237,8 @@ function HeaderInner() {
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 top-[var(--header-h)] z-40 overflow-y-auto bg-background/95 backdrop-blur-sm lg:hidden">
-          <nav className="page-container py-4" aria-label="Mobile">
+        <div className="fixed inset-0 top-[var(--header-h)] z-40 overflow-hidden overscroll-none bg-background/95 backdrop-blur-sm lg:hidden">
+          <nav className="page-container overflow-hidden py-4" aria-label="Mobile">
             <div className="rounded-xl border-[3px] border-[#1F1F1F] bg-navbar p-2">
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
@@ -222,7 +247,7 @@ function HeaderInner() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className={`block cursor-pointer rounded-lg px-4 py-3.5 text-[18px] font-medium transition-colors ${
+                    className={`block cursor-pointer rounded-lg px-4 py-3.5 text-[18px] font-normal transition-colors ${
                       active
                         ? "bg-pill-active text-white"
                         : "text-[#999999] hover:text-white"
