@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 /**
- * Every support form message is delivered here.
- * (Gmail — Couragelivingstone1@gmail.com)
+ * Support form delivery → Couragelivingstone1@gmail.com
+ * Primary path is client-side FormSubmit; this API is a fallback
+ * (FormSubmit form-urlencoded, then SMTP, then Resend).
  */
 const SUPPORT_INBOX = "Couragelivingstone1@gmail.com";
 
@@ -59,7 +60,6 @@ function buildBodies(
   return { text, html };
 }
 
-/** Optional: Gmail App Password if configured */
 async function sendViaSmtp(opts: {
   fullName: string;
   email: string;
@@ -74,7 +74,7 @@ async function sendViaSmtp(opts: {
   const pass =
     process.env.SMTP_PASS?.trim() || process.env.GMAIL_APP_PASSWORD?.trim();
 
-  if (!pass) return { ok: false as const, reason: "no_smtp" as const };
+  if (!pass) return { ok: false as const };
 
   const host = process.env.SMTP_HOST?.trim() || "smtp.gmail.com";
   const port = Number(process.env.SMTP_PORT ?? "465");
@@ -114,7 +114,7 @@ async function sendViaResend(opts: {
   subject: string;
 }) {
   const key = process.env.RESEND_API_KEY?.trim();
-  if (!key) return { ok: false as const, reason: "no_resend" as const };
+  if (!key) return { ok: false as const };
 
   const from =
     process.env.RESEND_FROM?.trim() ||
@@ -143,70 +143,32 @@ async function sendViaResend(opts: {
   });
 
   if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    console.error("[api/support] Resend", res.status, errText);
-    return { ok: false as const, reason: "resend_failed" as const };
+    console.error("[api/support] Resend", res.status, await res.text().catch(() => ""));
+    return { ok: false as const };
   }
   return { ok: true as const, via: "resend" as const };
 }
 
-function parseFormSubmitResponse(raw: string, status: number) {
-  let data: {
-    success?: string | boolean;
-    message?: string;
-    error?: string;
-  } = {};
-  try {
-    data = JSON.parse(raw) as typeof data;
-  } catch {
-    /* HTML or empty */
-  }
-
-  const msg = String(data.message || data.error || raw || "").toLowerCase();
-
-  // Activation required (first-time FormSubmit setup)
-  if (
-    /activation|activate form|confirm your email|check your email/i.test(msg)
-  ) {
-    return { ok: false as const, reason: "needs_activation" as const };
-  }
-
-  // Explicit failure
-  if (data.success === false || data.success === "false") {
-    return { ok: false as const, reason: "formsubmit_failed" as const };
-  }
-
-  // Success: success true/"true", ok status, or known success phrases
-  const successFlag =
-    data.success === true ||
-    data.success === "true" ||
-    /thank you|successfully|form submitted|message has been sent/i.test(msg);
-
-  if (successFlag || (status >= 200 && status < 300 && !/error|fail/i.test(msg))) {
-    return { ok: true as const };
-  }
-
-  if (status >= 200 && status < 300 && !msg) {
-    return { ok: true as const };
-  }
-
-  return { ok: false as const, reason: "formsubmit_failed" as const };
-}
-
 /**
- * FormSubmit.co — primary free delivery (no API key).
- * Posts JSON + form-urlencoded for best compatibility from server runtimes.
+ * FormSubmit — form-urlencoded first (works from server when form is activated).
  */
-async function sendViaFormSubmit(opts: {
-  fullName: string;
-  email: string;
-  phoneLine: string;
-  message: string;
-  subject: string;
-}) {
+async function sendViaFormSubmit(
+  opts: {
+    fullName: string;
+    email: string;
+    phoneLine: string;
+    message: string;
+    subject: string;
+  },
+  request: NextRequest,
+) {
   const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(SUPPORT_INBOX)}`;
+  const origin =
+    request.headers.get("origin") ||
+    request.nextUrl.origin ||
+    "https://localhost";
 
-  const fields = {
+  const fields: Record<string, string> = {
     name: opts.fullName,
     email: opts.email,
     phone: opts.phoneLine,
@@ -218,66 +180,42 @@ async function sendViaFormSubmit(opts: {
     _honey: "",
   };
 
-  // 1) JSON (FormSubmit ajax docs)
+  const body = new URLSearchParams(fields);
+
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+      Origin: origin,
+      Referer: `${origin}/support`,
+    },
+    body: body.toString(),
+    cache: "no-store",
+  });
+
+  const raw = await res.text().catch(() => "");
+  console.info("[api/support] FormSubmit", res.status, raw.slice(0, 240));
+
+  let data: { success?: string | boolean; message?: string } = {};
   try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(fields),
-      cache: "no-store",
-    });
-    const raw = await res.text().catch(() => "");
-    console.info("[api/support] FormSubmit JSON", res.status, raw.slice(0, 200));
-    const parsed = parseFormSubmitResponse(raw, res.status);
-    if (parsed.ok) return { ok: true as const, via: "formsubmit" as const };
-    if (parsed.reason === "needs_activation") {
-      return { ok: false as const, reason: "needs_activation" as const };
-    }
-  } catch (e) {
-    console.error("[api/support] FormSubmit JSON error", e);
+    data = JSON.parse(raw) as typeof data;
+  } catch {
+    /* ignore */
   }
 
-  // 2) application/x-www-form-urlencoded (often more reliable from Node)
-  try {
-    const body = new URLSearchParams();
-    for (const [k, v] of Object.entries(fields)) {
-      body.set(k, v);
-    }
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
-      },
-      body: body.toString(),
-      cache: "no-store",
-    });
-    const raw = await res.text().catch(() => "");
-    console.info(
-      "[api/support] FormSubmit form",
-      res.status,
-      raw.slice(0, 200),
-    );
-    const parsed = parseFormSubmitResponse(raw, res.status);
-    if (parsed.ok) return { ok: true as const, via: "formsubmit" as const };
-    if (parsed.reason === "needs_activation") {
-      return { ok: false as const, reason: "needs_activation" as const };
-    }
-  } catch (e) {
-    console.error("[api/support] FormSubmit form error", e);
+  if (data.success === true || data.success === "true") {
+    return { ok: true as const, via: "formsubmit" as const };
   }
 
-  return { ok: false as const, reason: "formsubmit_failed" as const };
+  const msg = String(data.message ?? raw ?? "").toLowerCase();
+  if (/successfully|form was submitted|thank you/i.test(msg)) {
+    return { ok: true as const, via: "formsubmit" as const };
+  }
+
+  return { ok: false as const };
 }
 
-/**
- * POST /api/support
- * Delivers every form submission to Couragelivingstone1@gmail.com via FormSubmit
- * (and optional SMTP/Resend if configured).
- */
 export async function POST(request: NextRequest) {
   let body: SupportBody;
   try {
@@ -313,45 +251,33 @@ export async function POST(request: NextRequest) {
   const payload = { fullName, email, phoneLine, message, subject };
 
   try {
-    // 1) FormSubmit (primary — no env keys required)
     try {
-      const formSubmit = await sendViaFormSubmit(payload);
+      const formSubmit = await sendViaFormSubmit(payload, request);
       if (formSubmit.ok) {
         return NextResponse.json({ ok: true, via: formSubmit.via });
       }
-      // Log activation status for the inbox owner; user still gets a soft success
-      // path below if optional providers work.
-      if (formSubmit.reason === "needs_activation") {
-        console.warn(
-          "[api/support] FormSubmit needs one-time activation for",
-          SUPPORT_INBOX,
-        );
-      }
     } catch (e) {
-      console.error("[api/support] FormSubmit error", e);
+      console.error("[api/support] FormSubmit", e);
     }
 
-    // 2) Optional SMTP if configured
     try {
       const smtp = await sendViaSmtp(payload);
       if (smtp.ok) {
         return NextResponse.json({ ok: true, via: smtp.via });
       }
     } catch (e) {
-      console.error("[api/support] SMTP error", e);
+      console.error("[api/support] SMTP", e);
     }
 
-    // 3) Optional Resend if configured
     try {
       const resend = await sendViaResend(payload);
       if (resend.ok) {
         return NextResponse.json({ ok: true, via: resend.via });
       }
     } catch (e) {
-      console.error("[api/support] Resend error", e);
+      console.error("[api/support] Resend", e);
     }
 
-    // Last FormSubmit attempt already ran — friendly message only (no Gmail env text)
     return NextResponse.json(
       {
         error:

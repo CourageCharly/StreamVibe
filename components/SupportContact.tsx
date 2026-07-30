@@ -92,7 +92,96 @@ export default function SupportContact({ posters = [] }: Props) {
     setError("");
     setSending(true);
     setToast(false);
+
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+    const phoneLine = [country, phone.trim()].filter(Boolean).join(" ").trim();
+    const subject = `StreamVibe Support — ${fullName}`;
+    /** FormSubmit inbox */
+    const formSubmitUrl =
+      "https://formsubmit.co/ajax/Couragelivingstone1@gmail.com";
+
+    const markSuccess = () => {
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPhone("");
+      setMessage("");
+      setAgreed(false);
+      setToast(true);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(false), 3000);
+    };
+
+    const isFormSubmitOk = (data: {
+      success?: string | boolean;
+      message?: string;
+    }) => {
+      if (data.success === true || data.success === "true") return true;
+      const msg = String(data.message ?? "").toLowerCase();
+      return /successfully|form was submitted|thank you/i.test(msg);
+    };
+
     try {
+      // 1) FormSubmit from the browser (form-urlencoded — most reliable)
+      const formBody = new URLSearchParams({
+        name: fullName,
+        email: email.trim(),
+        phone: phoneLine || "—",
+        message: message.trim(),
+        _subject: subject,
+        _template: "table",
+        _captcha: "false",
+        _replyto: email.trim(),
+        _honey: "",
+      });
+
+      const fsRes = await fetch(formSubmitUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
+        body: formBody.toString(),
+      });
+      const fsData = (await fsRes.json().catch(() => ({}))) as {
+        success?: string | boolean;
+        message?: string;
+      };
+
+      if (isFormSubmitOk(fsData)) {
+        markSuccess();
+        return;
+      }
+
+      // 2) FormSubmit JSON fallback
+      const fsJson = await fetch(formSubmitUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email: email.trim(),
+          phone: phoneLine || "—",
+          message: message.trim(),
+          _subject: subject,
+          _template: "table",
+          _captcha: false,
+          _replyto: email.trim(),
+        }),
+      });
+      const fsJsonData = (await fsJson.json().catch(() => ({}))) as {
+        success?: string | boolean;
+        message?: string;
+      };
+
+      if (isFormSubmitOk(fsJsonData)) {
+        markSuccess();
+        return;
+      }
+
+      // 3) Our API (SMTP / Resend / FormSubmit server-side) as last resort
       const res = await fetch("/api/support", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,19 +198,15 @@ export default function SupportContact({ posters = [] }: Props) {
         error?: string;
         ok?: boolean;
       };
-      if (!res.ok) {
-        setError(data.error || "Failed to send message. Please try again.");
+      if (res.ok && data.ok !== false) {
+        markSuccess();
         return;
       }
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setPhone("");
-      setMessage("");
-      setAgreed(false);
-      setToast(true);
-      if (toastTimer.current) clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(() => setToast(false), 3000);
+
+      setError(
+        data.error ||
+          "We could not send your message right now. Please try again in a moment.",
+      );
     } catch {
       setError(
         "Network error. Please check your connection and try again.",
