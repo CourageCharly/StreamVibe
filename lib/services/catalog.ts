@@ -212,11 +212,13 @@ async function loadGenrePool(
 
 export async function getMovieCategoriesMap(
   limit = 4,
+  /** Discover pages per genre (1 = fastest home load) */
+  pages = 3,
 ): Promise<CategoriesMapResponse> {
   // Multiple discover pages per genre so global de-dupe still fills 4 posters
   const entries = await Promise.all(
     CATEGORIES.map(async (cat) => {
-      const pool = await loadGenrePool("movie", cat.key);
+      const pool = await loadGenrePool("movie", cat.key, pages);
       return [cat.key, pool] as const;
     }),
   );

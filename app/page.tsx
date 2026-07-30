@@ -1,9 +1,6 @@
+import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
-import Devices from "@/components/Devices";
-import FAQ from "@/components/FAQ";
-import Pricing from "@/components/Pricing";
-import FreeTrialBanner from "@/components/FreeTrialBanner";
 import {
   fetchMovieCategories,
   fetchPopularMovies,
@@ -11,16 +8,26 @@ import {
   fetchTrendingMovies,
 } from "@/lib/api";
 
+/** Cache home data — fewer cold TMDB hits, faster navigations */
+export const revalidate = 21600;
+
+/* Below-the-fold: load after hero so first paint is faster */
+const Devices = dynamic(() => import("@/components/Devices"));
+const FAQ = dynamic(() => import("@/components/FAQ"));
+const Pricing = dynamic(() => import("@/components/Pricing"));
+const FreeTrialBanner = dynamic(() => import("@/components/FreeTrialBanner"));
+
 export default async function HomePage() {
+  // Faster home: 1 page per genre (not 3) + fewer trailer lookups
   const [popular, trending, { categories }] = await Promise.all([
     fetchPopularMovies(),
     fetchTrendingMovies(),
-    fetchMovieCategories(),
+    fetchMovieCategories(4, 1),
   ]);
 
-  const heroPosters = [...trending, ...popular].slice(0, 24);
+  const heroPosters = [...trending, ...popular].slice(0, 16);
   const bannerPosters = popular.slice(0, 12);
-  const trailers = await fetchTrailers(heroPosters, 8);
+  const trailers = await fetchTrailers(heroPosters, 4);
 
   return (
     <div
