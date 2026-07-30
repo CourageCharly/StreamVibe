@@ -75,6 +75,15 @@ section {
   overflow-x: hidden !important;
 }
 
+/* Web: no top stroke / hairline on footer */
+@media (min-width: 640px) {
+  footer {
+    border-top: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+}
+
 /**
  * App content grid — same horizontal bounds as the navbar:
  * left edge = logo, right edge = notification bell.
