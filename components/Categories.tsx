@@ -87,14 +87,14 @@ export default function Categories({ categoryMovies }: Props) {
                   return (
                     <div
                       key={`${movie.id}-${i}`}
-                      className="relative h-full min-h-0 min-w-0 w-full overflow-hidden rounded-lg [transform:translateZ(0)]"
+                      className="relative h-full min-h-0 min-w-0 w-full overflow-hidden rounded-lg bg-[#1A1A1A] [transform:translateZ(0)]"
                     >
                       <PosterCard
                         title={title}
                         imageUrl={imageUrl}
                         showLabel={false}
                         showOverlays={false}
-                        className="!absolute !inset-0 !aspect-auto !h-full !w-full !min-h-full !min-w-full !max-h-none !max-w-none !rounded-lg"
+                        className="!absolute !inset-0 !aspect-auto !h-full !w-full !min-h-full !min-w-full !max-h-none !max-w-none !rounded-lg [&_img]:!h-full [&_img]:!w-full [&_img]:!object-cover [&_img]:!object-center sm:[&_img]:scale-[1.02]"
                         sizes="(max-width: 640px) 40vw, 140px"
                       />
                       <GradientOverlay
