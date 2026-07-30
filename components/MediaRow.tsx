@@ -1,0 +1,177 @@
+"use client";
+
+import Link from "next/link";
+import { FiArrowRight } from "react-icons/fi";
+import SliderControls from "@/components/SliderControls";
+import PosterCard from "@/components/PosterCard";
+import GradientOverlay from "@/components/GradientOverlay";
+import TrendingMovieCard from "@/components/TrendingMovieCard";
+import { posterUrl } from "@/lib/media";
+import type { Movie } from "@/lib/types";
+import { useRowSlider } from "@/lib/use-row-slider";
+
+/** Design card size: 285 × 317, 4 visible in a row */
+export const MEDIA_CARD_W = 285;
+export const MEDIA_CARD_H = 317;
+
+export type Top10GenreItem = {
+  name: string;
+  key: string;
+  /** Up to 4 unique posters for the collage */
+  movies: Movie[];
+};
+
+type MediaRowProps = {
+  title: string;
+  movies: Movie[];
+  showRuntime?: boolean;
+  showDate?: boolean;
+  showRating?: boolean;
+  /** Popular Top 10 — genre collage structure like Our Genres */
+  top10Label?: boolean;
+  /** Genre names when top10 (aligned with movies array) — prefer top10Items */
+  genreNames?: string[];
+  /** Preferred: each genre card with its own 4 distinct posters */
+  top10Items?: Top10GenreItem[];
+  basePath?: string;
+  /** Links cards to movie or show detail routes */
+  mediaKind?: "movie" | "tv";
+};
+
+export default function MediaRow({
+  title,
+  movies,
+  showRuntime = true,
+  showDate = false,
+  showRating = false,
+  top10Label = false,
+  genreNames = [],
+  top10Items,
+  basePath = "/movies",
+  mediaKind = "movie",
+}: MediaRowProps) {
+  const top10Cards: Top10GenreItem[] = top10Label
+    ? top10Items?.length
+      ? top10Items
+      : movies.map((movie, index) => ({
+          name: genreNames[index] || movie.title || movie.name || "Genre",
+          key: (genreNames[index] || "popular").toLowerCase(),
+          movies: [movie],
+        }))
+    : [];
+
+  /** Same as MoviesHero: segment count = item count */
+  const itemCount = top10Label ? top10Cards.length : movies.length;
+  const { rowRef, progress, go, segments, activeIndex } = useRowSlider(
+    itemCount,
+    MEDIA_CARD_W + 16,
+  );
+
+  if (!movies.length && !top10Cards.length) return null;
+
+  return (
+    <div className="min-w-0">
+      {/* Web: arrows + segments (manual only) */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="min-w-0 text-[20px] font-bold text-white sm:text-[22px]">
+          {title}
+        </h2>
+        <SliderControls
+          variant="row"
+          placement="header"
+          onPrev={() => go(-1)}
+          onNext={() => go(1)}
+          progress={progress}
+          segments={segments}
+          activeIndex={activeIndex}
+          className="shrink-0"
+        />
+      </div>
+
+      <div
+        ref={rowRef}
+        className="media-scroll-row flex gap-4 overflow-x-auto overflow-y-hidden pb-1"
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+      >
+        {top10Label
+          ? top10Cards.map((item) => {
+              const collage = item.movies.slice(0, 4);
+              while (collage.length < 4 && item.movies.length > 0) {
+                collage.push(item.movies[collage.length % item.movies.length]);
+              }
+              if (!collage.length) return null;
+              return (
+                <Link
+                  key={`top10-${item.key}`}
+                  href={`${basePath}?category=${item.key}`}
+                  className="group flex shrink-0 flex-col overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] p-4"
+                  style={{ width: MEDIA_CARD_W, height: MEDIA_CARD_H }}
+                >
+                  <div className="grid min-h-0 flex-1 grid-cols-2 gap-1.5 overflow-hidden">
+                    {collage.map((m, i) => {
+                      const name = m.title || m.name || item.name;
+                      const imageUrl = posterUrl(m.poster_path, "w342");
+                      return (
+                        <div
+                          key={`${item.key}-${m.id}-${i}`}
+                          className="relative min-h-0 overflow-hidden rounded-lg"
+                        >
+                          <PosterCard
+                            title={name}
+                            imageUrl={imageUrl}
+                            showLabel={false}
+                            showOverlays
+                            className="!aspect-auto absolute inset-0 h-full w-full"
+                            sizes="140px"
+                          />
+                          <GradientOverlay
+                            variant="poster"
+                            direction="to bottom"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 flex shrink-0 items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="mb-1 inline-block rounded bg-cta px-2 py-0.5 text-[10px] font-semibold text-white">
+                        Top 10 In
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate text-[16px] font-semibold text-white">
+                          {item.name}
+                        </span>
+                        <FiArrowRight className="h-4 w-4 shrink-0 text-white group-hover:text-cta" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })
+          : movies.map((movie) => (
+              <TrendingMovieCard
+                key={movie.id}
+                movie={movie}
+                showRuntime={showRuntime}
+                showDate={showDate}
+                showRating={showRating}
+                mediaKind={mediaKind}
+              />
+            ))}
+      </div>
+
+      {/* Mobile: progress follows same index as web segments (hero-style) */}
+      <div className="mt-4">
+        <SliderControls
+          variant="row"
+          placement="footer"
+          onPrev={() => go(-1)}
+          onNext={() => go(1)}
+          progress={progress}
+          segments={segments}
+          activeIndex={activeIndex}
+        />
+      </div>
+    </div>
+  );
+}
