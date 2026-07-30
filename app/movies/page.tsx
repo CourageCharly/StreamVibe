@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     "Browse movies and shows by genre — Action, Adventure, Comedy, Drama, Horror, and more on StreamVibe.",
 };
 
+/** Cache browse page — matches home; avoids cold multi-genre TMDB storms */
+export const revalidate = 21600;
+
 type Props = {
   searchParams: Promise<{ category?: string; q?: string; from?: string }>;
 };
@@ -41,10 +44,10 @@ export default async function MoviesPage({ searchParams }: Props) {
 
   // ——— Search or genre listing (infinite load) ———
   if (q || hasCategory) {
-    const list = q
-      ? await fetchSearchMovies(q, 1)
-      : await fetchMovies(category, 1);
-    const popular = await fetchPopularMovies();
+    const [list, popular] = await Promise.all([
+      q ? fetchSearchMovies(q, 1) : fetchMovies(category, 1),
+      fetchPopularMovies(),
+    ]);
     const label = q
       ? `Results for “${q}”`
       : `${MOVIE_LISTS.find((c) => c.key === category)?.name ?? "Movies"}`;
@@ -106,7 +109,7 @@ export default async function MoviesPage({ searchParams }: Props) {
   }
 
   // ——— Full Movies & Shows browse page (design) ———
-  // Trending / Popular / New Releases: single page, modest row size
+  // Fast path: 1 TMDB page per genre (not 3) + fewer hero trailers
   const [
     { categories },
     { categories: showCategories },
@@ -119,16 +122,16 @@ export default async function MoviesPage({ searchParams }: Props) {
     showsOnAirRes,
     showsTop,
   ] = await Promise.all([
-    fetchMovieCategories(),
-    fetchShowCategories(),
+    fetchMovieCategories(4, 1),
+    fetchShowCategories(4, 1),
     fetchMovies("trending", 1),
     fetchMovies("upcoming", 1),
     fetchMovies("popular", 1),
-    fetchMovies("top_rated"),
+    fetchMovies("top_rated", 1),
     fetchShows("trending", 1),
     fetchShows("popular", 1),
     fetchShows("on_the_air", 1),
-    fetchShows("top_rated"),
+    fetchShows("top_rated", 1),
   ]);
 
   const trending = trendingRes.results;
@@ -143,8 +146,9 @@ export default async function MoviesPage({ searchParams }: Props) {
       m.backdrop_path && arr.findIndex((x) => x.id === m.id) === i,
   );
 
-  const heroSlides = (heroMovies.length ? heroMovies : trending).slice(0, 6);
-  const heroTrailers = await fetchTrailers(heroSlides, 6);
+  // Fewer slides/trailers = fewer /videos requests after the main batch
+  const heroSlides = (heroMovies.length ? heroMovies : trending).slice(0, 4);
+  const heroTrailers = await fetchTrailers(heroSlides, 3);
 
   /**
    * Popular Top 10 In Genres — one collage card per genre (same set as Our Genres).

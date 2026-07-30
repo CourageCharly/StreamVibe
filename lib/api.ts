@@ -62,8 +62,12 @@ export async function fetchMovieCategories(
 }
 
 /** TV genre map for Shows “Our Genres” collages */
-export async function fetchShowCategories(): Promise<CategoriesMapResponse> {
-  return getShowCategoriesMap();
+export async function fetchShowCategories(
+  limit = 4,
+  /** TMDB pages per genre — use 1 on Movies & Shows for faster load */
+  pages = 3,
+): Promise<CategoriesMapResponse> {
+  return getShowCategoriesMap(limit, pages);
 }
 
 /** Convenience: popular movies only */
