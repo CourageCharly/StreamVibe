@@ -235,12 +235,10 @@ export async function getMovieCategoriesMap(
  */
 export async function getShowCategoriesMap(
   limit = 4,
-  /** Discover pages per genre (1 = fastest Movies & Shows load) */
-  pages = 3,
 ): Promise<CategoriesMapResponse> {
   const entries = await Promise.all(
     CATEGORIES.map(async (cat) => {
-      const pool = await loadGenrePool("show", cat.key, pages);
+      const pool = await loadGenrePool("show", cat.key);
       return [cat.key, pool] as const;
     }),
   );
