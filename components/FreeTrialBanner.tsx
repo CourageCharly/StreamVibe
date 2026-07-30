@@ -48,7 +48,10 @@ export default function FreeTrialBanner({
   const allTiles = [...leftTiles, ...rightTiles];
 
   return (
-    <section id="free-trial" className="page-section min-w-0">
+    <section
+      id="free-trial"
+      className="page-section min-w-0 !pb-14 sm:!pb-20 lg:!pb-24"
+    >
       {/* Card frame — gradient is scoped to this relative box only */}
       <div
         className="relative w-full min-w-0 overflow-hidden rounded-[12px] border border-[#1F1F1F]"
