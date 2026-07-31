@@ -57,22 +57,7 @@ export default function Pricing({
             <span className="block sm:inline">for you</span>
           </>
         }
-        description={
-          <>
-            <span className="sm:hidden">
-              Join StreamVibe and select from our flexible subscription
-              <br />
-              options tailored to suit your viewing preferences. Get
-              <br />
-              ready for non-stop entertainment!
-            </span>
-            <span className="hidden sm:inline">
-              Join StreamVibe and select from our flexible subscription options
-              tailored to suit your viewing preferences. Get ready for non-stop
-              entertainment!
-            </span>
-          </>
-        }
+        description="Join StreamVibe and select from our flexible subscription options tailored to suit your viewing preferences. Get ready for non-stop entertainment!"
         action={
           <div
             className="inline-flex rounded-lg border border-[#262626] p-1"
