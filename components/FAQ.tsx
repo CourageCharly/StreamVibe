@@ -84,23 +84,7 @@ export default function FAQ({ askHref = "/support" }: Props) {
     <section id="faq" className="page-section">
       <SectionHeading
         title="Frequently Asked Questions"
-        description={
-          <>
-            <span className="sm:hidden">
-              <span className="block">
-                Got questions? We&apos;ve got answers! Check out our FAQ
-              </span>
-              <span className="block">
-                section to find answers to the most common questions
-              </span>
-              <span className="block">about StreamVibe.</span>
-            </span>
-            <span className="hidden sm:inline">
-              Got questions? We&apos;ve got answers! Check out our FAQ section to
-              find answers to the most common questions about StreamVibe.
-            </span>
-          </>
-        }
+        description="Got questions? We've got answers! Check out our FAQ section to find answers to the most common questions about StreamVibe."
         action={<Button href={askHref}>Ask a Question</Button>}
       />
 
