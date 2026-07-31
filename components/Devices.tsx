@@ -8,7 +8,6 @@ export default function Devices() {
       <SectionHeading
         title={
           <>
-            {/* Mobile: 2 lines · Web: single line (no wrap) */}
             <span className="sm:hidden">
               We Provide you streaming
               <br />
@@ -19,7 +18,19 @@ export default function Devices() {
             </span>
           </>
         }
-        description="With StreamVibe, you can enjoy your favorite movies and TV shows anytime, anywhere."
+        description={
+          <>
+            <span className="sm:hidden">
+              With StreamVibe, you can enjoy your favorite movies
+              <br />
+              and TV shows anytime, anywhere.
+            </span>
+            <span className="hidden sm:inline">
+              With StreamVibe, you can enjoy your favorite movies and TV shows
+              anytime, anywhere.
+            </span>
+          </>
+        }
         singleLine
       />
 
