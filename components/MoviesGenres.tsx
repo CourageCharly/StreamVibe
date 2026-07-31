@@ -19,77 +19,13 @@ const GAP = 6;
 const PAD = 16;
 const TITLE_BLOCK = 40;
 
-/** Solid bottom fade — always covers full image frame */
+/** Solid bottom fade — covers full image frame (mobile + web) */
 const TILE_OVERLAY =
   "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.35) 42%, rgba(26,26,26,0.88) 78%, #1A1A1A 100%)";
 
-function GenreTile({
-  movie,
-  fallbackTitle,
-  fixed,
-  cellW,
-  cellH,
-}: {
-  movie: Movie;
-  fallbackTitle: string;
-  fixed?: boolean;
-  cellW?: number;
-  cellH?: number;
-}) {
-  const title = movie.title || movie.name || fallbackTitle;
-  const imageUrl = posterUrl(movie.poster_path, "w342");
-
-  return (
-    <div
-      className={[
-        "relative overflow-hidden rounded-lg bg-[#1A1A1A]",
-        fixed ? "" : "min-h-0 min-w-0 h-full w-full",
-      ].join(" ")}
-      style={
-        fixed && cellW && cellH
-          ? { width: cellW, height: cellH, flex: "none" }
-          : undefined
-      }
-    >
-      {imageUrl ? (
-        fixed && cellW && cellH ? (
-          <Image
-            src={imageUrl}
-            alt={title}
-            width={cellW}
-            height={cellH}
-            className="block h-full w-full object-cover object-center"
-            sizes={`${cellW}px`}
-          />
-        ) : (
-          <Image
-            src={imageUrl}
-            alt={title}
-            fill
-            className="object-cover object-center"
-            sizes="40vw"
-          />
-        )
-      ) : (
-        <div
-          className={fixed ? "h-full w-full" : "absolute inset-0"}
-          style={{
-            background: `linear-gradient(145deg, hsl(${(movie.id * 47) % 360} 32% 18%), hsl(${(movie.id * 47) % 360} 40% 8%)`,
-          }}
-        />
-      )}
-      <div
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{ background: TILE_OVERLAY }}
-        aria-hidden
-      />
-    </div>
-  );
-}
-
 /**
- * Our Genres — segment count = genre card count.
- * Web: integer-pixel 2×2 collage so overlay covers every frame edge (no bottom gap).
+ * Our Genres — fixed integer-pixel 2×2 collage on all breakpoints
+ * so image + overlay fill every frame with no bottom gap.
  */
 export default function MoviesGenres({
   categoryMovies,
@@ -101,6 +37,7 @@ export default function MoviesGenres({
     MEDIA_CARD_W + 16,
   );
 
+  // Card 285×317, p-4. Integer cells avoid subpixel hairlines under the overlay.
   const collageH = MEDIA_CARD_H - PAD * 2 - TITLE_BLOCK;
   const cellH = Math.floor((collageH - GAP) / 2);
   const cellW = Math.floor((MEDIA_CARD_W - PAD * 2 - GAP) / 2);
@@ -150,41 +87,53 @@ export default function MoviesGenres({
               className="group flex shrink-0 flex-col overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] p-4"
               style={{ width: MEDIA_CARD_W, height: MEDIA_CARD_H }}
             >
-              {/* Mobile: fluid 2×2 */}
+              {/* Integer-pixel 2×2 — same full-frame cover on mobile + web */}
               <div
-                className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 overflow-hidden sm:hidden"
-                style={{ gap: GAP }}
-              >
-                {collage.map((movie, i) => (
-                  <GenreTile
-                    key={`m-${movie.id}-${i}`}
-                    movie={movie}
-                    fallbackTitle={cat.name}
-                  />
-                ))}
-              </div>
-
-              {/* Web: fixed integer-pixel 2×2 — full frame cover, no bottom gap */}
-              <div
-                className="hidden shrink-0 overflow-hidden sm:grid"
+                className="shrink-0 overflow-hidden"
                 style={{
                   width: collageW,
                   height: collageExactH,
+                  display: "grid",
                   gap: GAP,
                   gridTemplateColumns: `${cellW}px ${cellW}px`,
                   gridTemplateRows: `${cellH}px ${cellH}px`,
                 }}
               >
-                {collage.map((movie, i) => (
-                  <GenreTile
-                    key={`d-${movie.id}-${i}`}
-                    movie={movie}
-                    fallbackTitle={cat.name}
-                    fixed
-                    cellW={cellW}
-                    cellH={cellH}
-                  />
-                ))}
+                {collage.map((movie, i) => {
+                  const title = movie.title || movie.name || cat.name;
+                  const imageUrl = posterUrl(movie.poster_path, "w342");
+                  return (
+                    <div
+                      key={`${movie.id}-${i}`}
+                      className="relative overflow-hidden rounded-lg bg-[#1A1A1A]"
+                      style={{ width: cellW, height: cellH }}
+                    >
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt={title}
+                          width={cellW}
+                          height={cellH}
+                          className="block h-full w-full object-cover object-center"
+                          sizes={`${cellW}px`}
+                        />
+                      ) : (
+                        <div
+                          className="h-full w-full"
+                          style={{
+                            background: `linear-gradient(145deg, hsl(${(movie.id * 47) % 360} 32% 18%), hsl(${(movie.id * 47) % 360} 40% 8%)`,
+                          }}
+                        />
+                      )}
+                      {/* Overlay covers full tile — solid at bottom */}
+                      <div
+                        className="pointer-events-none absolute inset-0 z-[1]"
+                        style={{ background: TILE_OVERLAY }}
+                        aria-hidden
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="mt-auto flex shrink-0 items-center justify-between gap-2 pt-3">
