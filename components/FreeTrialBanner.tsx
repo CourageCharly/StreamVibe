@@ -102,10 +102,9 @@ export default function FreeTrialBanner({
         <GradientPanel />
 
         {/* Layer 2: copy + CTA — centered on mobile, split on sm+ */}
-        <div
-          className="relative z-[3] flex min-h-[300px] min-w-0 flex-col items-center justify-center gap-6 px-4 py-12 sm:min-h-[210px] sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14"
-        >
-          <div className="w-full min-w-0 max-w-[560px] flex-1 text-center sm:text-left">
+        <div className="relative z-[3] flex min-h-[300px] min-w-0 flex-col items-center justify-center gap-6 px-4 py-10 sm:min-h-[210px] sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+          {/* flex-none on mobile keeps normal gap between subtext and CTA */}
+          <div className="w-full min-w-0 max-w-[560px] shrink-0 text-center sm:flex-1 sm:text-left">
             <h2 className="text-center text-[clamp(1.25rem,4vw,28px)] font-bold leading-[1.2] tracking-tight text-white sm:text-left">
               Start your free trial today!
             </h2>
