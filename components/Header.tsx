@@ -216,7 +216,8 @@ function HeaderInner() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search movies…"
               autoFocus
-              className="min-w-0 flex-1 bg-transparent text-[14px] text-white outline-none placeholder:text-[#999999]"
+              /* 16px+ on mobile prevents iOS Safari auto-zoom on focus */
+              className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#999999] sm:text-[14px]"
             />
             <button
               type="submit"
