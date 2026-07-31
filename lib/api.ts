@@ -3,6 +3,7 @@
  * All app pages/components should load catalog data through these helpers.
  * They call the same services that power `/api/*` (no unused dual paths).
  */
+import { unstable_cache } from "next/cache";
 import {
   getMediaDetails,
   getMovieCategoriesMap,
@@ -36,12 +37,20 @@ export type {
   TrailerClip,
 };
 
+/** Catalog cache TTL (seconds) — same data, faster repeated visits */
+const CATALOG_REVALIDATE = 21600;
+
 /** GET /api/movies?category=&page= */
 export async function fetchMovies(
   category: string = "popular",
   page = 1,
 ): Promise<CatalogListResponse> {
-  return getMovies(parseMovieCategory(category), page);
+  const key = parseMovieCategory(category);
+  return unstable_cache(
+    () => getMovies(key, page),
+    ["movies", key, String(page)],
+    { revalidate: CATALOG_REVALIDATE },
+  )();
 }
 
 /** GET /api/shows?category=&page= */
@@ -49,21 +58,39 @@ export async function fetchShows(
   category: string = "popular",
   page = 1,
 ): Promise<CatalogListResponse> {
-  return getShows(parseShowCategory(category), page);
+  const key = parseShowCategory(category);
+  return unstable_cache(
+    () => getShows(key, page),
+    ["shows", key, String(page)],
+    { revalidate: CATALOG_REVALIDATE },
+  )();
 }
 
-/** GET /api/movies/categories */
+/**
+ * Genre collage map for movies.
+ * Cached as one unit so Movies & Shows browse does not re-hit every genre on each visit.
+ */
 export async function fetchMovieCategories(
   limit = 4,
-  /** TMDB pages per genre — use 1 on home for faster first paint */
   pages = 3,
 ): Promise<CategoriesMapResponse> {
-  return getMovieCategoriesMap(limit, pages);
+  return unstable_cache(
+    () => getMovieCategoriesMap(limit, pages),
+    ["movie-categories", String(limit), String(pages)],
+    { revalidate: CATALOG_REVALIDATE },
+  )();
 }
 
 /** TV genre map for Shows “Our Genres” collages */
-export async function fetchShowCategories(): Promise<CategoriesMapResponse> {
-  return getShowCategoriesMap();
+export async function fetchShowCategories(
+  limit = 4,
+  pages = 3,
+): Promise<CategoriesMapResponse> {
+  return unstable_cache(
+    () => getShowCategoriesMap(limit, pages),
+    ["show-categories", String(limit), String(pages)],
+    { revalidate: CATALOG_REVALIDATE },
+  )();
 }
 
 /** Convenience: popular movies only */
@@ -83,10 +110,18 @@ export async function fetchTrailers(
   movies: Movie[],
   limit = 8,
 ): Promise<TrailerClip[]> {
-  return getTrailersForMovies(movies, limit);
+  const ids = movies
+    .slice(0, Math.max(limit * 2, limit))
+    .map((m) => m.id)
+    .join(",");
+  return unstable_cache(
+    () => getTrailersForMovies(movies, limit),
+    ["trailers", ids, String(limit)],
+    { revalidate: CATALOG_REVALIDATE },
+  )();
 }
 
-/** Search movies by title */
+/** Search movies by title (not aggressively cached — query-specific) */
 export async function fetchSearchMovies(
   query: string,
   page = 1,

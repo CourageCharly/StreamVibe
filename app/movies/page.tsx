@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     "Browse movies and shows by genre — Action, Adventure, Comedy, Drama, Horror, and more on StreamVibe.",
 };
 
+/** ISR: same page content, much faster after first cold load */
+export const revalidate = 21600;
+
 type Props = {
   searchParams: Promise<{ category?: string; q?: string; from?: string }>;
 };
@@ -41,10 +44,10 @@ export default async function MoviesPage({ searchParams }: Props) {
 
   // ——— Search or genre listing (infinite load) ———
   if (q || hasCategory) {
-    const list = q
-      ? await fetchSearchMovies(q, 1)
-      : await fetchMovies(category, 1);
-    const popular = await fetchPopularMovies();
+    const [list, popular] = await Promise.all([
+      q ? fetchSearchMovies(q, 1) : fetchMovies(category, 1),
+      fetchPopularMovies(),
+    ]);
     const label = q
       ? `Results for “${q}”`
       : `${MOVIE_LISTS.find((c) => c.key === category)?.name ?? "Movies"}`;
@@ -106,10 +109,25 @@ export default async function MoviesPage({ searchParams }: Props) {
   }
 
   // ——— Full Movies & Shows browse page (design) ———
-  // Trending / Popular / New Releases: single page, modest row size
+  // Same data as before — faster via cache + overlapping trailer fetch with genres
+  const listsPromise = Promise.all([
+    fetchMovies("trending", 1),
+    fetchMovies("upcoming", 1),
+    fetchMovies("popular", 1),
+    fetchMovies("top_rated", 1),
+    fetchShows("trending", 1),
+    fetchShows("popular", 1),
+    fetchShows("on_the_air", 1),
+    fetchShows("top_rated", 1),
+  ]);
+
+  const catsPromise = Promise.all([
+    fetchMovieCategories(),
+    fetchShowCategories(),
+  ]);
+
+  // Lists usually finish first — start trailers while genre maps still load
   const [
-    { categories },
-    { categories: showCategories },
     trendingRes,
     upcomingRes,
     popularRes,
@@ -118,18 +136,7 @@ export default async function MoviesPage({ searchParams }: Props) {
     showsPopularRes,
     showsOnAirRes,
     showsTop,
-  ] = await Promise.all([
-    fetchMovieCategories(),
-    fetchShowCategories(),
-    fetchMovies("trending", 1),
-    fetchMovies("upcoming", 1),
-    fetchMovies("popular", 1),
-    fetchMovies("top_rated"),
-    fetchShows("trending", 1),
-    fetchShows("popular", 1),
-    fetchShows("on_the_air", 1),
-    fetchShows("top_rated"),
-  ]);
+  ] = await listsPromise;
 
   const trending = trendingRes.results;
   const upcoming = upcomingRes.results;
@@ -144,7 +151,11 @@ export default async function MoviesPage({ searchParams }: Props) {
   );
 
   const heroSlides = (heroMovies.length ? heroMovies : trending).slice(0, 6);
-  const heroTrailers = await fetchTrailers(heroSlides, 6);
+  // Overlap trailers with remaining category work (same 6 trailers as before)
+  const trailersPromise = fetchTrailers(heroSlides, 6);
+
+  const [[{ categories }, { categories: showCategories }], heroTrailers] =
+    await Promise.all([catsPromise, trailersPromise]);
 
   /**
    * Popular Top 10 In Genres — one collage card per genre (same set as Our Genres).

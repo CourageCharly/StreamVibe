@@ -235,10 +235,11 @@ export async function getMovieCategoriesMap(
  */
 export async function getShowCategoriesMap(
   limit = 4,
+  pages = 3,
 ): Promise<CategoriesMapResponse> {
   const entries = await Promise.all(
     CATEGORIES.map(async (cat) => {
-      const pool = await loadGenrePool("show", cat.key);
+      const pool = await loadGenrePool("show", cat.key, pages);
       return [cat.key, pool] as const;
     }),
   );
@@ -249,50 +250,46 @@ export async function getShowCategoriesMap(
   };
 }
 
-/** Resolve YouTube trailer keys for hero muted playback — stop once we have enough */
+/** Resolve YouTube trailer keys for hero muted playback — all candidates in parallel */
 export async function getTrailersForMovies(
   movies: Movie[],
   limit = 8,
 ): Promise<TrailerClip[]> {
+  const candidates = movies.slice(0, Math.max(limit * 2, limit));
+  const clips = await Promise.all(
+    candidates.map(async (movie) => {
+      const data = await tmdbGet<{ results: TmdbVideo[] }>(
+        `/movie/${movie.id}/videos`,
+      );
+      const videos = data?.results ?? [];
+      const trailer =
+        videos.find(
+          (v) =>
+            v.site === "YouTube" &&
+            v.type === "Trailer" &&
+            v.official !== false,
+        ) ??
+        videos.find((v) => v.site === "YouTube" && v.type === "Trailer") ??
+        videos.find((v) => v.site === "YouTube" && v.type === "Teaser") ??
+        videos.find((v) => v.site === "YouTube");
+
+      if (!trailer?.key) return null;
+
+      return {
+        id: movie.id,
+        key: trailer.key,
+        title: movie.title || movie.name || "Trailer",
+      } satisfies TrailerClip;
+    }),
+  );
+
   const unique: TrailerClip[] = [];
   const seenKeys = new Set<string>();
-  const BATCH = 4;
-
-  for (let i = 0; i < movies.length && unique.length < limit; i += BATCH) {
-    const batch = movies.slice(i, i + BATCH);
-    const clips = await Promise.all(
-      batch.map(async (movie) => {
-        const data = await tmdbGet<{ results: TmdbVideo[] }>(
-          `/movie/${movie.id}/videos`,
-        );
-        const videos = data?.results ?? [];
-        const trailer =
-          videos.find(
-            (v) =>
-              v.site === "YouTube" &&
-              v.type === "Trailer" &&
-              v.official !== false,
-          ) ??
-          videos.find((v) => v.site === "YouTube" && v.type === "Trailer") ??
-          videos.find((v) => v.site === "YouTube" && v.type === "Teaser") ??
-          videos.find((v) => v.site === "YouTube");
-
-        if (!trailer?.key) return null;
-
-        return {
-          id: movie.id,
-          key: trailer.key,
-          title: movie.title || movie.name || "Trailer",
-        } satisfies TrailerClip;
-      }),
-    );
-
-    for (const clip of clips) {
-      if (!clip || seenKeys.has(clip.key)) continue;
-      seenKeys.add(clip.key);
-      unique.push(clip);
-      if (unique.length >= limit) break;
-    }
+  for (const clip of clips) {
+    if (!clip || seenKeys.has(clip.key)) continue;
+    seenKeys.add(clip.key);
+    unique.push(clip);
+    if (unique.length >= limit) break;
   }
 
   return unique;

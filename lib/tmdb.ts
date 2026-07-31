@@ -6,11 +6,14 @@
  * Network / DNS failures (e.g. getaddrinfo EAI_AGAIN) never throw —
  * they return null after retries so pages can render empty states.
  */
+import { cache } from "react";
 import type { MoviesResponse } from "./types";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 400;
+/** Shared Data Cache TTL for TMDB (seconds) */
+const TMDB_REVALIDATE = 21600;
 
 /**
  * Reads the two credentials from `.env.local`:
@@ -45,10 +48,17 @@ function isTransientNetworkError(err: unknown): boolean {
   );
 }
 
-export async function tmdbGet<T>(
-  pathWithQuery: string,
-  extraParams?: Record<string, string>,
-): Promise<T | null> {
+/**
+ * Per-request dedupe (stable string key) + Next Data Cache (revalidate).
+ */
+const tmdbGetByKey = cache(async function tmdbGetByKey(
+  cacheKey: string,
+): Promise<unknown> {
+  const { pathWithQuery, extraParams } = JSON.parse(cacheKey) as {
+    pathWithQuery: string;
+    extraParams?: Record<string, string>;
+  };
+
   const { token, apiKey } = getCredentials();
 
   if (!token && !apiKey) {
@@ -92,8 +102,7 @@ export async function tmdbGet<T>(
     try {
       const res = await fetch(url.toString(), {
         headers,
-        // Cache TMDB responses longer — major win for repeated page loads
-        next: { revalidate: 21600 },
+        next: { revalidate: TMDB_REVALIDATE },
       });
 
       if (!res.ok) {
@@ -101,7 +110,7 @@ export async function tmdbGet<T>(
         return null;
       }
 
-      return (await res.json()) as T;
+      return await res.json();
     } catch (err) {
       lastError = err;
       const transient = isTransientNetworkError(err);
@@ -118,6 +127,23 @@ export async function tmdbGet<T>(
 
   console.error(`[tmdb] giving up on ${pathname}`, lastError);
   return null;
+});
+
+export async function tmdbGet<T>(
+  pathWithQuery: string,
+  extraParams?: Record<string, string>,
+): Promise<T | null> {
+  const cacheKey = JSON.stringify({
+    pathWithQuery,
+    extraParams: extraParams
+      ? Object.fromEntries(
+          Object.keys(extraParams)
+            .sort()
+            .map((k) => [k, extraParams[k]]),
+        )
+      : undefined,
+  });
+  return (await tmdbGetByKey(cacheKey)) as T | null;
 }
 
 export async function tmdbList(
