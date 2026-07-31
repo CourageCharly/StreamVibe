@@ -87,11 +87,13 @@ export default function FAQ({ askHref = "/support" }: Props) {
         description={
           <>
             <span className="sm:hidden">
-              Got questions? We&apos;ve got answers! Check out our FAQ
-              <br />
-              section to find answers to the most common questions
-              <br />
-              about StreamVibe.
+              <span className="block">
+                Got questions? We&apos;ve got answers! Check out our FAQ
+              </span>
+              <span className="block">
+                section to find answers to the most common questions
+              </span>
+              <span className="block">about StreamVibe.</span>
             </span>
             <span className="hidden sm:inline">
               Got questions? We&apos;ve got answers! Check out our FAQ section to

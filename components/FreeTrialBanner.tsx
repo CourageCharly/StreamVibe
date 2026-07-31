@@ -106,11 +106,9 @@ export default function FreeTrialBanner({
           {/* Mobile: slightly more space subtext → CTA (gap-8); web row gap-8 unchanged */}
           <div className="w-full min-w-0 max-w-[560px] shrink-0 text-center sm:flex-1 sm:text-left">
             <h2 className="text-center text-[clamp(1.25rem,4vw,28px)] font-bold leading-[1.2] tracking-tight text-white sm:text-left">
-              {/* Mobile only: 2 lines */}
               <span className="sm:hidden">
-                Start your free trial
-                <br />
-                today!
+                <span className="block">Start your free trial</span>
+                <span className="block">today!</span>
               </span>
               <span className="hidden sm:inline">
                 Start your free trial today!

@@ -9,9 +9,8 @@ export default function Devices() {
         title={
           <>
             <span className="sm:hidden">
-              We Provide you streaming
-              <br />
-              experience across various devices.
+              <span className="block">We Provide you streaming</span>
+              <span className="block">experience across various devices.</span>
             </span>
             <span className="hidden sm:inline">
               We Provide you streaming experience across various devices.
@@ -21,9 +20,10 @@ export default function Devices() {
         description={
           <>
             <span className="sm:hidden">
-              With StreamVibe, you can enjoy your favorite movies
-              <br />
-              and TV shows anytime, anywhere.
+              <span className="block">
+                With StreamVibe, you can enjoy your favorite movies
+              </span>
+              <span className="block">and TV shows anytime, anywhere.</span>
             </span>
             <span className="hidden sm:inline">
               With StreamVibe, you can enjoy your favorite movies and TV shows
@@ -31,7 +31,6 @@ export default function Devices() {
             </span>
           </>
         }
-        singleLine
       />
 
       <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
