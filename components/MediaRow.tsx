@@ -1,10 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
 import SliderControls from "@/components/SliderControls";
-import PosterCard from "@/components/PosterCard";
-import GradientOverlay from "@/components/GradientOverlay";
 import TrendingMovieCard from "@/components/TrendingMovieCard";
 import { posterUrl } from "@/lib/media";
 import type { Movie } from "@/lib/types";
@@ -13,6 +12,28 @@ import { useRowSlider } from "@/lib/use-row-slider";
 /** Design card size: 285 × 317, 4 visible in a row */
 export const MEDIA_CARD_W = 285;
 export const MEDIA_CARD_H = 317;
+
+const COLLAGE_GAP = 6;
+const CARD_PAD = 16;
+/** Our Genres title row */
+const GENRE_TITLE_H = 40;
+/** Top 10 In badge + genre name row */
+const TOP10_TITLE_H = 56;
+
+const TILE_OVERLAY =
+  "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.35) 42%, rgba(26,26,26,0.88) 78%, #1A1A1A 100%)";
+
+function collageMetrics(titleBlock: number) {
+  const collageH = MEDIA_CARD_H - CARD_PAD * 2 - titleBlock;
+  const cellH = Math.floor((collageH - COLLAGE_GAP) / 2);
+  const cellW = Math.floor((MEDIA_CARD_W - CARD_PAD * 2 - COLLAGE_GAP) / 2);
+  return {
+    cellW,
+    cellH,
+    collageW: cellW * 2 + COLLAGE_GAP,
+    collageH: cellH * 2 + COLLAGE_GAP,
+  };
+}
 
 export type Top10GenreItem = {
   name: string;
@@ -69,6 +90,11 @@ export default function MediaRow({
 
   if (!movies.length && !top10Cards.length) return null;
 
+  // Integer-pixel collage (same fix as Our Genres — no bottom gap under overlay)
+  const { cellW, cellH, collageW, collageH } = collageMetrics(
+    top10Label ? TOP10_TITLE_H : GENRE_TITLE_H,
+  );
+
   return (
     <div className="min-w-0">
       {/* Web: arrows + segments (manual only) */}
@@ -107,33 +133,54 @@ export default function MediaRow({
                   className="group flex shrink-0 flex-col overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] p-4"
                   style={{ width: MEDIA_CARD_W, height: MEDIA_CARD_H }}
                 >
-                  {/* 2×2 collage — equal cells + full-bleed overlay (iOS + Android) */}
-                  <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-1.5 overflow-hidden">
+                  {/* Fixed integer 2×2 — full overlay cover on mobile + web */}
+                  <div
+                    className="shrink-0 overflow-hidden"
+                    style={{
+                      width: collageW,
+                      height: collageH,
+                      display: "grid",
+                      gap: COLLAGE_GAP,
+                      gridTemplateColumns: `${cellW}px ${cellW}px`,
+                      gridTemplateRows: `${cellH}px ${cellH}px`,
+                    }}
+                  >
                     {collage.map((m, i) => {
                       const name = m.title || m.name || item.name;
                       const imageUrl = posterUrl(m.poster_path, "w342");
                       return (
                         <div
                           key={`${item.key}-${m.id}-${i}`}
-                          className="relative h-full min-h-0 min-w-0 w-full overflow-hidden rounded-lg bg-[#1A1A1A] [transform:translateZ(0)]"
+                          className="relative overflow-hidden rounded-lg bg-[#1A1A1A]"
+                          style={{ width: cellW, height: cellH }}
                         >
-                          <PosterCard
-                            title={name}
-                            imageUrl={imageUrl}
-                            showLabel={false}
-                            showOverlays={false}
-                            className="!absolute !inset-0 !aspect-auto !h-full !w-full !min-h-full !min-w-full !max-h-none !max-w-none !rounded-lg [&_img]:!h-full [&_img]:!w-full [&_img]:!object-cover [&_img]:!object-center sm:[&_img]:scale-[1.02]"
-                            sizes="(max-width: 640px) 40vw, 140px"
-                          />
-                          <GradientOverlay
-                            variant="poster"
-                            direction="to bottom"
+                          {imageUrl ? (
+                            <Image
+                              src={imageUrl}
+                              alt={name}
+                              width={cellW}
+                              height={cellH}
+                              className="block h-full w-full object-cover object-center"
+                              sizes={`${cellW}px`}
+                            />
+                          ) : (
+                            <div
+                              className="h-full w-full"
+                              style={{
+                                background: `linear-gradient(145deg, hsl(${(m.id * 47) % 360} 32% 18%), hsl(${(m.id * 47) % 360} 40% 8%)`,
+                              }}
+                            />
+                          )}
+                          <div
+                            className="pointer-events-none absolute inset-0 z-[1]"
+                            style={{ background: TILE_OVERLAY }}
+                            aria-hidden
                           />
                         </div>
                       );
                     })}
                   </div>
-                  <div className="mt-3 flex shrink-0 items-center justify-between gap-2">
+                  <div className="mt-auto flex shrink-0 items-center justify-between gap-2 pt-3">
                     <div className="min-w-0">
                       <span className="mb-1 inline-block rounded bg-cta px-2 py-0.5 text-[10px] font-semibold text-white">
                         Top 10 In
