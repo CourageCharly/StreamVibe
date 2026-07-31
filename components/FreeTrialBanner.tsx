@@ -105,16 +105,8 @@ export default function FreeTrialBanner({
         <div className="relative z-[3] flex min-h-[300px] min-w-0 flex-col items-center justify-center gap-8 px-4 py-10 sm:min-h-[210px] sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
           {/* Mobile: slightly more space subtext → CTA (gap-8); web row gap-8 unchanged */}
           <div className="w-full min-w-0 max-w-[560px] shrink-0 text-center sm:flex-1 sm:text-left">
-            <h2 className="text-center text-[clamp(1.5rem,5.5vw,1.75rem)] font-bold leading-[1.2] tracking-tight text-white sm:text-left sm:text-[clamp(1.25rem,4vw,28px)]">
-              {/* Mobile: larger + 2 lines · Web: one line */}
-              <span className="sm:hidden">
-                Start your free trial
-                <br />
-                today!
-              </span>
-              <span className="hidden sm:inline">
-                Start your free trial today!
-              </span>
+            <h2 className="text-center text-[clamp(1.25rem,4vw,28px)] font-bold leading-[1.2] tracking-tight text-white sm:text-left">
+              Start your free trial today!
             </h2>
             <p className="mx-auto mt-3 max-w-[32rem] text-center text-[14px] font-normal leading-[1.5] text-[#999999] sm:mx-0 sm:max-w-full sm:text-left sm:text-pretty">
               {/* Mobile: fixed 3-line break · Web: single flowing paragraph */}
