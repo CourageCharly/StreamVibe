@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 
 type Props = {
   title: ReactNode;
-  description?: string;
+  /** String or mobile line-break markup */
+  description?: ReactNode;
   action?: ReactNode;
   className?: string;
   id?: string;
@@ -12,7 +13,7 @@ type Props = {
 
 /**
  * Shared section headers — 28px bold (matches categories).
- * Subtext: 14px regular #999999.
+ * Subtext: 14px regular #999999 — full width on mobile for design line breaks.
  */
 export default function SectionHeading({
   title,
@@ -28,12 +29,11 @@ export default function SectionHeading({
       className={`mb-8 flex min-w-0 flex-col gap-4 sm:mb-10 lg:flex-row lg:items-end lg:justify-between lg:gap-6 ${className}`}
     >
       <div
-        className={`min-w-0 flex-1 ${singleLine ? "max-w-none" : "max-w-3xl"}`}
+        className={`min-w-0 flex-1 ${singleLine ? "max-w-none" : "max-w-none sm:max-w-3xl"}`}
       >
         <h2
           className={[
             "min-w-0 text-[clamp(1.25rem,3.5vw,28px)] font-bold leading-tight text-white",
-            /* No text-balance — it overrides intentional mobile line breaks */
             singleLine
               ? "whitespace-nowrap max-sm:whitespace-normal"
               : "whitespace-normal",
@@ -42,7 +42,7 @@ export default function SectionHeading({
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 max-w-3xl text-pretty text-[14px] font-normal leading-relaxed text-subtext">
+          <p className="mt-2 w-full max-w-none text-[14px] font-normal leading-relaxed text-subtext sm:max-w-3xl sm:text-pretty">
             {description}
           </p>
         ) : null}

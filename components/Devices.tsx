@@ -19,7 +19,19 @@ export default function Devices() {
             </span>
           </>
         }
-        description="With StreamVibe, you can enjoy your favorite movies and TV shows anytime, anywhere."
+        description={
+          <>
+            <span className="sm:hidden">
+              With StreamVibe, you can enjoy your favorite movies and TV
+              <br />
+              shows anytime, anywhere.
+            </span>
+            <span className="hidden sm:inline">
+              With StreamVibe, you can enjoy your favorite movies and TV shows
+              anytime, anywhere.
+            </span>
+          </>
+        }
         singleLine
       />
 

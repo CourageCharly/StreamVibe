@@ -62,8 +62,34 @@ export default function PlanComparison({ billing = "monthly" }: Props) {
   return (
     <section id="features" className="page-section pt-0 sm:pt-2">
       <SectionHeading
-        title="Compare our plans and find the right one for you"
-        description="StreamVibe offers three different plans to fit your needs: Basic, Standard, and Premium. Compare the features of each plan and choose the one that's right for you."
+        title={
+          <>
+            <span className="sm:hidden">
+              Compare our plans and find the right
+              <br />
+              one for you
+            </span>
+            <span className="hidden sm:inline">
+              Compare our plans and find the right one for you
+            </span>
+          </>
+        }
+        description={
+          <>
+            <span className="sm:hidden">
+              StreamVibe offers three different plans to fit your needs: Basic,
+              <br />
+              Standard, and Premium. Compare the features of each plan and
+              <br />
+              choose the one that&apos;s right for you.
+            </span>
+            <span className="hidden sm:inline">
+              StreamVibe offers three different plans to fit your needs: Basic,
+              Standard, and Premium. Compare the features of each plan and choose
+              the one that&apos;s right for you.
+            </span>
+          </>
+        }
       />
 
       {/* ——— Mobile only (Table Mobile.png) ——— */}
