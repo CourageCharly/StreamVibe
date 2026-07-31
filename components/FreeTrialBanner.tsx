@@ -52,11 +52,8 @@ export default function FreeTrialBanner({
       id="free-trial"
       className="page-section min-w-0 !pb-14 sm:!pb-20 lg:!pb-24"
     >
-      {/* Card frame — gradient is scoped to this relative box only */}
-      <div
-        className="relative w-full min-w-0 overflow-hidden rounded-[12px] border border-[#1F1F1F]"
-        style={{ minHeight: 210 }}
-      >
+      {/* Card frame — taller on mobile only */}
+      <div className="relative w-full min-w-0 min-h-[300px] overflow-hidden rounded-[12px] border border-[#1F1F1F] sm:min-h-[210px]">
         {/* Layer 0: movie posters */}
         <div
           aria-hidden
@@ -106,16 +103,25 @@ export default function FreeTrialBanner({
 
         {/* Layer 2: copy + CTA — centered on mobile, split on sm+ */}
         <div
-          className="flex min-w-0 flex-col items-center justify-center gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14"
-          style={{ position: "relative", zIndex: 3, minHeight: 210 }}
+          className="relative z-[3] flex min-h-[300px] min-w-0 flex-col items-center justify-center gap-6 px-4 py-12 sm:min-h-[210px] sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14"
         >
           <div className="w-full min-w-0 max-w-[560px] flex-1 text-center sm:text-left">
             <h2 className="text-center text-[clamp(1.25rem,4vw,28px)] font-bold leading-[1.2] tracking-tight text-white sm:text-left">
               Start your free trial today!
             </h2>
-            <p className="mx-auto mt-3 max-w-[32rem] text-center text-pretty text-[14px] font-normal leading-[1.5] text-[#999999] sm:mx-0 sm:max-w-full sm:text-left">
-              This is a clear and concise call to action that encourages users to
-              sign up for a free trial of StreamVibe.
+            <p className="mx-auto mt-3 max-w-[32rem] text-center text-[14px] font-normal leading-[1.5] text-[#999999] sm:mx-0 sm:max-w-full sm:text-left sm:text-pretty">
+              {/* Mobile: fixed 3-line break · Web: single flowing paragraph */}
+              <span className="sm:hidden">
+                This is a clear and concise call to action that
+                <br />
+                encourages users to sign up for a free trial of
+                <br />
+                StreamVibe.
+              </span>
+              <span className="hidden sm:inline">
+                This is a clear and concise call to action that encourages users
+                to sign up for a free trial of StreamVibe.
+              </span>
             </p>
           </div>
 
