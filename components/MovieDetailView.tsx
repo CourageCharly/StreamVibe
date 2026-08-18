@@ -366,7 +366,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
         {/* Hero — matches Movies & Shows hero (taller mobile, lighter title, full-width CTA) */}
         <section
           id="hero"
-          className="relative h-[min(88vw,460px)] w-full min-w-0 overflow-hidden rounded-xl sm:h-auto sm:min-h-[480px] sm:rounded-2xl lg:min-h-[560px]"
+          className="relative h-[min(88vw,460px)] w-full min-w-0 overflow-hidden rounded-xl sm:h-[480px] sm:rounded-2xl lg:h-[560px]"
         >
           {bg ? (
             <Image
@@ -374,7 +374,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
               alt={movie.title}
               fill
               priority
-              className="object-cover object-center"
+              className="h-full w-full object-cover object-center"
               sizes="100vw"
             />
           ) : (
@@ -382,7 +382,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/50 to-transparent" />
 
-          <div className="relative z-10 flex h-full min-h-[min(88vw,460px)] flex-col items-center justify-end px-4 pb-6 pt-20 text-center sm:min-h-[480px] sm:px-6 sm:pb-8 sm:pt-20 md:px-8 lg:min-h-[560px] lg:pb-10">
+          <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-end px-4 pb-6 pt-20 text-center sm:px-6 sm:pb-8 md:px-8 lg:pb-10">
             <h1 className="max-w-3xl break-words text-[clamp(1.25rem,3.5vw,1.875rem)] font-semibold leading-tight text-white sm:text-[clamp(1.35rem,4vw,2.25rem)]">
               {movie.title}
             </h1>

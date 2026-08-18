@@ -153,7 +153,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
       }}
     >
       {/* Taller stage for mobile + web */}
-      <div className="relative h-[min(88vw,460px)] w-full overflow-hidden sm:h-auto sm:min-h-[480px] lg:min-h-[560px]">
+      <div className="relative h-[min(88vw,460px)] w-full overflow-hidden sm:h-[480px] lg:h-[560px]">
         {slides.map((slide, i) => {
           const slideTitle = slide.title || slide.name || "Featured";
           const slideBg = backdropUrl(slide.backdrop_path, "w1280");
@@ -178,7 +178,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
                   alt={slideTitle}
                   fill
                   priority={i === 0 || i === (index + 1) % Math.max(slides.length, 1)}
-                  className="object-cover object-center"
+                  className="h-full w-full object-cover object-center"
                   sizes="100vw"
                 />
               ) : (
@@ -206,10 +206,10 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
           <div className="absolute inset-0 bg-[#1A1A1A]" />
         ) : null}
 
-        <div className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-t from-[#141414] via-[#141414]/55 to-transparent" />
-        <div className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r from-[#141414]/70 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-[2] h-full w-full bg-gradient-to-t from-[#141414] via-[#141414]/55 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-[2] h-full w-full bg-gradient-to-r from-[#141414]/70 via-transparent to-transparent" />
 
-        <div className="relative z-10 flex h-full min-h-[min(88vw,460px)] flex-col items-center justify-end px-4 pb-6 pt-20 text-center sm:min-h-[480px] sm:px-8 sm:pb-8 lg:min-h-[560px] lg:pb-10">
+        <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-end px-4 pb-6 pt-20 text-center sm:px-8 sm:pb-8 lg:pb-10">
           <h1
             key={`title-${index}`}
             className="max-w-3xl text-[clamp(1.25rem,3.5vw,1.875rem)] font-semibold text-white transition-opacity ease-in-out"

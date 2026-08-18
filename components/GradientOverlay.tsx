@@ -48,7 +48,7 @@ export default function GradientOverlay({
         "pointer-events-none absolute inset-0 z-[1]",
         "h-full w-full min-h-full min-w-full",
         /* Web: close 1px bottom hairline under image frames (subpixel grid) */
-        "sm:-bottom-px sm:top-0 sm:left-0 sm:right-0 sm:h-auto sm:min-h-[calc(100%+1px)]",
+        "sm:inset-0 sm:h-full sm:min-h-full",
         "[transform:translateZ(0)]",
         className,
       ]

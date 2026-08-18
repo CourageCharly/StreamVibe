@@ -21,7 +21,7 @@ export default function SectionFrame({
         {tag}
       </span>
       {/* Stroke container — web only */}
-      <div className="h-full w-full bg-transparent lg:rounded-xl lg:border lg:border-[#262626] lg:px-6 lg:pb-8 lg:pt-10">
+      <div className="h-full w-full bg-transparent lg:rounded-xl lg:border lg:border-[#262626] lg:p-6">
         {children}
       </div>
     </div>
