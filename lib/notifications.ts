@@ -99,3 +99,8 @@ export function markAllNoticesRead(ids: string[]) {
     /* quota */
   }
 }
+
+export function getUnreadNoticeCount(): number {
+  const read = getReadNoticeIds();
+  return MOVIE_NOTICES.filter((n) => n.unread && !read.includes(n.id)).length;
+}

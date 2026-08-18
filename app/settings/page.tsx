@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { FiChevronRight } from "react-icons/fi";
-import PageWrapper from "@/components/PageWrapper";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import Button from "@/components/ui/Button";
@@ -58,10 +57,9 @@ function SettingsInner() {
   }
 
   return (
-    <div className="w-full bg-[#141414] pt-[var(--header-h)]">
-      <PageWrapper className="py-8 sm:py-12">
-        <div className="mx-auto max-w-2xl">
-          <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
+      <div className="page-container py-8 sm:py-10">
+          <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
             Settings
           </h1>
           <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
@@ -292,15 +290,14 @@ function SettingsInner() {
 
           <Button
             variant="secondary"
-            className="mt-6 !w-full"
+            className="mt-6 !w-full sm:!w-auto"
             onClick={() => {
               void logout().then(() => router.replace("/"));
             }}
           >
             Sign out
           </Button>
-        </div>
-      </PageWrapper>
+      </div>
     </div>
   );
 }

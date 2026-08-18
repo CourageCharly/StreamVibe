@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import PageWrapper from "@/components/PageWrapper";
 import RequireAuth from "@/components/auth/RequireAuth";
+import EmptyCatalog from "@/components/EmptyCatalog";
 import { getWatchHistory, type HistoryItem } from "@/lib/user-lists";
 
 export default function HistoryPage() {
@@ -22,17 +22,18 @@ function HistoryInner() {
   }, []);
 
   return (
-    <div className="w-full bg-[#141414] pt-[var(--header-h)]">
-      <PageWrapper className="py-8 sm:py-12">
-        <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
+      <div className="page-container py-8 sm:py-10">
+        <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
           Watch History
         </h1>
+        <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
+          Movies and shows you have played.
+        </p>
         {items.length === 0 ? (
-          <p className="mt-4 max-w-md text-[14px] text-[#999999] sm:text-[16px]">
-            Movies you play will show up here.
-          </p>
+          <EmptyCatalog message="Play a title and it will show up here." />
         ) : (
-          <ul className="mt-6 space-y-3">
+          <ul className="mt-10 space-y-3">
             {items.map((item) => (
               <li key={`${item.path}-${item.at}`}>
                 <Link
@@ -48,7 +49,7 @@ function HistoryInner() {
             ))}
           </ul>
         )}
-      </PageWrapper>
+      </div>
     </div>
   );
 }

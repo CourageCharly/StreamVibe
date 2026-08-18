@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import PageWrapper from "@/components/PageWrapper";
 import RequireAuth from "@/components/auth/RequireAuth";
 import {
   getReadNoticeIds,
@@ -36,9 +35,8 @@ function NotificationsInner() {
   );
 
   return (
-    <div className="w-full bg-[#141414] pt-[var(--header-h)]">
-      <PageWrapper className="py-8 sm:py-12">
-        <div className="mx-auto max-w-2xl">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
+      <div className="page-container py-8 sm:py-10">
           <div className="flex items-end justify-between gap-3">
             <div>
               <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
@@ -100,8 +98,7 @@ function NotificationsInner() {
               </li>
             ))}
           </ul>
-        </div>
-      </PageWrapper>
+      </div>
     </div>
   );
 }

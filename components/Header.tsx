@@ -9,6 +9,7 @@ import { NAV_LINKS } from "@/lib/constants";
 import { useAuth } from "@/components/auth/AuthProvider";
 import UserMenu from "@/components/auth/UserMenu";
 import { rememberReturnTo } from "@/lib/auth/return-to";
+import { getUnreadNoticeCount } from "@/lib/notifications";
 import type { Movie } from "@/lib/types";
 
 function HeaderInner() {
@@ -23,6 +24,11 @@ function HeaderInner() {
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { user, status, logout } = useAuth();
   const returnTo = pathname + (searchParams.toString() ? `?${searchParams}` : "");
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    setUnread(getUnreadNoticeCount());
+  }, [pathname]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -175,8 +181,10 @@ function HeaderInner() {
       {SearchButton}
       <Link
         href="/notifications"
-        className="flex h-6 w-6 cursor-pointer items-center justify-center transition-opacity hover:opacity-80"
-        aria-label="Notifications"
+        className="relative flex h-6 w-6 cursor-pointer items-center justify-center transition-opacity hover:opacity-80"
+        aria-label={
+          unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
+        }
       >
         <Image
           src="/Icons/Bell Icon.svg"
@@ -186,6 +194,11 @@ function HeaderInner() {
           className="h-6 w-6"
           aria-hidden
         />
+        {unread > 0 ? (
+          <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-cta px-1 text-[10px] font-semibold leading-none text-white">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        ) : null}
       </Link>
     </div>
   );
