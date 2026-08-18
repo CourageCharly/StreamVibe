@@ -4,6 +4,8 @@ import { Manrope } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NavigationTracker from "@/components/NavigationTracker";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import Toaster from "@/components/Toaster";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -39,17 +41,20 @@ export default function RootLayout({
         style={{ overflowX: "hidden", maxWidth: "100%" }}
         suppressHydrationWarning
       >
-        <Header />
-        <Suspense fallback={null}>
-          <NavigationTracker />
-        </Suspense>
-        <main
-          className="w-full min-w-0 max-w-full flex-1 overflow-x-hidden"
-          style={{ overflowX: "hidden", maxWidth: "100%" }}
-        >
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Toaster />
+          <Header />
+          <Suspense fallback={null}>
+            <NavigationTracker />
+          </Suspense>
+          <main
+            className="w-full min-w-0 max-w-full flex-1 overflow-x-hidden"
+            style={{ overflowX: "hidden", maxWidth: "100%" }}
+          >
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

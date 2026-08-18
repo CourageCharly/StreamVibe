@@ -33,6 +33,48 @@ export function getLikes(): number[] {
   return readIds(LIKES_KEY);
 }
 
+export type HistoryItem = {
+  id: number;
+  title: string;
+  path: string;
+  at: number;
+};
+
+const HISTORY_KEY = "streamvibe:watch-history";
+
+export function getWatchHistory(): HistoryItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (item): item is HistoryItem =>
+        item &&
+        typeof item === "object" &&
+        typeof item.id === "number" &&
+        typeof item.title === "string" &&
+        typeof item.path === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function addWatchHistory(item: Omit<HistoryItem, "at">) {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getWatchHistory().filter(
+      (row) => row.id !== item.id || row.path !== item.path,
+    );
+    const next = [{ ...item, at: Date.now() }, ...current].slice(0, 40);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+  } catch {
+    /* quota */
+  }
+}
+
 /** Returns new list after toggle */
 export function toggleMyList(id: number): number[] {
   const current = getMyList();

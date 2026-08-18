@@ -26,7 +26,11 @@ import BackLink from "@/components/BackLink";
 import ReviewsSection from "@/components/ReviewsSection";
 import SeasonsAndEpisodes from "@/components/SeasonsAndEpisodes";
 import WatchPlayer, { type CaptionTrack } from "@/components/WatchPlayer";
+import AuthPrompt from "@/components/auth/AuthPrompt";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { rememberReturnTo } from "@/lib/auth/return-to";
 import {
+  addWatchHistory,
   getLikes,
   getMyList,
   toggleLike,
@@ -279,8 +283,11 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     ? { id: "main", title: movie.title, videoKey: playKey }
     : null;
 
-  // Movies start playing immediately when opening watch (from detail Play Now)
-  const [playing, setPlaying] = useState(Boolean(playKey));
+  const { status } = useAuth();
+  const canPlay = status === "authenticated";
+  const [authOpen, setAuthOpen] = useState(false);
+  // Only start playback after authentication is confirmed
+  const [playing, setPlaying] = useState(false);
   const [active, setActive] = useState<Playable | null>(defaultPlayable);
   // Start muted so browser autoplay policies allow the movie to start
   const [muted, setMuted] = useState(true);
@@ -356,12 +363,28 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     setLikes(getLikes());
   }, []);
 
-  // Always start the movie player when a stream key is available
+  // Start the movie player only after the user is authenticated
   useEffect(() => {
     if (!playKey) return;
-    setActive({ id: "main", title: movie.title, videoKey: playKey });
-    setPlaying(true);
-  }, [playKey, movie.title, movie.id]);
+    if (status === "loading") return;
+    const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
+    const timer = window.setTimeout(() => {
+      if (!canPlay) {
+        setPlaying(false);
+        setAuthOpen(true);
+        rememberReturnTo(watchPath);
+        return;
+      }
+      setActive({ id: "main", title: movie.title, videoKey: playKey });
+      setPlaying(true);
+      addWatchHistory({
+        id: movie.id,
+        title: movie.title,
+        path: watchPath,
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, status]);
 
   useEffect(() => {
     setSubtitleLang(defaultLang);
@@ -590,14 +613,30 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   const playNow = useCallback(() => {
     if (!playKey) return;
+    if (!canPlay) {
+      rememberReturnTo(
+        `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`,
+      );
+      setAuthOpen(true);
+      return;
+    }
     setActive({ id: "main", title: movie.title, videoKey: playKey });
     setPlaying(true);
     // User gesture — can unmute for full movie watch
     setMuted(false);
-  }, [playKey, movie.title]);
+    addWatchHistory({
+      id: movie.id,
+      title: movie.title,
+      path: `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`,
+    });
+  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay]);
 
   const playEpisode = useCallback(
     (ep: ShowEpisode, season: ShowSeason) => {
+      if (!canPlay) {
+        setAuthOpen(true);
+        return;
+      }
       // Every episode must play — episode clip, then show trailer / any video
       const key =
         ep.videoKey ||
@@ -617,7 +656,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
-    [playKey, movie.videos],
+    [playKey, movie.videos, canPlay],
   );
 
   return (
@@ -904,7 +943,12 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
             <CastSection cast={movie.cast} />
 
             {/* Same reviews layout as movie/show detail (mobile + web) */}
-            <ReviewsSection reviews={movie.reviews} />
+            <ReviewsSection
+              reviews={movie.reviews}
+              mediaId={movie.id}
+              mediaType={isShow ? "tv" : "movie"}
+              title={movie.title}
+            />
           </div>
 
           <aside className="min-w-0 space-y-4 sm:space-y-5">
@@ -1010,6 +1054,22 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       </div>
 
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      <AuthPrompt
+        key={authOpen ? "auth-open" : "auth-closed"}
+        open={authOpen && status === "anonymous"}
+        onClose={() => setAuthOpen(false)}
+        onAuthenticated={() => {
+          setAuthOpen(false);
+          if (!playKey) return;
+          setActive({ id: "main", title: movie.title, videoKey: playKey });
+          setPlaying(true);
+          addWatchHistory({
+            id: movie.id,
+            title: movie.title,
+            path: `${isShow ? "/shows" : "/movies"}/${movie.id}/watch`,
+          });
+        }}
+      />
     </div>
   );
 }

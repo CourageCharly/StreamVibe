@@ -2,15 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaPlay, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import { FiArrowLeft, FiArrowRight, FiCalendar } from "react-icons/fi";
+import { toast } from "sonner";
 import { backdropUrl, profileUrl } from "@/lib/media";
 import type { MovieDetails, MoviePerson } from "@/lib/types";
 import Button from "@/components/ui/Button";
 import FreeTrialBanner from "@/components/FreeTrialBanner";
 import BackLink from "@/components/BackLink";
 import ReviewsSection from "@/components/ReviewsSection";
+import AuthPrompt from "@/components/auth/AuthPrompt";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { rememberReturnTo } from "@/lib/auth/return-to";
 import type { Movie } from "@/lib/types";
 import {
   getLikes,
@@ -250,6 +255,9 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
   const [hydrated, setHydrated] = useState(false);
   /** Page/section the user opened this title from (genre, row, home, …) */
   const [returnHref, setReturnHref] = useState("/movies");
+  const [authOpen, setAuthOpen] = useState(false);
+  const router = useRouter();
+  const { status } = useAuth();
 
   useEffect(() => {
     setHydrated(true);
@@ -377,13 +385,20 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
               {movie.title}
             </h1>
             {/* Description: web only — hidden on mobile */}
-            <p className="mt-2.5 hidden max-w-2xl text-[14px] leading-relaxed text-[#999999] sm:mt-3 sm:line-clamp-2 sm:block">
+            <p className="subtext-wide mt-2.5 hidden max-w-2xl text-[14px] leading-relaxed text-[#999999] sm:mt-3 sm:line-clamp-2 sm:block">
               {movie.overview || "No description available."}
             </p>
             <div className="mt-6 flex w-full max-w-2xl flex-wrap items-center justify-center gap-2 sm:mt-6 sm:w-auto sm:max-w-none sm:gap-3">
               <Button
-                href={watchHref}
                 className="!h-[49px] !w-full max-w-2xl gap-2 px-8 text-[14px] sm:!h-[49px] sm:!w-auto sm:min-w-[140px] sm:max-w-none sm:px-6"
+                onClick={() => {
+                  if (status === "authenticated") {
+                    router.push(watchHref);
+                    return;
+                  }
+                  rememberReturnTo(watchHref);
+                  setAuthOpen(true);
+                }}
               >
                 <FaPlay className="h-3 w-3" />
                 Play Now
@@ -393,7 +408,15 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                 className={actionBtn}
                 aria-label={inList ? "Remove from list" : "Add to list"}
                 aria-pressed={inList}
-                onClick={() => setMyList(toggleMyList(movie.id))}
+                onClick={() => {
+                  const next = toggleMyList(movie.id);
+                  setMyList(next);
+                  toast.success(
+                    next.includes(movie.id)
+                      ? "Added to My List."
+                      : "Removed from My List.",
+                  );
+                }}
               >
                 <IconMask src="/Icons/Plus.svg" active={inList} />
               </button>
@@ -433,7 +456,12 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
 
             <CastSection cast={movie.cast} />
 
-            <ReviewsSection reviews={movie.reviews} />
+            <ReviewsSection
+              reviews={movie.reviews}
+              mediaId={movie.id}
+              mediaType={isShow ? "tv" : "movie"}
+              title={movie.title}
+            />
           </div>
 
           <aside className="min-w-0 space-y-4 sm:space-y-5">
@@ -541,6 +569,15 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
       </div>
 
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      <AuthPrompt
+        key={authOpen ? "auth-open" : "auth-closed"}
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onAuthenticated={() => {
+          setAuthOpen(false);
+          router.replace(watchHref);
+        }}
+      />
     </div>
   );
 }

@@ -3,9 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { FiX } from "react-icons/fi";
 import { NAV_LINKS } from "@/lib/constants";
+import { useAuth } from "@/components/auth/AuthProvider";
+import UserMenu from "@/components/auth/UserMenu";
+import { rememberReturnTo } from "@/lib/auth/return-to";
+import type { Movie } from "@/lib/types";
 
 function HeaderInner() {
   const pathname = usePathname();
@@ -14,6 +18,11 @@ function HeaderInner() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [suggestions, setSuggestions] = useState<Movie[]>([]);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { user, status } = useAuth();
+  const returnTo = pathname + (searchParams.toString() ? `?${searchParams}` : "");
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -75,6 +84,30 @@ function HeaderInner() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    const q = query.trim();
+    if (q.length < 2) {
+      return;
+    }
+    suggestTimer.current = setTimeout(() => {
+      fetch(`/api/movies?q=${encodeURIComponent(q)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: { results?: Movie[] } | null) => {
+          const rows = data?.results?.slice(0, 6) ?? [];
+          setSuggestions(rows);
+          setSuggestOpen(rows.length > 0);
+        })
+        .catch(() => {
+          setSuggestions([]);
+          setSuggestOpen(false);
+        });
+    }, 220);
+    return () => {
+      if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    };
+  }, [query]);
+
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
     const q = query.trim();
@@ -85,7 +118,38 @@ function HeaderInner() {
     router.push(`/movies?q=${encodeURIComponent(q)}`);
     setSearchOpen(false);
     setOpen(false);
+    setSuggestOpen(false);
   };
+
+  const AuthActions = (
+    <div className="flex items-center gap-2">
+      {status === "loading" ? (
+        <span
+          className="h-10 w-24 animate-pulse rounded-lg bg-[#1A1A1A]"
+          aria-hidden
+        />
+      ) : status === "authenticated" && user ? (
+        <UserMenu user={user} />
+      ) : (
+        <>
+          <Link
+            href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+            onClick={() => rememberReturnTo(returnTo)}
+            className="rounded-lg px-3 py-2 text-[13px] font-medium text-[#999999] outline-none transition hover:text-white sm:text-[14px]"
+          >
+            Login
+          </Link>
+          <Link
+            href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
+            onClick={() => rememberReturnTo(returnTo)}
+            className="rounded-lg bg-cta px-3 py-2 text-[13px] font-medium text-white outline-none transition hover:bg-red-600 sm:px-4 sm:text-[14px]"
+          >
+            Sign Up
+          </Link>
+        </>
+      )}
+    </div>
+  );
 
   const SearchBell = (
     <div className="flex items-center gap-[14px]">
@@ -163,13 +227,17 @@ function HeaderInner() {
 
         <div className="min-w-0 lg:hidden" />
 
-        <div className="z-10 flex h-10 shrink-0 items-center justify-end gap-3">
-          {/* Desktop search + bell */}
-          <div className="hidden lg:flex">{SearchBell}</div>
-
-          {/* Mobile: search + bell + menu */}
-          <div className="flex items-center gap-3 lg:hidden">
+        <div className="z-10 flex h-10 shrink-0 items-center justify-end gap-2 sm:gap-3">
+          {/* Desktop search + bell + auth */}
+          <div className="hidden items-center gap-3 lg:flex">
             {SearchBell}
+            {AuthActions}
+          </div>
+
+          {/* Mobile: search + bell + auth + menu */}
+          <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
+            {SearchBell}
+            {AuthActions}
             <button
               type="button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center"
@@ -197,10 +265,11 @@ function HeaderInner() {
 
       {/* Search input panel */}
       {searchOpen ? (
-        <div className="border-b border-[#1F1F1F] bg-[#0F0F0F]/95 backdrop-blur-sm">
+        <div className="relative border-b border-[#1F1F1F] bg-[#0F0F0F]/95 backdrop-blur-sm">
           <form
             onSubmit={onSearch}
             className="page-container flex items-center gap-3 py-3"
+            autoComplete="off"
           >
             <Image
               src="/Icons/Search Icon.svg"
@@ -227,13 +296,45 @@ function HeaderInner() {
             </button>
             <button
               type="button"
-              onClick={() => setSearchOpen(false)}
+              onClick={() => {
+                setSearchOpen(false);
+                setSuggestOpen(false);
+              }}
               className="shrink-0 text-[#999999] hover:text-white"
               aria-label="Close search"
             >
               <FiX className="h-5 w-5" />
             </button>
           </form>
+          {suggestOpen && query.trim().length >= 2 && suggestions.length ? (
+            <ul
+              className="page-container absolute inset-x-0 top-full z-50 max-h-72 overflow-auto border-b border-[#1F1F1F] bg-[#0F0F0F] py-2 shadow-xl"
+              role="listbox"
+              aria-label="Movie suggestions"
+            >
+              {suggestions.map((movie) => {
+                const title = movie.title || movie.name || "Untitled";
+                return (
+                  <li key={movie.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={false}
+                      className="flex w-full items-center px-1 py-2 text-left text-[14px] text-white outline-none hover:bg-[#1A1A1A]"
+                      onClick={() => {
+                        router.push(`/movies/${movie.id}`);
+                        setSearchOpen(false);
+                        setSuggestOpen(false);
+                        setOpen(false);
+                      }}
+                    >
+                      {title}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
         </div>
       ) : null}
 
@@ -241,6 +342,30 @@ function HeaderInner() {
         <div className="fixed inset-0 top-[var(--header-h)] z-40 overflow-hidden overscroll-none bg-background/95 backdrop-blur-sm lg:hidden">
           <nav className="page-container overflow-hidden py-4" aria-label="Mobile">
             <div className="rounded-xl border-[3px] border-[#1F1F1F] bg-navbar p-2">
+              {status === "anonymous" ? (
+                <div className="mb-2 flex gap-2 p-2">
+                  <Link
+                    href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+                    onClick={() => {
+                      rememberReturnTo(returnTo);
+                      setOpen(false);
+                    }}
+                    className="flex-1 rounded-lg px-3 py-2.5 text-center text-[15px] font-medium text-[#999999]"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
+                    onClick={() => {
+                      rememberReturnTo(returnTo);
+                      setOpen(false);
+                    }}
+                    className="flex-1 rounded-lg bg-cta px-3 py-2.5 text-center text-[15px] font-medium text-white"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              ) : null}
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
                 return (
