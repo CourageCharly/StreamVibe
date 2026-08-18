@@ -112,7 +112,7 @@ export default function UserMenu({ user }: { user: AuthUser }) {
             <button
               type="button"
               onClick={() => void onLogout()}
-              className="block w-full px-3 py-2.5 text-left text-[14px] font-semibold text-white outline-none transition hover:bg-[#1A1A1A]"
+              className="block w-full px-3 py-2.5 text-left text-[14px] font-semibold text-cta outline-none transition hover:bg-[#1A1A1A]"
             >
               Log Out
             </button>

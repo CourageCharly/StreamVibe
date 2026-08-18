@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/components/auth/RequireAuth";
-import MovieGrid from "@/components/MovieGrid";
+import TrendingMovieCard from "@/components/TrendingMovieCard";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import AccountBack from "@/components/AccountBack";
 import { getLikes, getMyList } from "@/lib/user-lists";
@@ -58,11 +58,12 @@ function ListInner() {
             : "Titles you save to watch later."}
         </p>
         {loading ? (
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
+          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+            {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-[2/3] animate-pulse rounded-xl bg-[#1A1A1A]"
+                className="animate-pulse rounded-xl bg-[#1A1A1A]"
+                style={{ aspectRatio: "285 / 317" }}
               />
             ))}
           </div>
@@ -75,13 +76,16 @@ function ListInner() {
             }
           />
         ) : (
-          <div className="mt-10">
-            <MovieGrid
-              movies={items}
-              emptyMessage={
-                ratingsOnly ? "No ratings yet." : "No saved titles yet."
-              }
-            />
+          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+            {items.map((movie) => (
+              <TrendingMovieCard
+                key={movie.id}
+                movie={movie}
+                fluid
+                showRuntime
+                showRating={ratingsOnly}
+              />
+            ))}
           </div>
         )}
       </div>

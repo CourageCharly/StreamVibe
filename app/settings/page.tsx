@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { FiChevronRight } from "react-icons/fi";
@@ -36,8 +35,7 @@ export default function SettingsPage() {
 }
 
 function SettingsInner() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [open, setOpen] = useState<SectionId | null>("account");
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
 
@@ -287,17 +285,6 @@ function SettingsInner() {
             })}
           </div>
 
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              className="text-[14px] font-semibold text-cta underline underline-offset-4 outline-none hover:text-white"
-              onClick={() => {
-                void logout().then(() => router.replace("/"));
-              }}
-            >
-              Sign out
-            </button>
-          </div>
       </div>
     </div>
   );
