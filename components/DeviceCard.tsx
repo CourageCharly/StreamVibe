@@ -33,11 +33,11 @@ export default function DeviceCard({
               aria-hidden
             />
           </span>
-          <h3 className="min-w-0 truncate text-[16px] font-semibold text-white">
+          <h3 className="min-w-0 truncate text-[18px] font-semibold text-white sm:text-[20px]">
             {title}
           </h3>
         </div>
-        <p className="text-[16px] font-normal leading-relaxed text-subtext">
+        <p className="text-[14px] font-normal leading-relaxed text-subtext sm:text-[16px]">
           {description}
         </p>
       </div>

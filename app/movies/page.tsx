@@ -82,10 +82,10 @@ export default async function MoviesPage({ searchParams }: Props) {
               />
               <p className="text-sm font-medium text-cta">{backLabel}</p>
             </div>
-            <h1 className="text-[28px] font-bold leading-tight text-white">
+            <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
               {label}
             </h1>
-            <p className="mt-2 text-[16px] text-[#999999]">
+            <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
               {q
                 ? matchCount === 0
                   ? "No Movie/Show found."

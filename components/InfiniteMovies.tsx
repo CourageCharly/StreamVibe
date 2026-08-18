@@ -95,7 +95,7 @@ export default function InfiniteMovies({
         <p className="text-[16px] font-medium text-white sm:text-[18px]">
           No Movies/Shows found
         </p>
-        <p className="mt-2 text-[16px] text-[#999999]">
+        <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
           {query
             ? "We couldn't find any movie/show that matches your search."
             : "No titles found."}

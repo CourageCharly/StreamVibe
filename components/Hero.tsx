@@ -184,7 +184,7 @@ export default function Hero({ posters, trailers = [] }: Props) {
         </div>
 
         {/* Title — same 28px bold scale as section headings */}
-        <h1 className="w-full max-w-3xl text-balance text-[clamp(1.25rem,3.5vw,28px)] font-bold leading-tight tracking-tight text-white sm:text-[clamp(1.75rem,6vw,48px)] sm:leading-[1.15]">
+        <h1 className="w-full max-w-3xl text-balance text-[20px] font-bold leading-tight tracking-tight text-white sm:text-[clamp(1.75rem,6vw,48px)] sm:leading-[1.15]">
           <span className="sm:hidden">
             The Best Streaming
             <br />
@@ -194,7 +194,7 @@ export default function Hero({ posters, trailers = [] }: Props) {
         </h1>
 
         {/* Subtext — same 14px / mt-2 as SectionHeading description */}
-        <p className="mx-auto mt-2 max-w-3xl text-pretty text-[16px] font-normal leading-relaxed text-subtext sm:line-clamp-2">
+        <p className="mx-auto mt-2 max-w-3xl text-pretty text-[14px] font-normal leading-relaxed text-subtext sm:text-[16px] sm:line-clamp-2">
           <span className="sm:hidden">
             StreamVibe is the best streaming experience for watching your
             favorite movies and shows on demand, anytime, anywhere.

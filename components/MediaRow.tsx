@@ -186,7 +186,7 @@ export default function MediaRow({
                         Top 10 In
                       </span>
                       <div className="flex items-center gap-1.5">
-                        <span className="truncate text-[16px] font-semibold text-white">
+                        <span className="truncate text-[18px] font-semibold text-white sm:text-[20px]">
                           {item.name}
                         </span>
                         <FiArrowRight className="h-4 w-4 shrink-0 text-white group-hover:text-cta" />

@@ -59,7 +59,9 @@ function SettingsInner() {
     <div className="w-full bg-[#141414] pt-[var(--header-h)]">
       <PageWrapper className="py-8 sm:py-12">
         <div className="mx-auto max-w-xl rounded-2xl border border-[#262626] bg-[#1A1A1A] p-5 sm:p-7">
-          <h1 className="text-[28px] font-semibold text-white">Settings</h1>
+          <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
+            Settings
+          </h1>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
               <label className="mb-2 block text-[13px] font-medium">

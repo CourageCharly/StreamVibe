@@ -75,7 +75,7 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
             >
               Create an account to continue watching
             </h2>
-            <p className="min-w-0 text-[16px] leading-relaxed text-[#999999] sm:min-w-[min(100%,400px)]">
+            <p className="min-w-0 text-[14px] leading-relaxed text-[#999999] sm:min-w-[min(100%,400px)] sm:text-[16px]">
               An account is required to play this title. You can still browse
               movies and view details without signing in.
             </p>
@@ -102,7 +102,7 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
             >
               Log In
             </h2>
-            <p className="mb-4 text-[16px] text-[#999999]">
+            <p className="mb-4 text-[14px] text-[#999999] sm:text-[16px]">
               Welcome back. Sign in to start watching.
             </p>
             <LoginForm
@@ -133,7 +133,7 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
             >
               Sign Up
             </h2>
-            <p className="mb-4 text-[16px] text-[#999999]">
+            <p className="mb-4 text-[14px] text-[#999999] sm:text-[16px]">
               Create your account to start watching.
             </p>
             <SignupForm

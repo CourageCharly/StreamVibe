@@ -107,7 +107,7 @@ export default function Categories({ categoryMovies }: Props) {
               </div>
 
               <div className="mt-3 flex shrink-0 items-center justify-between gap-2">
-                <span className="truncate text-[16px] font-semibold text-white">
+                <span className="truncate text-[18px] font-semibold text-white sm:text-[20px]">
                   {cat.name}
                 </span>
                 <FiArrowRight className="h-5 w-5 shrink-0 text-white transition group-hover:translate-x-0.5 group-hover:text-cta" />

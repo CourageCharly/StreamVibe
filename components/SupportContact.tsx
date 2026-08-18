@@ -221,10 +221,10 @@ export default function SupportContact({ posters = [] }: Props) {
       ) : null}
       {/* Left — welcome + poster collage (height matches form column) */}
       <div className="flex min-h-0 min-w-0 flex-col">
-        <h1 className="max-w-md text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-tight text-white">
+        <h1 className="max-w-md text-[20px] font-bold leading-tight text-white sm:text-[28px]">
           Welcome to our support page!
         </h1>
-        <p className="mt-3 max-w-md text-[16px] font-normal leading-relaxed text-[#999999] sm:mt-4">
+        <p className="mt-3 max-w-md text-[14px] font-normal leading-relaxed text-[#999999] sm:mt-4 sm:text-[16px]">
           We&apos;re here to help you with any problems you may be having with
           our product.
         </p>

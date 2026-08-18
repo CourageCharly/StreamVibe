@@ -100,11 +100,11 @@ export default function Pricing({
               key={plan.name}
               className="flex min-w-0 flex-col rounded-xl border border-[#262626] bg-[#1A1A1A] p-5 sm:p-6 md:p-8"
             >
-              <h3 className="text-[16px] font-semibold text-white">
+              <h3 className="text-[18px] font-semibold text-white sm:text-[20px]">
                 {plan.name}
               </h3>
               {/* Mobile: tighter stack subtext → price → CTAs; sm+ keeps original rhythm */}
-              <p className="mt-3 min-h-0 flex-1 text-[16px] font-normal leading-relaxed text-[#999999] sm:min-h-[4.5rem]">
+              <p className="mt-3 min-h-0 flex-1 text-[14px] font-normal leading-relaxed text-[#999999] sm:min-h-[4.5rem] sm:text-[16px]">
                 {plan.description}
               </p>
               <p className="mt-3 flex min-h-0 flex-wrap items-baseline gap-x-1 sm:mt-6 sm:min-h-[2.75rem]">

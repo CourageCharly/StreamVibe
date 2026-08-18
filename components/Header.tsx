@@ -21,7 +21,7 @@ function HeaderInner() {
   const [suggestions, setSuggestions] = useState<Movie[]>([]);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { user, status } = useAuth();
+  const { user, status, logout } = useAuth();
   const returnTo = pathname + (searchParams.toString() ? `?${searchParams}` : "");
 
   const isActive = (href: string) => {
@@ -151,24 +151,28 @@ function HeaderInner() {
     </div>
   );
 
+  const SearchButton = (
+    <button
+      type="button"
+      className="flex h-6 w-6 cursor-pointer items-center justify-center transition-opacity hover:opacity-80"
+      aria-label="Search"
+      aria-expanded={searchOpen}
+      onClick={() => setSearchOpen((v) => !v)}
+    >
+      <Image
+        src="/Icons/Search Icon.svg"
+        alt=""
+        width={24}
+        height={24}
+        className="h-6 w-6"
+        aria-hidden
+      />
+    </button>
+  );
+
   const SearchBell = (
     <div className="flex items-center gap-[14px]">
-      <button
-        type="button"
-        className="flex h-6 w-6 cursor-pointer items-center justify-center transition-opacity hover:opacity-80"
-        aria-label="Search"
-        aria-expanded={searchOpen}
-        onClick={() => setSearchOpen((v) => !v)}
-      >
-        <Image
-          src="/Icons/Search Icon.svg"
-          alt=""
-          width={24}
-          height={24}
-          className="h-6 w-6"
-          aria-hidden
-        />
-      </button>
+      {SearchButton}
       <button
         type="button"
         className="flex h-6 w-6 cursor-pointer items-center justify-center transition-opacity hover:opacity-80"
@@ -234,10 +238,9 @@ function HeaderInner() {
             {AuthActions}
           </div>
 
-          {/* Mobile: search + bell + auth + menu */}
-          <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
-            {SearchBell}
-            {AuthActions}
+          {/* Mobile: logo + search only, plus menu */}
+          <div className="flex items-center gap-3 lg:hidden">
+            {SearchButton}
             <button
               type="button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center"
@@ -339,33 +342,110 @@ function HeaderInner() {
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 top-[var(--header-h)] z-40 overflow-hidden overscroll-none bg-background/95 backdrop-blur-sm lg:hidden">
-          <nav className="page-container overflow-hidden py-4" aria-label="Mobile">
-            <div className="rounded-xl border-[3px] border-[#1F1F1F] bg-navbar p-2">
-              {status === "anonymous" ? (
-                <div className="mb-2 flex gap-2 p-2">
+        <div className="fixed inset-0 z-[110] flex flex-col overflow-y-auto overscroll-none bg-background lg:hidden">
+          <div className="page-container flex h-[var(--header-h)] shrink-0 items-center justify-between">
+            <Link
+              href="/"
+              className="flex h-10 shrink-0 items-center"
+              aria-label="StreamVibe home"
+              onClick={() => setOpen(false)}
+            >
+              <Image
+                src="/Icons/Logo.svg"
+                alt="StreamVibe"
+                width={166}
+                height={50}
+                className="h-8 w-auto max-w-[120px]"
+                priority
+              />
+            </Link>
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+            >
+              <FiX className="h-6 w-6 text-white" />
+            </button>
+          </div>
+
+          <div className="page-container flex flex-1 flex-col pb-10">
+            <form
+              onSubmit={onSearch}
+              className="flex items-center gap-3 rounded-xl border border-[#262626] bg-[#0F0F0F] px-3 py-3"
+              autoComplete="off"
+            >
+              <Image
+                src="/Icons/Search Icon.svg"
+                alt=""
+                width={20}
+                height={20}
+                className="h-5 w-5 shrink-0"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search movies…"
+                className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#999999]"
+              />
+            </form>
+
+            {status === "anonymous" || status === "loading" ? (
+              <div className="mt-6 flex flex-col gap-3">
+                <Link
+                  href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+                  onClick={() => {
+                    rememberReturnTo(returnTo);
+                    setOpen(false);
+                  }}
+                  className="flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[16px] font-medium text-white"
+                >
+                  Login
+                </Link>
+                <Link
+                  href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
+                  onClick={() => {
+                    rememberReturnTo(returnTo);
+                    setOpen(false);
+                  }}
+                  className="flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[16px] font-medium text-white"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            ) : user ? (
+              <div className="mt-6 flex flex-col">
+                {[
+                  { href: "/profile", label: "Profile" },
+                  { href: "/list", label: "My List / Favorites" },
+                  { href: "/history", label: "Watch History" },
+                  { href: "/settings", label: "Settings" },
+                ].map((item) => (
                   <Link
-                    href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
-                    onClick={() => {
-                      rememberReturnTo(returnTo);
-                      setOpen(false);
-                    }}
-                    className="flex-1 rounded-lg px-3 py-2.5 text-center text-[15px] font-medium text-[#999999]"
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="border-b border-[#262626] py-4 text-[18px] font-medium text-white"
                   >
-                    Login
+                    {item.label}
                   </Link>
-                  <Link
-                    href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
-                    onClick={() => {
-                      rememberReturnTo(returnTo);
-                      setOpen(false);
-                    }}
-                    className="flex-1 rounded-lg bg-cta px-3 py-2.5 text-center text-[15px] font-medium text-white"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              ) : null}
+                ))}
+                <button
+                  type="button"
+                  className="border-b border-[#262626] py-4 text-left text-[18px] font-medium text-white"
+                  onClick={() => {
+                    void logout();
+                    setOpen(false);
+                  }}
+                >
+                  Log Out
+                </button>
+              </div>
+            ) : null}
+
+            <nav className="mt-8 flex flex-col" aria-label="Mobile">
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
                 return (
@@ -373,18 +453,16 @@ function HeaderInner() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className={`block cursor-pointer rounded-lg px-4 py-3.5 text-[18px] font-normal transition-colors ${
-                      active
-                        ? "bg-pill-active text-white"
-                        : "text-[#999999] hover:text-white"
+                    className={`border-b border-[#262626] py-4 text-[18px] font-medium transition-colors ${
+                      active ? "text-white" : "text-[#999999]"
                     }`}
                   >
                     {link.label}
                   </Link>
                 );
               })}
-            </div>
-          </nav>
+            </nav>
+          </div>
         </div>
       ) : null}
     </header>

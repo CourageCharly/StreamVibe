@@ -22,7 +22,9 @@ function ProfileInner() {
     <div className="w-full bg-[#141414] pt-[var(--header-h)]">
       <PageWrapper className="py-8 sm:py-12">
         <div className="mx-auto max-w-xl rounded-2xl border border-[#262626] bg-[#1A1A1A] p-5 sm:p-7">
-          <h1 className="text-[28px] font-semibold text-white">Profile</h1>
+          <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
+            Profile
+          </h1>
           <div className="mt-6 flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[#262626] bg-[#141414] text-xl font-semibold">
               {(user.firstName?.[0] ?? user.email[0] ?? "?").toUpperCase()}

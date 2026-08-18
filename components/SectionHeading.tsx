@@ -11,8 +11,8 @@ type Props = {
 };
 
 /**
- * Shared section headers — 28px bold (matches categories).
- * Subtext: 16px regular #999999.
+ * Shared section headers — 20px bold mobile, 28px bold web.
+ * Subtext: 14px mobile, 16px web, regular #999999.
  */
 export default function SectionHeading({
   title,
@@ -32,7 +32,7 @@ export default function SectionHeading({
       >
         <h2
           className={[
-            "min-w-0 text-[clamp(1.25rem,3.5vw,28px)] font-bold leading-tight text-white",
+            "min-w-0 text-[20px] font-bold leading-tight text-white sm:text-[28px]",
             /* No text-balance — it overrides intentional mobile line breaks */
             singleLine
               ? "whitespace-nowrap max-sm:whitespace-normal"
@@ -42,7 +42,7 @@ export default function SectionHeading({
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 max-w-3xl text-pretty text-[16px] font-normal leading-relaxed text-subtext">
+          <p className="mt-2 max-w-3xl text-pretty text-[14px] font-normal leading-relaxed text-subtext sm:text-[16px]">
             {description}
           </p>
         ) : null}
