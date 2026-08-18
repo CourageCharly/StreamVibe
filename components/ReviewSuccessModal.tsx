@@ -28,12 +28,12 @@ export default function ReviewSuccessModal({ open, onClose }: Props) {
       />
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-[#262626] bg-[#1A1A1A] p-6 text-center shadow-2xl sm:p-8">
         <div
-          className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cta/15"
+          className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#22c55e]/15"
           aria-hidden
         >
           <svg
             viewBox="0 0 24 24"
-            className="h-7 w-7 text-cta"
+            className="h-7 w-7 text-[#22c55e]"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.4"
