@@ -469,11 +469,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     const el = playerShellRef.current;
     if (!el) return;
 
-    const isMobile = () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 639px)").matches;
-
-    const clearMobileLayout = () => {
+    const clearFsLayout = () => {
       el.style.position = "";
       el.style.top = "";
       el.style.left = "";
@@ -489,8 +485,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     };
 
     const apply = () => {
-      if (!isMobile()) {
-        clearMobileLayout();
+      if (document.fullscreenElement === el) {
+        clearFsLayout();
         return;
       }
       const vv = window.visualViewport;
@@ -519,7 +515,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     window.addEventListener("resize", apply);
     window.addEventListener("orientationchange", apply);
     return () => {
-      clearMobileLayout();
+      clearFsLayout();
       vv?.removeEventListener("resize", apply);
       vv?.removeEventListener("scroll", apply);
       window.removeEventListener("resize", apply);
@@ -709,8 +705,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         ) : null}
 
         {/*
-          Cinema hero — same mobile height idle & playing (Movies hero size).
-          Full view (mobile): fills visual viewport on every screen size.
+          Cinema frame — full container width/height idle and playing.
+          Full view: visual viewport (mobile + web) or native fullscreen.
         */}
         <section
           ref={playerShellRef}
@@ -724,11 +720,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
               : [
-                  "rounded-xl sm:rounded-2xl",
+                  "w-full rounded-xl sm:rounded-2xl",
                   "h-[min(88vw,460px)] sm:h-[480px] lg:h-[560px]",
-                  playing && active?.videoKey
-                    ? "sm:h-auto sm:aspect-video sm:min-h-[360px] md:min-h-[420px] lg:min-h-[560px]"
-                    : "",
                 ].join(" "),
           ].join(" ")}
         >
@@ -932,6 +925,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                         toggleLike(
                           movie.id,
                           movie.mediaType === "tv" ? "tv" : "movie",
+                          movie.title,
                         ),
                       )
                     }

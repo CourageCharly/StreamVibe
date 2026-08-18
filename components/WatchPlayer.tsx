@@ -155,8 +155,8 @@ export default function WatchPlayer({
   }, []);
 
   /**
-   * Standard streaming layout: full-width 16:9 frame centered in the box.
-   * No crop of the picture so burned-in / YouTube captions stay fully visible.
+   * Cover-fill the player box (standard cinema UI) — full width and height,
+   * same in-page and fullscreen, mobile and web. No letterbox.
    */
   useEffect(() => {
     if (!mounted) return;
@@ -168,14 +168,18 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const videoRatio = 16 / 9;
-      // Prefer full width; if that exceeds height, fit height instead
-      let w = width;
-      let h = width / videoRatio;
-      if (h > height) {
+      const boxRatio = width / height;
+      let w: number;
+      let h: number;
+      if (boxRatio > videoRatio) {
+        w = width;
+        h = width / videoRatio;
+      } else {
         h = height;
         w = height * videoRatio;
       }
-      setCoverSize({ w, h });
+      const pad = 1.12;
+      setCoverSize({ w: w * pad, h: h * pad });
     };
 
     apply();
@@ -473,7 +477,7 @@ export default function WatchPlayer({
   return (
     <div
       ref={coverBoxRef}
-      className={`absolute inset-0 h-full w-full min-h-full min-w-full overflow-hidden bg-black ${className}`}
+      className={`absolute inset-0 h-full w-full min-h-full min-w-full overflow-hidden bg-black [container-type:size] ${className}`}
       onMouseMove={bumpControls}
       onTouchStart={bumpControls}
     >
@@ -491,10 +495,8 @@ export default function WatchPlayer({
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
             : {
-                width: "max(100%, 177.78%)",
-                height: "max(100%, 100%)",
-                minWidth: "100%",
-                minHeight: "100%",
+                width: "max(100cqw, 177.78cqh)",
+                height: "max(100cqh, 56.25cqw)",
               }
         }
       >

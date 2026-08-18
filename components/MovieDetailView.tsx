@@ -442,6 +442,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                     toggleLike(
                       movie.id,
                       movie.mediaType === "tv" ? "tv" : "movie",
+                      movie.title,
                     ),
                   )
                 }

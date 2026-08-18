@@ -94,7 +94,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
 
   const onToggleLike = () => {
     if (movieId == null) return;
-    setLikes(toggleLike(movieId));
+    setLikes(toggleLike(movieId, "movie", title));
   };
 
   // Always auto-advance to the next slide (even while a trailer plays)

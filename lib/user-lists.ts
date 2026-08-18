@@ -137,7 +137,11 @@ export function toggleMyList(
   return next.map((row) => row.id);
 }
 
-export function toggleLike(id: number, kind: MediaKind = "movie"): number[] {
+export function toggleLike(
+  id: number,
+  kind: MediaKind = "movie",
+  title?: string,
+): number[] {
   const current = readRefs(LIKES_KEY);
   const ref: CatalogRef = { id, kind };
   const adding = !current.some((row) => sameRef(row, ref));
@@ -145,5 +149,17 @@ export function toggleLike(id: number, kind: MediaKind = "movie"): number[] {
     ? [...current, ref]
     : current.filter((row) => !sameRef(row, ref));
   writeRefs(LIKES_KEY, next);
+  if (adding && typeof window !== "undefined") {
+    const label = title?.trim() || (kind === "tv" ? "A show" : "A movie");
+    const href = kind === "tv" ? `/shows/${id}` : `/movies/${id}`;
+    void import("@/lib/notifications").then(({ addMovieNotice }) => {
+      addMovieNotice({
+        title: "You liked this title",
+        body: `${label} was added to your likes.`,
+        href,
+        kind: "like",
+      });
+    });
+  }
   return next.map((row) => row.id);
 }
