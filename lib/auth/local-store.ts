@@ -77,35 +77,44 @@ function sixDigit(): string {
 export function localCreateRegistration(
   userId: string,
   input: RegistrationInput,
+  opts?: { skipVerification?: boolean },
 ) {
   const users = load();
   const email = input.email.trim().toLowerCase();
-  if (users.some((u) => u.email === email)) {
-    const error = new Error("EMAIL_EXISTS");
-    throw error;
+  const existing = users.find((u) => u.email === email);
+  if (existing?.verified) {
+    throw new Error("EMAIL_EXISTS");
   }
 
-  const verificationId = randomBytes(24).toString("base64url");
-  const verificationCode = sixDigit();
+  const skipVerification = Boolean(opts?.skipVerification);
+  const verificationId = skipVerification
+    ? undefined
+    : randomBytes(24).toString("base64url");
+  const verificationCode = skipVerification ? undefined : sixDigit();
   const row: LocalUser = {
-    id: userId,
+    id: existing?.id ?? userId,
     email,
     passwordHash: hashPassword(input.password),
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),
-    verified: false,
+    verified: skipVerification,
     applicationId: fusionAuthApplicationId(),
     verificationId,
     verificationCode,
   };
-  save([...users, row]);
+
+  const next = existing
+    ? users.map((u) => (u.email === email ? row : u))
+    : [...users, row];
+  save(next);
+
   return {
     user: toUser(row),
     registration: {
       applicationId: row.applicationId,
-      verified: false,
+      verified: row.verified,
     },
-    requiresVerification: true,
+    requiresVerification: !skipVerification,
     verificationId,
     developmentCode: verificationCode,
   };

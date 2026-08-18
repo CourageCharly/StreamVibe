@@ -386,9 +386,8 @@ function HeaderInner() {
                   </Link>
                 );
               })}
-              {status === "authenticated" && user ? (
-                <>
-                  {[
+              {status === "authenticated" && user
+                ? [
                     { href: "/profile", label: "Profile" },
                     { href: "/list", label: "My List / Favorites" },
                     { href: "/history", label: "Watch History" },
@@ -402,47 +401,44 @@ function HeaderInner() {
                     >
                       {item.label}
                     </Link>
-                  ))}
-                  <button
-                    type="button"
-                    className="border-b border-[#262626] py-4 text-left text-[18px] font-medium text-white"
-                    onClick={() => {
-                      void logout();
-                      setOpen(false);
-                    }}
-                  >
-                    Log Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
-                    onClick={() => {
-                      rememberReturnTo(returnTo);
-                      setOpen(false);
-                    }}
-                    className={`border-b border-[#262626] py-4 text-[18px] font-medium ${
-                      pathname === "/login" ? "text-white" : "text-[#999999]"
-                    }`}
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
-                    onClick={() => {
-                      rememberReturnTo(returnTo);
-                      setOpen(false);
-                    }}
-                    className={`border-b border-[#262626] py-4 text-[18px] font-medium ${
-                      pathname === "/signup" ? "text-white" : "text-[#999999]"
-                    }`}
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              )}
+                  ))
+                : null}
             </nav>
+            {status === "authenticated" && user ? (
+              <button
+                type="button"
+                className="mt-6 flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
+                onClick={() => {
+                  void logout();
+                  setOpen(false);
+                }}
+              >
+                Log Out
+              </button>
+            ) : (
+              <div className="mt-6 flex flex-col gap-3">
+                <Link
+                  href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+                  onClick={() => {
+                    rememberReturnTo(returnTo);
+                    setOpen(false);
+                  }}
+                  className="flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
+                >
+                  Login
+                </Link>
+                <Link
+                  href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
+                  onClick={() => {
+                    rememberReturnTo(returnTo);
+                    setOpen(false);
+                  }}
+                  className="flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[14px] font-semibold text-white"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       ) : null}

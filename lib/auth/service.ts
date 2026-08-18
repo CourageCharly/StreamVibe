@@ -80,7 +80,9 @@ export async function registerUser(
   }
 
   try {
-    return localCreateRegistration(userId, input);
+    return localCreateRegistration(userId, input, {
+      skipVerification: !isFusionAuthConfigured(),
+    });
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_EXISTS") {
       throw new AuthServiceError(

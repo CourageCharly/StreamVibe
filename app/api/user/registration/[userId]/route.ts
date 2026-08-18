@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { applyPendingAuthCookie } from "@/lib/auth/session";
+import { applyPendingAuthCookie, applySessionCookie } from "@/lib/auth/session";
 import { registerUser } from "@/lib/auth/service";
 import { jsonError } from "@/lib/auth/http";
 import { MESSAGES } from "@/lib/auth/errors";
@@ -62,6 +62,8 @@ export async function POST(request: NextRequest, context: Ctx) {
 
     if (result.requiresVerification) {
       applyPendingAuthCookie(response, result.user.id, result.user.email);
+    } else {
+      applySessionCookie(response, result.user);
     }
 
     return response;
