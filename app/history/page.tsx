@@ -1,11 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import RequireAuth from "@/components/auth/RequireAuth";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import AccountBack from "@/components/AccountBack";
-import { getWatchHistory, type HistoryItem } from "@/lib/user-lists";
+import MoviesShowsTabs from "@/components/MoviesShowsTabs";
+import SectionFrame from "@/components/SectionFrame";
+import CatalogPosterGrid, {
+  CatalogPosterSkeletonGrid,
+} from "@/components/CatalogPosterGrid";
+import {
+  getWatchHistory,
+  historyKind,
+} from "@/lib/user-lists";
+import type { Movie } from "@/lib/types";
+
+type Bucket = { movies: Movie[]; shows: Movie[] };
+
+async function fetchItem(id: number, kind: "movie" | "tv"): Promise<Movie | null> {
+  const path = kind === "tv" ? `/api/shows/${id}` : `/api/movies/${id}`;
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    return (await res.json()) as Movie;
+  } catch {
+    return null;
+  }
+}
 
 export default function HistoryPage() {
   return (
@@ -16,41 +37,77 @@ export default function HistoryPage() {
 }
 
 function HistoryInner() {
-  const [items, setItems] = useState<HistoryItem[]>([]);
+  const [bucket, setBucket] = useState<Bucket>({ movies: [], shows: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setItems(getWatchHistory());
+    const rows = getWatchHistory();
+    if (!rows.length) {
+      setBucket({ movies: [], shows: [] });
+      setLoading(false);
+      return;
+    }
+    Promise.all(
+      rows.map(async (item) => ({
+        kind: historyKind(item),
+        movie: await fetchItem(item.id, historyKind(item)),
+      })),
+    ).then((loaded) => {
+      const movies: Movie[] = [];
+      const shows: Movie[] = [];
+      for (const row of loaded) {
+        if (!row.movie) continue;
+        if (row.kind === "tv") shows.push(row.movie);
+        else movies.push(row.movie);
+      }
+      setBucket({ movies, shows });
+      setLoading(false);
+    });
   }, []);
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container py-8 sm:py-10">
-        <AccountBack />
-        <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
-          Watch History
-        </h1>
-        <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
-          Movies and shows you have played.
-        </p>
-        {items.length === 0 ? (
-          <EmptyCatalog message="Play a title and it will show up here." />
-        ) : (
-          <ul className="mt-10 space-y-3">
-            {items.map((item) => (
-              <li key={`${item.path}-${item.at}`}>
-                <Link
-                  href={item.path}
-                  className="block rounded-xl border border-[#262626] bg-[#1A1A1A] px-4 py-3 transition hover:border-[#404040]"
-                >
-                  <p className="font-medium text-white">{item.title}</p>
-                  <p className="mt-1 text-[12px] text-[#999999]">
-                    {new Date(item.at).toLocaleString()}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="page-container space-y-8 py-8 sm:space-y-10 sm:py-10">
+        <div>
+          <AccountBack />
+          <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
+            Watch History
+          </h1>
+          <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
+            Movies you have played and shows you have played.
+          </p>
+        </div>
+
+        <MoviesShowsTabs
+          movies={
+            <SectionFrame tag="Movies">
+              {loading ? (
+                <CatalogPosterSkeletonGrid />
+              ) : bucket.movies.length === 0 ? (
+                <EmptyCatalog
+                  title="No Movies found"
+                  message="Movies you play will appear here."
+                />
+              ) : (
+                <CatalogPosterGrid movies={bucket.movies} kind="movie" />
+              )}
+            </SectionFrame>
+          }
+          shows={
+            <SectionFrame tag="Shows">
+              {loading ? (
+                <CatalogPosterSkeletonGrid />
+              ) : bucket.shows.length === 0 ? (
+                <EmptyCatalog
+                  title="No Shows found"
+                  message="Shows you play will appear here."
+                />
+              ) : (
+                <CatalogPosterGrid movies={bucket.shows} kind="tv" />
+              )}
+            </SectionFrame>
+          }
+        />
       </div>
     </div>
   );

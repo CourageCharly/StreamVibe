@@ -1,36 +1,70 @@
-/** Client-side My List / Likes (localStorage). */
+/** Client-side My List / Likes / History (localStorage). */
+
+export type MediaKind = "movie" | "tv";
+
+export type CatalogRef = {
+  id: number;
+  kind: MediaKind;
+};
 
 const MY_LIST_KEY = "streamvibe:my-list";
 const LIKES_KEY = "streamvibe:likes";
+const HISTORY_KEY = "streamvibe:watch-history";
 
-function readIds(key: string): number[] {
+function readRefs(key: string): CatalogRef[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((n): n is number => typeof n === "number");
+    return parsed
+      .map((item): CatalogRef | null => {
+        if (typeof item === "number") return { id: item, kind: "movie" };
+        if (
+          item &&
+          typeof item === "object" &&
+          typeof (item as CatalogRef).id === "number"
+        ) {
+          const kind =
+            (item as CatalogRef).kind === "tv" ? "tv" : "movie";
+          return { id: (item as CatalogRef).id, kind };
+        }
+        return null;
+      })
+      .filter((item): item is CatalogRef => item !== null);
   } catch {
     return [];
   }
 }
 
-function writeIds(key: string, ids: number[]) {
+function writeRefs(key: string, refs: CatalogRef[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(key, JSON.stringify(ids));
+    localStorage.setItem(key, JSON.stringify(refs));
   } catch {
     /* quota / private mode */
   }
 }
 
+function sameRef(a: CatalogRef, b: CatalogRef) {
+  return a.id === b.id && a.kind === b.kind;
+}
+
 export function getMyList(): number[] {
-  return readIds(MY_LIST_KEY);
+  return readRefs(MY_LIST_KEY).map((r) => r.id);
+}
+
+export function getMyListRefs(): CatalogRef[] {
+  return readRefs(MY_LIST_KEY);
 }
 
 export function getLikes(): number[] {
-  return readIds(LIKES_KEY);
+  return readRefs(LIKES_KEY).map((r) => r.id);
+}
+
+export function getLikeRefs(): CatalogRef[] {
+  return readRefs(LIKES_KEY);
 }
 
 export type HistoryItem = {
@@ -40,7 +74,9 @@ export type HistoryItem = {
   at: number;
 };
 
-const HISTORY_KEY = "streamvibe:watch-history";
+export function historyKind(item: HistoryItem): MediaKind {
+  return item.path.includes("/shows") ? "tv" : "movie";
+}
 
 export function getWatchHistory(): HistoryItem[] {
   if (typeof window === "undefined") return [];
@@ -75,16 +111,20 @@ export function addWatchHistory(item: Omit<HistoryItem, "at">) {
   }
 }
 
-/** Returns new list after toggle */
-export function toggleMyList(id: number, title?: string): number[] {
-  const current = getMyList();
-  const adding = !current.includes(id);
+export function toggleMyList(
+  id: number,
+  title?: string,
+  kind: MediaKind = "movie",
+): number[] {
+  const current = readRefs(MY_LIST_KEY);
+  const ref: CatalogRef = { id, kind };
+  const adding = !current.some((row) => sameRef(row, ref));
   const next = adding
-    ? [...current, id]
-    : current.filter((x) => x !== id);
-  writeIds(MY_LIST_KEY, next);
+    ? [...current, ref]
+    : current.filter((row) => !sameRef(row, ref));
+  writeRefs(MY_LIST_KEY, next);
   if (adding && typeof window !== "undefined") {
-    const label = title?.trim() || "A title";
+    const label = title?.trim() || (kind === "tv" ? "A show" : "A movie");
     void import("@/lib/notifications").then(({ addMovieNotice }) => {
       addMovieNotice({
         title: "Added to your list",
@@ -94,14 +134,16 @@ export function toggleMyList(id: number, title?: string): number[] {
       });
     });
   }
-  return next;
+  return next.map((row) => row.id);
 }
 
-export function toggleLike(id: number): number[] {
-  const current = getLikes();
-  const next = current.includes(id)
-    ? current.filter((x) => x !== id)
-    : [...current, id];
-  writeIds(LIKES_KEY, next);
-  return next;
+export function toggleLike(id: number, kind: MediaKind = "movie"): number[] {
+  const current = readRefs(LIKES_KEY);
+  const ref: CatalogRef = { id, kind };
+  const adding = !current.some((row) => sameRef(row, ref));
+  const next = adding
+    ? [...current, ref]
+    : current.filter((row) => !sameRef(row, ref));
+  writeRefs(LIKES_KEY, next);
+  return next.map((row) => row.id);
 }

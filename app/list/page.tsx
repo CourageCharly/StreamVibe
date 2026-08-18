@@ -3,11 +3,21 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/components/auth/RequireAuth";
-import TrendingMovieCard from "@/components/TrendingMovieCard";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import AccountBack from "@/components/AccountBack";
-import { getLikes, getMyList } from "@/lib/user-lists";
+import MoviesShowsTabs from "@/components/MoviesShowsTabs";
+import SectionFrame from "@/components/SectionFrame";
+import CatalogPosterGrid, {
+  CatalogPosterSkeletonGrid,
+} from "@/components/CatalogPosterGrid";
+import {
+  getLikeRefs,
+  getMyListRefs,
+  type CatalogRef,
+} from "@/lib/user-lists";
 import type { Movie } from "@/lib/types";
+
+type Bucket = { movies: Movie[]; shows: Movie[] };
 
 export default function ListPage() {
   return (
@@ -19,75 +29,106 @@ export default function ListPage() {
   );
 }
 
+async function fetchRef(ref: CatalogRef): Promise<Movie | null> {
+  const path = ref.kind === "tv" ? `/api/shows/${ref.id}` : `/api/movies/${ref.id}`;
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    return (await res.json()) as Movie;
+  } catch {
+    return null;
+  }
+}
+
 function ListInner() {
-  const view = useSearchParams().get("view");
-  const ratingsOnly = view === "ratings";
-  const [items, setItems] = useState<Movie[]>([]);
+  const ratingsOnly = useSearchParams().get("view") === "ratings";
+  const [bucket, setBucket] = useState<Bucket>({ movies: [], shows: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const ids = ratingsOnly ? getLikes() : getMyList();
-    if (!ids.length) {
-      setItems([]);
+    const refs = ratingsOnly ? getLikeRefs() : getMyListRefs();
+    if (!refs.length) {
+      setBucket({ movies: [], shows: [] });
       setLoading(false);
       return;
     }
     setLoading(true);
     Promise.all(
-      ids.map((id) =>
-        fetch(`/api/movies/${id}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null),
-      ),
+      refs.map(async (ref) => ({ ref, movie: await fetchRef(ref) })),
     ).then((rows) => {
-      setItems(rows.filter(Boolean) as Movie[]);
+      const movies: Movie[] = [];
+      const shows: Movie[] = [];
+      for (const row of rows) {
+        if (!row.movie) continue;
+        if (row.ref.kind === "tv") shows.push(row.movie);
+        else movies.push(row.movie);
+      }
+      setBucket({ movies, shows });
       setLoading(false);
     });
   }, [ratingsOnly]);
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container py-8 sm:py-10">
-        <AccountBack />
-        <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
-          {ratingsOnly ? "Ratings" : "My List / Favorites"}
-        </h1>
-        <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
-          {ratingsOnly
-            ? "Titles you have rated."
-            : "Titles you save to watch later."}
-        </p>
-        {loading ? (
-          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="animate-pulse rounded-xl bg-[#1A1A1A]"
-                style={{ aspectRatio: "285 / 317" }}
-              />
-            ))}
-          </div>
-        ) : items.length === 0 ? (
-          <EmptyCatalog
-            message={
-              ratingsOnly
-                ? "Rate a title and it will show up here."
-                : "Add movies and shows to your list and they will appear here."
-            }
-          />
-        ) : (
-          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
-            {items.map((movie) => (
-              <TrendingMovieCard
-                key={movie.id}
-                movie={movie}
-                fluid
-                showRuntime
-                showRating={ratingsOnly}
-              />
-            ))}
-          </div>
-        )}
+      <div className="page-container space-y-8 py-8 sm:space-y-10 sm:py-10">
+        <div>
+          <AccountBack />
+          <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
+            {ratingsOnly ? "Ratings" : "My List / Favorites"}
+          </h1>
+          <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
+            {ratingsOnly
+              ? "Movies you have rated and shows you have rated."
+              : "Movies you save and shows you save."}
+          </p>
+        </div>
+
+        <MoviesShowsTabs
+          movies={
+            <SectionFrame tag="Movies">
+              {loading ? (
+                <CatalogPosterSkeletonGrid />
+              ) : bucket.movies.length === 0 ? (
+                <EmptyCatalog
+                  title="No Movies found"
+                  message={
+                    ratingsOnly
+                      ? "Rate a movie and it will show up here."
+                      : "Movies you save will appear here."
+                  }
+                />
+              ) : (
+                <CatalogPosterGrid
+                  movies={bucket.movies}
+                  kind="movie"
+                  showRating={ratingsOnly}
+                />
+              )}
+            </SectionFrame>
+          }
+          shows={
+            <SectionFrame tag="Shows">
+              {loading ? (
+                <CatalogPosterSkeletonGrid />
+              ) : bucket.shows.length === 0 ? (
+                <EmptyCatalog
+                  title="No Shows found"
+                  message={
+                    ratingsOnly
+                      ? "Rate a show and it will show up here."
+                      : "Shows you save will appear here."
+                  }
+                />
+              ) : (
+                <CatalogPosterGrid
+                  movies={bucket.shows}
+                  kind="tv"
+                  showRating={ratingsOnly}
+                />
+              )}
+            </SectionFrame>
+          }
+        />
       </div>
     </div>
   );

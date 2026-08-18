@@ -910,7 +910,15 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     className={actionBtn}
                     aria-label={inList ? "Remove from list" : "Add to list"}
                     aria-pressed={inList}
-                    onClick={() => setMyList(toggleMyList(movie.id, movie.title))}
+                    onClick={() =>
+                      setMyList(
+                        toggleMyList(
+                          movie.id,
+                          movie.title,
+                          movie.mediaType === "tv" ? "tv" : "movie",
+                        ),
+                      )
+                    }
                   >
                     <IconMask src="/Icons/Plus.svg" active={inList} />
                   </button>
@@ -919,7 +927,14 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     className={actionBtn}
                     aria-label={liked ? "Unlike" : "Like"}
                     aria-pressed={liked}
-                    onClick={() => setLikes(toggleLike(movie.id))}
+                    onClick={() =>
+                      setLikes(
+                        toggleLike(
+                          movie.id,
+                          movie.mediaType === "tv" ? "tv" : "movie",
+                        ),
+                      )
+                    }
                   >
                     <IconMask src="/Icons/hand.svg" active={liked} />
                   </button>

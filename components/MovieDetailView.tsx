@@ -417,7 +417,11 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                 aria-label={inList ? "Remove from list" : "Add to list"}
                 aria-pressed={inList}
                 onClick={() => {
-                  const next = toggleMyList(movie.id, movie.title);
+                  const next = toggleMyList(
+                    movie.id,
+                    movie.title,
+                    movie.mediaType === "tv" ? "tv" : "movie",
+                  );
                   setMyList(next);
                   toast.success(
                     next.includes(movie.id)
@@ -433,7 +437,14 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                 className={actionBtn}
                 aria-label={liked ? "Unlike" : "Like"}
                 aria-pressed={liked}
-                onClick={() => setLikes(toggleLike(movie.id))}
+                onClick={() =>
+                  setLikes(
+                    toggleLike(
+                      movie.id,
+                      movie.mediaType === "tv" ? "tv" : "movie",
+                    ),
+                  )
+                }
               >
                 <IconMask src="/Icons/hand.svg" active={liked} />
               </button>
