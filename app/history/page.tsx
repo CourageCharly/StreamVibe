@@ -68,7 +68,7 @@ function HistoryInner() {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container space-y-8 py-8 sm:space-y-10 sm:py-10">
+      <div className="page-container py-8 sm:py-10">
         <div>
           <AccountBack />
           <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
@@ -79,36 +79,39 @@ function HistoryInner() {
           </p>
         </div>
 
-        <MoviesShowsTabs
-          movies={
-            <SectionFrame tag="Movies">
-              {loading ? (
-                <CatalogPosterSkeletonGrid />
-              ) : bucket.movies.length === 0 ? (
-                <EmptyCatalog
-                  title="No Movies found"
-                  message="Movies you play will appear here."
-                />
-              ) : (
-                <CatalogPosterGrid movies={bucket.movies} kind="movie" />
-              )}
-            </SectionFrame>
-          }
-          shows={
-            <SectionFrame tag="Shows">
-              {loading ? (
-                <CatalogPosterSkeletonGrid />
-              ) : bucket.shows.length === 0 ? (
-                <EmptyCatalog
-                  title="No Shows found"
-                  message="Shows you play will appear here."
-                />
-              ) : (
-                <CatalogPosterGrid movies={bucket.shows} kind="tv" />
-              )}
-            </SectionFrame>
-          }
-        />
+        <div className="mt-8 sm:mt-12 lg:mt-16">
+          <MoviesShowsTabs
+            skeleton={loading}
+            movies={
+              <SectionFrame tag="Movies" skeleton={loading}>
+                {loading ? (
+                  <CatalogPosterSkeletonGrid />
+                ) : bucket.movies.length === 0 ? (
+                  <EmptyCatalog
+                    title="No Movies found"
+                    message="Movies you play will appear here."
+                  />
+                ) : (
+                  <CatalogPosterGrid movies={bucket.movies} kind="movie" />
+                )}
+              </SectionFrame>
+            }
+            shows={
+              <SectionFrame tag="Shows" skeleton={loading}>
+                {loading ? (
+                  <CatalogPosterSkeletonGrid />
+                ) : bucket.shows.length === 0 ? (
+                  <EmptyCatalog
+                    title="No Shows found"
+                    message="Shows you play will appear here."
+                  />
+                ) : (
+                  <CatalogPosterGrid movies={bucket.shows} kind="tv" />
+                )}
+              </SectionFrame>
+            }
+          />
+        </div>
       </div>
     </div>
   );

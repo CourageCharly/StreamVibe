@@ -14,6 +14,8 @@ const TAB_KEY = "sv-movies-shows-tab";
 type Props = {
   movies: React.ReactNode;
   shows: React.ReactNode;
+  /** Pulse the Movies / Shows switcher instead of live labels */
+  skeleton?: boolean;
 };
 
 function readTab(): Tab {
@@ -31,7 +33,11 @@ function readTab(): Tab {
  * Desktop: both sections always visible; tabs hidden.
  * Active tab is remembered so detail "back" returns to the same section.
  */
-export default function MoviesShowsTabs({ movies, shows }: Props) {
+export default function MoviesShowsTabs({
+  movies,
+  shows,
+  skeleton = false,
+}: Props) {
   const [tab, setTab] = useState<Tab>("movies");
   const [ready, setReady] = useState(false);
 
@@ -65,36 +71,46 @@ export default function MoviesShowsTabs({ movies, shows }: Props) {
   return (
     <div className="flex w-full min-w-0 flex-col gap-14 sm:gap-16 lg:gap-24">
       <div className="w-full lg:hidden">
-        <div
-          className="flex w-full items-center rounded-xl border-[3px] border-[#1F1F1F] bg-navbar p-1"
-          role="tablist"
-          aria-label="Movies or Shows"
-        >
-          {(
-            [
-              { id: "movies", label: "Movies" },
-              { id: "shows", label: "Shows" },
-            ] as const
-          ).map((item) => {
-            const isActive = active === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => select(item.id)}
-                className={`min-w-0 flex-1 cursor-pointer rounded-lg py-2 text-center text-[14px] font-semibold transition-colors sm:py-2.5 ${
-                  isActive
-                    ? "bg-pill-active text-white"
-                    : "text-[#999999] hover:text-white"
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
+        {skeleton ? (
+          <div
+            className="flex w-full items-center gap-1 rounded-xl border-[3px] border-[#1F1F1F] bg-navbar p-1"
+            aria-hidden
+          >
+            <div className="h-9 min-w-0 flex-1 animate-pulse rounded-lg bg-[#1A1A1A]" />
+            <div className="h-9 min-w-0 flex-1 animate-pulse rounded-lg bg-[#1A1A1A]" />
+          </div>
+        ) : (
+          <div
+            className="flex w-full items-center rounded-xl border-[3px] border-[#1F1F1F] bg-navbar p-1"
+            role="tablist"
+            aria-label="Movies or Shows"
+          >
+            {(
+              [
+                { id: "movies", label: "Movies" },
+                { id: "shows", label: "Shows" },
+              ] as const
+            ).map((item) => {
+              const isActive = active === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => select(item.id)}
+                  className={`min-w-0 flex-1 cursor-pointer rounded-lg py-2 text-center text-[14px] font-semibold transition-colors sm:py-2.5 ${
+                    isActive
+                      ? "bg-pill-active text-white"
+                      : "text-[#999999] hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Mobile: active tab only · Desktop: both always shown, with extra gap between Movies & Shows */}
