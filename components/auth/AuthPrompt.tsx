@@ -21,7 +21,6 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
   const [verificationId, setVerificationId] = useState("");
-  const [developmentCode, setDevelopmentCode] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -140,7 +139,6 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
               onSuccess={(result) => {
                 setEmail(result.email);
                 setVerificationId(result.verificationId ?? "");
-                setDevelopmentCode(result.developmentCode ?? "");
                 if (result.requiresVerification) {
                   toastVerifySent();
                   setMode("verify");
@@ -173,7 +171,6 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
             <VerifyForm
               email={email}
               verificationId={verificationId}
-              developmentCode={developmentCode}
               onSuccess={() => void finish()}
             />
           </div>

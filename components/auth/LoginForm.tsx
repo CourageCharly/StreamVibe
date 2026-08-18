@@ -10,6 +10,7 @@ import { cn } from "@/lib";
 type Props = {
   onSuccess?: () => void;
   onNeedVerify?: (email: string) => void;
+  forgotHref?: string;
   className?: string;
 };
 
@@ -19,6 +20,7 @@ const fieldChrome =
 export default function LoginForm({
   onSuccess,
   onNeedVerify,
+  forgotHref = "/forgot-password",
   className,
 }: Props) {
   const [email, setEmail] = useState("");
@@ -128,6 +130,14 @@ export default function LoginForm({
         {touched.password && errors.password ? (
           <p className="mt-1.5 text-[12px] text-cta">{errors.password}</p>
         ) : null}
+        <div className="mt-2 text-right">
+          <a
+            href={forgotHref}
+            className="text-[13px] font-medium text-[#999999] hover:text-white"
+          >
+            Forgot password?
+          </a>
+        </div>
       </div>
       <Button type="submit" disabled={submitting} className="!w-full">
         {submitting ? "Signing in…" : "Log In"}

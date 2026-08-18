@@ -173,8 +173,8 @@ function HeaderInner() {
   const SearchBell = (
     <div className="flex items-center gap-[14px]">
       {SearchButton}
-      <button
-        type="button"
+      <Link
+        href="/notifications"
         className="flex h-6 w-6 cursor-pointer items-center justify-center transition-opacity hover:opacity-80"
         aria-label="Notifications"
       >
@@ -186,7 +186,7 @@ function HeaderInner() {
           className="h-6 w-6"
           aria-hidden
         />
-      </button>
+      </Link>
     </div>
   );
 

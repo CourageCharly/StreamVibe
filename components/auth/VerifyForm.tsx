@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
+import OtpInput from "@/components/auth/OtpInput";
 import { MESSAGES } from "@/lib/auth/errors";
 import { fusionAuthApplicationIdSafe } from "@/lib/auth/public";
 import { cn } from "@/lib";
@@ -10,18 +11,13 @@ import { cn } from "@/lib";
 type Props = {
   email: string;
   verificationId?: string;
-  developmentCode?: string;
   onSuccess?: () => void;
   className?: string;
 };
 
-const fieldChrome =
-  "w-full rounded-lg border border-[#262626] bg-[#141414] px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-[#999999] focus:border-[#404040]";
-
 export default function VerifyForm({
   email,
   verificationId,
-  developmentCode,
   onSuccess,
   className,
 }: Props) {
@@ -30,7 +26,6 @@ export default function VerifyForm({
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
-  const [devCode, setDevCode] = useState(developmentCode ?? "");
   const [activeVerificationId, setActiveVerificationId] = useState(
     verificationId ?? "",
   );
@@ -38,8 +33,8 @@ export default function VerifyForm({
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setTouched(true);
-    if (!code.trim() && !activeVerificationId) {
-      setError("Enter the verification code from your email.");
+    if (code.trim().length !== 6) {
+      setError("Enter the 6-digit code we sent you.");
       return;
     }
     if (submitting) return;
@@ -51,7 +46,7 @@ export default function VerifyForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          oneTimeCode: code.trim() || undefined,
+          oneTimeCode: code.trim(),
           verificationId: activeVerificationId || undefined,
         }),
       });
@@ -83,16 +78,15 @@ export default function VerifyForm({
       });
       const data = (await res.json()) as {
         message?: string;
-        developmentCode?: string;
         verificationId?: string;
       };
       if (!res.ok) {
         toast.error(data.message || MESSAGES.resendFailed);
         return;
       }
-      if (data.developmentCode) setDevCode(data.developmentCode);
       if (data.verificationId) setActiveVerificationId(data.verificationId);
-      toast.success("Verification email sent.");
+      setCode("");
+      toast.success("A new code was sent.");
     } catch {
       toast.error(MESSAGES.network);
     } finally {
@@ -101,41 +95,27 @@ export default function VerifyForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className={cn("space-y-4", className)} noValidate>
+    <form onSubmit={onSubmit} className={cn("space-y-5", className)} noValidate>
       <p className="text-[14px] leading-relaxed text-[#999999] sm:text-[16px]">
-        We sent a verification code to{" "}
-        <span className="font-medium text-white">{email}</span>. Enter it below
-        to finish creating your account.
+        Enter the 6-digit code we sent to{" "}
+        <span className="font-medium text-white">{email}</span>.
       </p>
-      {devCode ? (
-        <p className="rounded-lg border border-[#262626] bg-[#141414] px-3 py-2 text-[12px] text-[#999999]">
-          Local development code:{" "}
-          <span className="font-medium text-white">{devCode}</span>
-        </p>
-      ) : null}
       <div>
-        <label htmlFor="verify-code" className="mb-2 block text-[13px] font-medium">
-          Verification code
-        </label>
-        <input
-          id="verify-code"
-          name="code"
-          autoComplete="one-time-code"
+        <OtpInput
+          id="verify-otp"
           value={code}
-          onChange={(e) => {
-            setCode(e.target.value);
-            if (touched && e.target.value.trim()) setError("");
+          onChange={(next) => {
+            setCode(next);
+            if (next.length === 6) setError("");
           }}
-          onBlur={() => setTouched(true)}
-          className={fieldChrome}
-          placeholder="6-digit code"
+          disabled={submitting}
         />
         {touched && error ? (
-          <p className="mt-1.5 text-[12px] text-cta">{error}</p>
+          <p className="mt-2 text-[12px] text-cta">{error}</p>
         ) : null}
       </div>
       <Button type="submit" disabled={submitting} className="!w-full">
-        {submitting ? "Verifying…" : "Verify email"}
+        {submitting ? "Verifying…" : "Verify"}
       </Button>
       <button
         type="button"
@@ -143,7 +123,7 @@ export default function VerifyForm({
         disabled={resending}
         className="w-full text-center text-[13px] text-[#999999] outline-none transition hover:text-white disabled:opacity-60"
       >
-        {resending ? "Sending…" : "Resend verification email"}
+        {resending ? "Sending…" : "Resend code"}
       </button>
     </form>
   );

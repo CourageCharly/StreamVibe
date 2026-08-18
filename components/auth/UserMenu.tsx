@@ -12,6 +12,7 @@ const ITEMS = [
   { href: "/profile", label: "Profile" },
   { href: "/list", label: "My List / Favorites" },
   { href: "/history", label: "Watch History" },
+  { href: "/notifications", label: "Notifications" },
   { href: "/settings", label: "Settings" },
 ] as const;
 

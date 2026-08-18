@@ -15,6 +15,8 @@ type LocalUser = {
   applicationId: string;
   verificationId?: string;
   verificationCode?: string;
+  resetId?: string;
+  resetCode?: string;
 };
 
 type StoreFile = { users: LocalUser[] };
@@ -232,4 +234,49 @@ export function localGetUser(userId: string): AuthUser | null {
 
 export function localFindByEmail(email: string): LocalUser | undefined {
   return load().find((u) => u.email === email.trim().toLowerCase());
+}
+
+export function localStartPasswordReset(email: string) {
+  const users = load();
+  const index = users.findIndex((u) => u.email === email.trim().toLowerCase());
+  if (index < 0) {
+    return { started: false as const };
+  }
+  const resetId = randomBytes(24).toString("base64url");
+  const resetCode = sixDigit();
+  users[index] = { ...users[index], resetId, resetCode };
+  save(users);
+  return {
+    started: true as const,
+    email: users[index].email,
+    resetId,
+    developmentCode: resetCode,
+  };
+}
+
+export function localVerifyResetOtp(email: string, code: string) {
+  const row = localFindByEmail(email);
+  if (!row?.resetCode || row.resetCode !== code.trim()) return false;
+  return true;
+}
+
+export function localResetPassword(
+  email: string,
+  code: string,
+  password: string,
+) {
+  const users = load();
+  const index = users.findIndex((u) => u.email === email.trim().toLowerCase());
+  if (index < 0) return false;
+  if (!users[index].resetCode || users[index].resetCode !== code.trim()) {
+    return false;
+  }
+  users[index] = {
+    ...users[index],
+    passwordHash: hashPassword(password),
+    resetCode: undefined,
+    resetId: undefined,
+  };
+  save(users);
+  return true;
 }

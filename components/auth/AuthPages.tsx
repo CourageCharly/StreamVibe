@@ -72,6 +72,7 @@ export function LoginPage() {
     <AuthShell title="Log In" subtitle="Welcome back to StreamVibe.">
       <LoginForm
         onSuccess={() => void done()}
+        forgotHref={`/forgot-password?returnTo=${encodeURIComponent(returnTo)}`}
         onNeedVerify={(email) => {
           router.replace(
             `/verify?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(returnTo)}`,
@@ -110,7 +111,6 @@ export function SignupPage() {
               returnTo,
             });
             if (result.verificationId) qs.set("vid", result.verificationId);
-            if (result.developmentCode) qs.set("dev", result.developmentCode);
             router.replace(`/verify?${qs.toString()}`);
             return;
           }
@@ -153,7 +153,6 @@ export function VerifyPage() {
       <VerifyForm
         email={email}
         verificationId={params.get("vid") ?? undefined}
-        developmentCode={params.get("dev") ?? undefined}
         onSuccess={() => {
           void refresh().then(() => {
             clearReturnTo();

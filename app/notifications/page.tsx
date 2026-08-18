@@ -1,0 +1,107 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import PageWrapper from "@/components/PageWrapper";
+import RequireAuth from "@/components/auth/RequireAuth";
+import {
+  getReadNoticeIds,
+  markAllNoticesRead,
+  markNoticeRead,
+  MOVIE_NOTICES,
+} from "@/lib/notifications";
+
+export default function NotificationsPage() {
+  return (
+    <RequireAuth>
+      <NotificationsInner />
+    </RequireAuth>
+  );
+}
+
+function NotificationsInner() {
+  const [read, setRead] = useState<string[]>([]);
+
+  useEffect(() => {
+    setRead(getReadNoticeIds());
+  }, []);
+
+  const items = useMemo(
+    () =>
+      MOVIE_NOTICES.map((n) => ({
+        ...n,
+        unread: n.unread && !read.includes(n.id),
+      })),
+    [read],
+  );
+
+  return (
+    <div className="w-full bg-[#141414] pt-[var(--header-h)]">
+      <PageWrapper className="py-8 sm:py-12">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
+                Notifications
+              </h1>
+              <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
+                New episodes, watchlist alerts, trailers, and recommendations.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="shrink-0 text-[13px] font-semibold text-white hover:text-cta"
+              onClick={() => {
+                const ids = MOVIE_NOTICES.map((n) => n.id);
+                markAllNoticesRead(ids);
+                setRead(ids);
+              }}
+            >
+              Mark all read
+            </button>
+          </div>
+
+          <ul className="mt-6 overflow-hidden rounded-2xl border border-[#262626] bg-[#1A1A1A]">
+            {items.map((item, i) => (
+              <li
+                key={item.id}
+                className={i === 0 ? "" : "border-t border-[#262626]"}
+              >
+                <Link
+                  href={item.href}
+                  onClick={() => {
+                    markNoticeRead(item.id);
+                    setRead((prev) =>
+                      prev.includes(item.id) ? prev : [...prev, item.id],
+                    );
+                  }}
+                  className="flex gap-3 px-4 py-4 sm:px-5"
+                >
+                  <span
+                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                      item.unread ? "bg-cta" : "bg-[#333]"
+                    }`}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="text-[15px] font-semibold text-white">
+                        {item.title}
+                      </span>
+                      <span className="shrink-0 text-[12px] text-[#999999]">
+                        {item.at}
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-[14px] text-[#999999]">
+                      {item.body}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </PageWrapper>
+    </div>
+  );
+}
