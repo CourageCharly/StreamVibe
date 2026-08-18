@@ -117,6 +117,26 @@ section {
   min-width: 0;
 }
 
+/**
+ * Cinema / hero / player frame — 16:9 of the wrap (page-container).
+ * Full container width; height follows so it sits on small and large screens.
+ */
+.cinema-frame {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
+  border-radius: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .cinema-frame {
+    border-radius: 1rem;
+  }
+}
+
 .page-section {
   padding-block: clamp(2rem, 4vw, 4rem);
   /* clip children so scaled media cannot expand the page */

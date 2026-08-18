@@ -366,7 +366,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
         {/* Hero — matches Movies & Shows hero (taller mobile, lighter title, full-width CTA) */}
         <section
           id="hero"
-          className="relative h-[min(88vw,460px)] w-full min-w-0 overflow-hidden rounded-xl bg-black sm:h-[480px] sm:rounded-2xl lg:h-[560px]"
+          className="cinema-frame"
         >
           {bg ? (
             <Image

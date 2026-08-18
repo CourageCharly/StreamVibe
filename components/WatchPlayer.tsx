@@ -155,8 +155,8 @@ export default function WatchPlayer({
   }, []);
 
   /**
-   * Cover-fill the player box (standard cinema UI) — full width and height,
-   * same in-page and fullscreen, mobile and web. No letterbox.
+   * IMDb / industry mobile+web: fit the full 16:9 picture in the wrap
+   * (contain). Subtitles stay in frame, never cropped by cover.
    */
   useEffect(() => {
     if (!mounted) return;
@@ -168,18 +168,13 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const videoRatio = 16 / 9;
-      const boxRatio = width / height;
-      let w: number;
-      let h: number;
-      if (boxRatio > videoRatio) {
-        w = width;
-        h = width / videoRatio;
-      } else {
+      let w = width;
+      let h = width / videoRatio;
+      if (h > height) {
         h = height;
         w = height * videoRatio;
       }
-      const pad = 1.12;
-      setCoverSize({ w: w * pad, h: h * pad });
+      setCoverSize({ w, h });
     };
 
     apply();
@@ -279,7 +274,8 @@ export default function WatchPlayer({
         player.setOption?.("captions", "track", track);
         player.setOption?.("cc", "track", track);
         try {
-          player.setOption?.("captions", "fontSize", 2);
+          // YouTube default-size captions (IMDb / industry mobile)
+          player.setOption?.("captions", "fontSize", 1);
         } catch {
           /* optional */
         }
@@ -495,8 +491,8 @@ export default function WatchPlayer({
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
             : {
-                width: "max(100cqw, 177.78cqh)",
-                height: "max(100cqh, 56.25cqw)",
+                width: "min(100cqw, 177.78cqh)",
+                height: "min(100cqh, 56.25cqw)",
               }
         }
       >
@@ -597,9 +593,9 @@ export default function WatchPlayer({
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-            {/* Caption safe band — empty space for YT / burned-in subtitles */}
+            {/* IMDb-style subtitle band — captions sit above the scrubber */}
             <div
-              className="mb-3 min-h-[2.75rem] sm:mb-4 sm:min-h-[3.25rem]"
+              className="mb-4 min-h-[3.5rem] sm:mb-5 sm:min-h-[4rem]"
               aria-hidden
             />
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">

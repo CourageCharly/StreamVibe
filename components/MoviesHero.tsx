@@ -142,7 +142,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
 
   return (
     <section
-      className="relative w-full min-w-0 overflow-hidden rounded-xl bg-black sm:rounded-2xl"
+      className="cinema-frame"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -152,8 +152,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
         }
       }}
     >
-      {/* Same stage as the mobile play screen — image covers the box including the top */}
-      <div className="relative h-[min(88vw,460px)] w-full overflow-hidden sm:h-[480px] lg:h-[560px]">
+      <div className="absolute inset-0 h-full w-full overflow-hidden">
         {slides.map((slide, i) => {
           const slideTitle = slide.title || slide.name || "Featured";
           const slideBg = backdropUrl(slide.backdrop_path, "w1280");

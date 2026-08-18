@@ -290,8 +290,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   const [authOpen, setAuthOpen] = useState(false);
   const isMobile = useIsMobile();
   const router = useRouter();
-  // Only start playback after authentication is confirmed
-  const [playing, setPlaying] = useState(false);
+  // Watch route is the play screen — start on the player, not the static hero
+  const [playing, setPlaying] = useState(() => Boolean(playKey));
   const [active, setActive] = useState<Playable | null>(defaultPlayable);
   // Start muted so browser autoplay policies allow the movie to start
   const [muted, setMuted] = useState(true);
@@ -367,34 +367,58 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     setLikes(getLikes());
   }, []);
 
-  // Start the movie player only after the user is authenticated
+  // Resume the last clip on refresh (same title / episode), then play
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem(
+        `streamvibe:watch-active:${movie.mediaType}:${movie.id}`,
+      );
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Playable;
+      if (saved?.videoKey && saved.id) setActive(saved);
+    } catch {
+      /* ignore */
+    }
+  }, [movie.id, movie.mediaType]);
+
+  useEffect(() => {
+    if (!playing || !active?.videoKey || typeof window === "undefined") return;
+    try {
+      sessionStorage.setItem(
+        `streamvibe:watch-active:${movie.mediaType}:${movie.id}`,
+        JSON.stringify(active),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [playing, active, movie.id, movie.mediaType]);
+
+  // Keep the player up after auth; guests still get the login gate
   useEffect(() => {
     if (!playKey) return;
     if (status === "loading") return;
     const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
-    const timer = window.setTimeout(() => {
-      if (!canPlay) {
-        setPlaying(false);
-        rememberReturnTo(watchPath);
-        if (isMobile) {
-          router.replace(
-            `/auth?returnTo=${encodeURIComponent(watchPath)}`,
-          );
-          return;
-        }
-        setAuthOpen(true);
+    if (!canPlay) {
+      setPlaying(false);
+      rememberReturnTo(watchPath);
+      if (isMobile) {
+        router.replace(`/auth?returnTo=${encodeURIComponent(watchPath)}`);
         return;
       }
+      setAuthOpen(true);
+      return;
+    }
+    setPlaying(true);
+    if (!active?.videoKey) {
       setActive({ id: "main", title: movie.title, videoKey: playKey });
-      setPlaying(true);
-      addWatchHistory({
-        id: movie.id,
-        title: movie.title,
-        path: watchPath,
-      });
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, status, isMobile, router]);
+    }
+    addWatchHistory({
+      id: movie.id,
+      title: movie.title,
+      path: watchPath,
+    });
+  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, status, isMobile, router, active?.videoKey]);
 
   useEffect(() => {
     setSubtitleLang(defaultLang);
@@ -719,10 +743,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "h-[100svh] h-[100dvh] max-h-[100dvh]",
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
-              : [
-                  "w-full rounded-xl sm:rounded-2xl",
-                  "h-[min(88vw,460px)] sm:h-[480px] lg:h-[560px]",
-                ].join(" "),
+              : "cinema-frame",
           ].join(" ")}
         >
           {playing && active?.videoKey ? (
@@ -873,7 +894,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   alt={movie.title}
                   fill
                   priority
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-contain object-center"
                   sizes="100vw"
                 />
               ) : (
