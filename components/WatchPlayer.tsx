@@ -157,9 +157,9 @@ export default function WatchPlayer({
   }, []);
 
   /**
-   * Netflix / IMDb: cover the parent completely.
-   * In-page 16:9 frame → exact fill. Fullscreen → cover the screen.
-   * When cropping vertically, pin to the bottom so captions stay on screen.
+   * Cover the parent with no gaps (Netflix).
+   * Overscan kills YouTube's inner letterbox. Pin to the bottom when
+   * cropping vertically so captions stay in the visible lower third.
    */
   useEffect(() => {
     if (!mounted) return;
@@ -172,16 +172,20 @@ export default function WatchPlayer({
       if (width <= 0 || height <= 0) return;
       const videoRatio = 16 / 9;
       const boxRatio = width / height;
+      const pad = 1.18;
       if (boxRatio > videoRatio) {
+        const w = width * pad;
+        const h = w / videoRatio;
         setCoverSize({
-          w: width,
-          h: width / videoRatio,
-          pin: "bottom",
+          w,
+          h,
+          pin: h > height ? "bottom" : "center",
         });
       } else {
+        const h = height * pad;
         setCoverSize({
-          w: height * videoRatio,
-          h: height,
+          w: h * videoRatio,
+          h,
           pin: "center",
         });
       }
@@ -598,14 +602,22 @@ export default function WatchPlayer({
           </button>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pt-12 sm:px-8 sm:pt-16 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div
+          className={[
+            "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-[6%] sm:px-[8%]",
+            showControls
+              ? "pt-16 pb-[max(5.25rem,calc(env(safe-area-inset-bottom)+4.25rem))]"
+              : "pt-10 pb-[max(2.75rem,calc(env(safe-area-inset-bottom)+1.75rem))]",
+          ].join(" ")}
+        >
           <div
             className="pointer-events-auto mx-auto w-full max-w-5xl"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
+            {/* Netflix caption well — centered, mid-lower frame, above the bar */}
             <div
-              className="mx-auto mb-3 min-h-[3rem] w-[min(100%,36rem)] sm:mb-4 sm:min-h-[3.5rem]"
+              className="mx-auto mb-2 min-h-[2.5rem] w-[min(80%,34rem)] sm:mb-3 sm:min-h-[3rem]"
               aria-hidden
             />
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">

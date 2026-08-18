@@ -894,11 +894,12 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   alt={movie.title}
                   fill
                   priority
-                  className="h-full w-full object-cover object-center"
+                  className="object-cover object-center"
                   sizes="100vw"
+                  style={{ objectFit: "cover", objectPosition: "center" }}
                 />
               ) : (
-                <div className="absolute inset-0 bg-[#1A1A1A]" />
+                <div className="absolute inset-0 h-full w-full bg-black" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/50 to-transparent" />
 

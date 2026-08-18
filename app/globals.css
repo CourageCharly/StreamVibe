@@ -126,9 +126,15 @@ section {
   width: 100%;
   min-width: 0;
   aspect-ratio: 16 / 9;
-  overflow: hidden;
+  overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
+}
+
+.cinema-frame img,
+.cinema-frame iframe {
+  object-fit: cover;
+  object-position: center;
 }
 
 @media (min-width: 640px) {

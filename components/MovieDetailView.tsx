@@ -374,8 +374,9 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
               alt={movie.title}
               fill
               priority
-              className="h-full w-full object-cover object-center"
+              className="object-cover object-center"
               sizes="100vw"
+              style={{ objectFit: "cover", objectPosition: "center" }}
             />
           ) : (
             <div className="absolute inset-0 h-full w-full bg-[#1A1A1A]" />
