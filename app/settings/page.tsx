@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { FiChevronRight } from "react-icons/fi";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
-import Button from "@/components/ui/Button";
 import { CATEGORIES } from "@/lib/constants";
 import {
   DEFAULT_SETTINGS,
@@ -288,15 +287,17 @@ function SettingsInner() {
             })}
           </div>
 
-          <Button
-            variant="secondary"
-            className="mt-6 !w-full sm:!w-auto"
-            onClick={() => {
-              void logout().then(() => router.replace("/"));
-            }}
-          >
-            Sign out
-          </Button>
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              className="text-[14px] font-semibold text-cta underline underline-offset-4 outline-none hover:text-white"
+              onClick={() => {
+                void logout().then(() => router.replace("/"));
+              }}
+            >
+              Sign out
+            </button>
+          </div>
       </div>
     </div>
   );

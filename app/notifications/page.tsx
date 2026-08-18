@@ -28,15 +28,13 @@ function NotificationsInner() {
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
-                Notifications
-              </h1>
-              <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
-                New episodes, watchlist alerts, trailers, and recommendations.
-              </p>
-            </div>
+          <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
+            Notifications
+          </h1>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="min-w-0 text-[14px] text-[#999999] sm:text-[16px]">
+              New episodes, watchlist alerts, trailers, and recommendations.
+            </p>
             <button
               type="button"
               className="shrink-0 text-[13px] font-semibold text-white hover:text-cta"
