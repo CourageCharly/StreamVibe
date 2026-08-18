@@ -66,7 +66,7 @@ export default function Pricing({
             <button
               type="button"
               onClick={() => setBilling("monthly")}
-              className={`min-w-[5.5rem] rounded-md px-4 py-2 text-sm font-medium transition ${
+              className={`min-w-[5.5rem] rounded-md px-4 py-2 text-[14px] font-semibold transition ${
                 billing === "monthly"
                   ? "bg-[#1A1A1A] text-white"
                   : "text-[#999999] hover:text-white"
@@ -77,7 +77,7 @@ export default function Pricing({
             <button
               type="button"
               onClick={() => setBilling("yearly")}
-              className={`min-w-[5.5rem] rounded-md px-4 py-2 text-sm font-medium transition ${
+              className={`min-w-[5.5rem] rounded-md px-4 py-2 text-[14px] font-semibold transition ${
                 billing === "yearly"
                   ? "bg-[#1A1A1A] text-white"
                   : "text-[#999999] hover:text-white"

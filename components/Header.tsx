@@ -135,14 +135,14 @@ function HeaderInner() {
           <Link
             href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
             onClick={() => rememberReturnTo(returnTo)}
-            className="rounded-lg px-3 py-2 text-[13px] font-medium text-[#999999] outline-none transition hover:text-white sm:text-[14px]"
+            className="rounded-lg px-3 py-2 text-[14px] font-semibold text-[#999999] outline-none transition hover:text-white"
           >
             Login
           </Link>
           <Link
             href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
             onClick={() => rememberReturnTo(returnTo)}
-            className="rounded-lg bg-cta px-3 py-2 text-[13px] font-medium text-white outline-none transition hover:bg-red-600 sm:px-4 sm:text-[14px]"
+            className="rounded-lg bg-cta px-3 py-2 text-[14px] font-semibold text-white outline-none transition hover:bg-red-600 sm:px-4"
           >
             Sign Up
           </Link>
@@ -293,7 +293,7 @@ function HeaderInner() {
             />
             <button
               type="submit"
-              className="shrink-0 rounded-lg bg-cta px-4 py-2 text-[14px] font-medium text-white"
+              className="shrink-0 rounded-lg bg-cta px-4 py-2 text-[14px] font-semibold text-white"
             >
               Search
             </button>
@@ -400,7 +400,7 @@ function HeaderInner() {
                     rememberReturnTo(returnTo);
                     setOpen(false);
                   }}
-                  className="flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[16px] font-medium text-white"
+                  className="flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
                 >
                   Login
                 </Link>
@@ -410,7 +410,7 @@ function HeaderInner() {
                     rememberReturnTo(returnTo);
                     setOpen(false);
                   }}
-                  className="flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[16px] font-medium text-white"
+                  className="flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[14px] font-semibold text-white"
                 >
                   Sign Up
                 </Link>

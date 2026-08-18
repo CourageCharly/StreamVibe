@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-/** All CTAs: 149×49, 14px medium */
+/** All CTAs: 149×49, 14px semibold */
 const base =
-  "inline-flex h-[49px] w-[149px] max-w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-[14px] font-medium whitespace-nowrap outline-none transition hover:opacity-95 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-cta/60 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex h-[49px] w-[149px] max-w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-[14px] font-semibold whitespace-nowrap outline-none transition hover:opacity-95 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-cta/60 disabled:cursor-not-allowed disabled:opacity-50";
 
 const variants = {
   primary: "bg-cta text-white hover:bg-red-600",

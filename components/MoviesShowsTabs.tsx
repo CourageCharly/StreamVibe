@@ -84,7 +84,7 @@ export default function MoviesShowsTabs({ movies, shows }: Props) {
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => select(item.id)}
-                className={`min-w-0 flex-1 cursor-pointer rounded-lg py-2 text-center text-[13px] font-semibold transition-colors sm:py-2.5 sm:text-[14px] ${
+                className={`min-w-0 flex-1 cursor-pointer rounded-lg py-2 text-center text-[14px] font-semibold transition-colors sm:py-2.5 ${
                   isActive
                     ? "bg-pill-active text-white"
                     : "text-[#999999] hover:text-white"

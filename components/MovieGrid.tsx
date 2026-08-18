@@ -78,7 +78,7 @@ export function CategoryPills({
           <Link
             key={cat.key}
             href={`${basePath}?category=${cat.key}`}
-            className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-medium whitespace-nowrap transition ${
+            className={`shrink-0 rounded-lg border px-4 py-2 text-[14px] font-semibold whitespace-nowrap transition ${
               isActive
                 ? "border-border bg-pill-active text-white"
                 : "border-border bg-navbar text-subtext hover:text-white"

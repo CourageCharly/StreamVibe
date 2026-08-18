@@ -78,7 +78,7 @@ export default function PlanComparison({ billing = "monthly" }: Props) {
                 type="button"
                 onClick={() => setActiveIdx(i)}
                 className={[
-                  "min-w-0 flex-1 rounded-lg px-2 py-2.5 text-center text-[13px] font-medium transition",
+                  "min-w-0 flex-1 rounded-lg px-2 py-2.5 text-center text-[14px] font-semibold transition",
                   active
                     ? "bg-[#1A1A1A] text-white"
                     : "text-[#999999] hover:text-white",

@@ -51,7 +51,7 @@ export default function ReviewsSection({
             onClick={() => {
               if (loggedIn) setFormOpen(true);
             }}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-1.5 text-[12px] font-normal text-white outline-none transition hover:border-[#404040] disabled:cursor-not-allowed disabled:opacity-45 sm:px-3 sm:py-2 sm:text-[13px]"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-1.5 text-[14px] font-semibold text-white outline-none transition hover:border-[#404040] disabled:cursor-not-allowed disabled:opacity-45 sm:px-3 sm:py-2"
           >
             <FaPlus className="h-3 w-3 text-white" />
             <span className="whitespace-nowrap font-normal">

@@ -8,6 +8,7 @@ type Props = {
   id?: string;
   /** Keep title on one line (desktop); wraps only on very small screens */
   singleLine?: boolean;
+  titleClassName?: string;
 };
 
 /**
@@ -21,6 +22,7 @@ export default function SectionHeading({
   className = "",
   id,
   singleLine = false,
+  titleClassName = "",
 }: Props) {
   return (
     <div
@@ -37,6 +39,7 @@ export default function SectionHeading({
             singleLine
               ? "whitespace-nowrap max-sm:whitespace-normal"
               : "whitespace-normal",
+            titleClassName,
           ].join(" ")}
         >
           {title}

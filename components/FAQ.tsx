@@ -37,7 +37,7 @@ export default function FAQ({ askHref = "/support" }: Props) {
           </span>
           <div className="min-w-0 flex-1 pt-1.5 sm:pt-2.5">
             <div className="flex items-start justify-between gap-3">
-              <span className="min-w-0 flex-1 whitespace-normal text-base font-medium leading-snug text-white sm:text-lg">
+              <span className="min-w-0 flex-1 whitespace-normal text-[18px] font-medium leading-snug text-white sm:text-[20px]">
                 {item.questionLines ? (
                   <>
                     {/* Mobile: fixed 2 lines · Desktop: one line */}
@@ -84,6 +84,7 @@ export default function FAQ({ askHref = "/support" }: Props) {
     <section id="faq" className="page-section">
       <SectionHeading
         title="Frequently Asked Questions"
+        titleClassName="!text-[18px] !font-medium sm:!text-[20px]"
         description="Got questions? We've got answers! Check out our FAQ section to find answers to the most common questions about StreamVibe."
         action={<Button href={askHref}>Ask a Question</Button>}
       />
