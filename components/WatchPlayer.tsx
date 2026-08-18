@@ -155,8 +155,8 @@ export default function WatchPlayer({
   }, []);
 
   /**
-   * IMDb / industry mobile+web: fit the full 16:9 picture in the wrap
-   * (contain). Subtitles stay in frame, never cropped by cover.
+   * Full container width, 16:9 of that width (do not change the frame height).
+   * Picture is centered; IMDb captions sit in the lower third of the picture.
    */
   useEffect(() => {
     if (!mounted) return;
@@ -165,16 +165,8 @@ export default function WatchPlayer({
 
     const apply = () => {
       const width = el.clientWidth;
-      const height = el.clientHeight;
-      if (width <= 0 || height <= 0) return;
-      const videoRatio = 16 / 9;
-      let w = width;
-      let h = width / videoRatio;
-      if (h > height) {
-        h = height;
-        w = height * videoRatio;
-      }
-      setCoverSize({ w, h });
+      if (width <= 0) return;
+      setCoverSize({ w: width, h: width / (16 / 9) });
     };
 
     apply();
@@ -477,162 +469,149 @@ export default function WatchPlayer({
       onMouseMove={bumpControls}
       onTouchStart={bumpControls}
     >
-      {/* Full-bleed cover video */}
+      {/* Picture is always the wrap width; height stays 16:9 of that width */}
       <div
-        className={[
-          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
-          "[&>iframe]:!h-full [&>iframe]:!w-full",
-          "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
-          "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
-          "[&>iframe]:!pointer-events-none",
-        ].join(" ")}
+        className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
         style={
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
-            : {
-                width: "min(100cqw, 177.78cqh)",
-                height: "min(100cqh, 56.25cqw)",
-              }
+            : { width: "100cqw", height: "56.25cqw" }
         }
       >
         <div
-          ref={hostRef}
-          id={elId}
-          title={title}
-          className="relative h-full w-full"
-        />
-      </div>
-
-      {/* Tap center of screen to play / pause (streaming standard) */}
-      <button
-        type="button"
-        className="absolute inset-0 z-10 cursor-pointer bg-transparent"
-        aria-label={isPlaying ? "Pause" : "Play"}
-        onClick={() => {
-          bumpControls();
-          togglePlayPause();
-        }}
-      />
-
-      {/* Auto-hiding control chrome (hidden = no pointer steal) */}
-      <div
-        className={[
-          "absolute inset-0 z-20 transition-opacity duration-300",
-          showControls
-            ? "pointer-events-none opacity-100"
-            : "pointer-events-none opacity-0",
-        ].join(" ")}
-      >
-        {/* Center transport — visible only when chrome is shown */}
-        <div
           className={[
-            "pointer-events-none absolute inset-0 flex items-center justify-center gap-5 sm:gap-8",
-            showControls ? "pointer-events-none" : "",
+            "absolute inset-0",
+            "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
+            "[&>iframe]:!h-full [&>iframe]:!w-full",
+            "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
+            "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
+            "[&>iframe]:!pointer-events-none",
           ].join(" ")}
         >
-          <button
-            type="button"
-            className={`pointer-events-auto ${transportBtn}`}
-            aria-label={`Rewind ${SEEK_STEP} seconds`}
-            onClick={(e) => {
-              e.stopPropagation();
-              seekBy(-SEEK_STEP);
-            }}
-          >
-            <span className="relative inline-flex items-center justify-center">
-              <FiRotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="absolute text-[8px] font-bold sm:text-[9px]">
-                {SEEK_STEP}
-              </span>
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={`pointer-events-auto ${transportBtn} !h-14 !w-14 sm:!h-16 sm:!w-16`}
-            aria-label={isPlaying ? "Pause" : "Play"}
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePlayPause();
-            }}
-          >
-            {isPlaying ? (
-              <FaPause className="h-5 w-5 sm:h-6 sm:w-6" />
-            ) : (
-              <FaPlay className="h-5 w-5 translate-x-0.5 sm:h-6 sm:w-6" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            className={`pointer-events-auto ${transportBtn}`}
-            aria-label={`Forward ${SEEK_STEP} seconds`}
-            onClick={(e) => {
-              e.stopPropagation();
-              seekBy(SEEK_STEP);
-            }}
-          >
-            <span className="relative inline-flex items-center justify-center">
-              <FiRotateCw className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="absolute text-[8px] font-bold sm:text-[9px]">
-                {SEEK_STEP}
-              </span>
-            </span>
-          </button>
+          <div
+            ref={hostRef}
+            id={elId}
+            title={title}
+            className="relative h-full w-full"
+          />
         </div>
 
-        {/*
-          Bottom chrome — streaming standard:
-          progress line + times sit under a clear caption safe zone
-          so subtitles remain readable above the scrubber.
-        */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-3 pb-3 pt-16 sm:px-5 sm:pb-5 sm:pt-20">
-          <div
-            className="pointer-events-auto"
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            {/* IMDb-style subtitle band — captions sit above the scrubber */}
-            <div
-              className="mb-4 min-h-[3.5rem] sm:mb-5 sm:min-h-[4rem]"
-              aria-hidden
-            />
-            <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
-              <span>{formatTime(currentTime)}</span>
-              <span className="rounded bg-black/50 px-1.5 py-0.5 text-white/95">
-                {formatTime(duration)}
+        <button
+          type="button"
+          className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+          aria-label={isPlaying ? "Pause" : "Play"}
+          onClick={() => {
+            bumpControls();
+            togglePlayPause();
+          }}
+        />
+
+        <div
+          className={[
+            "absolute inset-0 z-20 transition-opacity duration-300",
+            showControls
+              ? "pointer-events-none opacity-100"
+              : "pointer-events-none opacity-0",
+          ].join(" ")}
+        >
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-5 sm:gap-8">
+            <button
+              type="button"
+              className={`pointer-events-auto ${transportBtn}`}
+              aria-label={`Rewind ${SEEK_STEP} seconds`}
+              onClick={(e) => {
+                e.stopPropagation();
+                seekBy(-SEEK_STEP);
+              }}
+            >
+              <span className="relative inline-flex items-center justify-center">
+                <FiRotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="absolute text-[8px] font-bold sm:text-[9px]">
+                  {SEEK_STEP}
+                </span>
               </span>
-            </div>
-            {/* Full-width progress line (standard streaming scrubber) */}
-            <label className="block cursor-pointer">
-              <span className="sr-only">Seek</span>
-              <input
-                type="range"
-                min={0}
-                max={1000}
-                step={1}
-                value={Math.round(progress * 1000)}
-                aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/25 accent-[#E50000] sm:h-1.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cta sm:[&::-webkit-slider-thumb]:h-4 sm:[&::-webkit-slider-thumb]:w-4"
-                style={{
-                  background: `linear-gradient(to right, #E50000 0%, #E50000 ${progress * 100}%, rgba(255,255,255,0.25) ${progress * 100}%, rgba(255,255,255,0.25) 100%)`,
-                }}
-                onPointerDown={() => {
-                  setDragging(true);
-                  bumpControls();
-                }}
-                onPointerUp={() => {
-                  setDragging(false);
-                  bumpControls();
-                }}
-                onChange={(e) => {
-                  const ratio = Number(e.target.value) / 1000;
-                  setCurrentTime(ratio * (duration || 0));
-                  seekToRatio(ratio);
-                }}
+            </button>
+
+            <button
+              type="button"
+              className={`pointer-events-auto ${transportBtn} !h-14 !w-14 sm:!h-16 sm:!w-16`}
+              aria-label={isPlaying ? "Pause" : "Play"}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlayPause();
+              }}
+            >
+              {isPlaying ? (
+                <FaPause className="h-5 w-5 sm:h-6 sm:w-6" />
+              ) : (
+                <FaPlay className="h-5 w-5 translate-x-0.5 sm:h-6 sm:w-6" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              className={`pointer-events-auto ${transportBtn}`}
+              aria-label={`Forward ${SEEK_STEP} seconds`}
+              onClick={(e) => {
+                e.stopPropagation();
+                seekBy(SEEK_STEP);
+              }}
+            >
+              <span className="relative inline-flex items-center justify-center">
+                <FiRotateCw className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="absolute text-[8px] font-bold sm:text-[9px]">
+                  {SEEK_STEP}
+                </span>
+              </span>
+            </button>
+          </div>
+
+          {/* IMDb: captions sit centered in the lower third, above the bar */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-4 pb-3 pt-10 sm:px-6 sm:pb-4 sm:pt-12">
+            <div
+              className="pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <div
+                className="mx-auto mb-3 min-h-[2.75rem] w-[min(100%,42rem)] sm:mb-3.5 sm:min-h-[3.25rem]"
+                aria-hidden
               />
-            </label>
+              <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
+                <span>{formatTime(currentTime)}</span>
+                <span className="rounded bg-black/50 px-1.5 py-0.5 text-white/95">
+                  {formatTime(duration)}
+                </span>
+              </div>
+              <label className="block cursor-pointer">
+                <span className="sr-only">Seek</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1000}
+                  step={1}
+                  value={Math.round(progress * 1000)}
+                  aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+                  className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/25 accent-[#E50000] sm:h-1.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cta sm:[&::-webkit-slider-thumb]:h-4 sm:[&::-webkit-slider-thumb]:w-4"
+                  style={{
+                    background: `linear-gradient(to right, #E50000 0%, #E50000 ${progress * 100}%, rgba(255,255,255,0.25) ${progress * 100}%, rgba(255,255,255,0.25) 100%)`,
+                  }}
+                  onPointerDown={() => {
+                    setDragging(true);
+                    bumpControls();
+                  }}
+                  onPointerUp={() => {
+                    setDragging(false);
+                    bumpControls();
+                  }}
+                  onChange={(e) => {
+                    const ratio = Number(e.target.value) / 1000;
+                    setCurrentTime(ratio * (duration || 0));
+                    seekToRatio(ratio);
+                  }}
+                />
+              </label>
+            </div>
           </div>
         </div>
       </div>
