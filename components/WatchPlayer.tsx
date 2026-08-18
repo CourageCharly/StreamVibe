@@ -68,7 +68,7 @@ type Props = {
   subtitlesOn?: boolean;
   subtitleLang?: string;
   className?: string;
-  /** frame = in-page 16:9 fill; fullscreen = Netflix contain in the viewport */
+  /** frame = in-page theater; fullscreen = viewport — both fill actual box size */
   layout?: "frame" | "fullscreen";
   onEnded?: () => void;
   onCaptionTracks?: (tracks: CaptionTrack[]) => void;
@@ -144,13 +144,9 @@ export default function WatchPlayer({
     setMounted(true);
   }, []);
 
-  // Netflix fullscreen: fit the full 16:9 picture in the viewport (contain).
-  // In-page frame is already 16:9 — video is 100% × 100% cover, no extra scale.
+  // Fill the container's actual width and height (object-fit: cover).
   useEffect(() => {
-    if (!mounted || layout !== "fullscreen") {
-      setCoverSize(null);
-      return;
-    }
+    if (!mounted) return;
     const el = coverBoxRef.current;
     if (!el) return;
 
@@ -159,13 +155,12 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const videoRatio = 16 / 9;
-      let w = width;
-      let h = width / videoRatio;
-      if (h > height) {
-        h = height;
-        w = height * videoRatio;
+      const boxRatio = width / height;
+      if (boxRatio > videoRatio) {
+        setCoverSize({ w: width, h: width / videoRatio });
+      } else {
+        setCoverSize({ w: height * videoRatio, h: height });
       }
-      setCoverSize({ w, h });
     };
 
     apply();
@@ -490,9 +485,7 @@ export default function WatchPlayer({
     >
       <div
         className={[
-          layout === "fullscreen"
-            ? "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
-            : "absolute inset-0 h-full w-full overflow-hidden",
+          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden",
           "[&>iframe]:!absolute [&>iframe]:!inset-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
           "[&>iframe]:!object-cover [&>iframe]:!object-center",
@@ -501,11 +494,12 @@ export default function WatchPlayer({
           "[&>iframe]:!pointer-events-none",
         ].join(" ")}
         style={
-          layout === "fullscreen"
-            ? coverSize
-              ? { width: coverSize.w, height: coverSize.h }
-              : { width: "min(100cqw, 177.78cqh)", height: "min(100cqh, 56.25cqw)" }
-            : undefined
+          coverSize
+            ? { width: coverSize.w, height: coverSize.h }
+            : {
+                width: "max(100%, 177.78%)",
+                height: "max(100%, 100%)",
+              }
         }
       >
         <div
