@@ -8,7 +8,7 @@ export default function EmptyCatalog({
   message,
 }: Props) {
   return (
-    <div className="mt-10 rounded-xl border border-[#262626] bg-[#0F0F0F] px-6 py-16 text-center">
+    <div className="w-full rounded-xl border border-[#262626] bg-[#0F0F0F] px-6 py-16 text-center">
       <p className="text-[16px] font-medium text-white sm:text-[18px]">{title}</p>
       <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">{message}</p>
     </div>

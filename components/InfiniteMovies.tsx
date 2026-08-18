@@ -107,7 +107,7 @@ export default function InfiniteMovies({
   return (
     <div>
       {/* Same card style as Trending Now — 4 per row; generous row gap */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+      <div className="grid w-full min-w-0 grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
         {movies.map((movie) => (
           <TrendingMovieCard
             key={movie.id}

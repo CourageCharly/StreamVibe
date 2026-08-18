@@ -24,7 +24,7 @@ export function CatalogCardSkeleton() {
 
 export function CatalogPosterSkeletonGrid({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+    <div className="grid w-full min-w-0 grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
       {Array.from({ length: count }).map((_, i) => (
         <CatalogCardSkeleton key={i} />
       ))}
@@ -44,7 +44,7 @@ export default function CatalogPosterGrid({
   showRating = false,
 }: Props) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+    <div className="grid w-full min-w-0 grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
       {movies.map((movie) => (
         <TrendingMovieCard
           key={`${kind}-${movie.id}`}

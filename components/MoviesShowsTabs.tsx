@@ -98,10 +98,14 @@ export default function MoviesShowsTabs({ movies, shows }: Props) {
       </div>
 
       {/* Mobile: active tab only · Desktop: both always shown, with extra gap between Movies & Shows */}
-      <div className={active === "movies" ? "block" : "hidden lg:block"}>
+      <div
+        className={`w-full min-w-0 ${active === "movies" ? "block" : "hidden lg:block"}`}
+      >
         {movies}
       </div>
-      <div className={active === "shows" ? "block" : "hidden lg:block"}>
+      <div
+        className={`w-full min-w-0 ${active === "shows" ? "block" : "hidden lg:block"}`}
+      >
         {shows}
       </div>
     </div>
