@@ -117,6 +117,9 @@ export default function WatchPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [coverSize, setCoverSize] = useState<{ w: number; h: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -137,6 +140,42 @@ export default function WatchPlayer({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // object-fit: cover — same on web and mobile (IMDb / Netflix)
+  useEffect(() => {
+    if (!mounted) return;
+    const el = coverBoxRef.current;
+    if (!el) return;
+
+    const apply = () => {
+      const width = el.clientWidth;
+      const height = el.clientHeight;
+      if (width <= 0 || height <= 0) return;
+      const videoRatio = 16 / 9;
+      const boxRatio = width / height;
+      if (boxRatio > videoRatio) {
+        setCoverSize({ w: width, h: width / videoRatio });
+      } else {
+        setCoverSize({ w: height * videoRatio, h: height });
+      }
+    };
+
+    apply();
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => apply())
+        : null;
+    ro?.observe(el);
+    window.addEventListener("resize", apply);
+    const t1 = window.setTimeout(apply, 50);
+    const t2 = window.setTimeout(apply, 300);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", apply);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [mounted, videoKey]);
 
   const bumpControls = useCallback(() => {
     setShowControls(true);
@@ -437,13 +476,13 @@ export default function WatchPlayer({
   return (
     <div
       ref={coverBoxRef}
-      className={`absolute inset-0 h-full w-full overflow-hidden bg-black ${className}`}
+      className={`absolute inset-0 h-full w-full overflow-hidden bg-black [container-type:size] ${className}`}
       onMouseMove={bumpControls}
       onTouchStart={bumpControls}
     >
       <div
         className={[
-          "absolute inset-0 h-full w-full overflow-hidden",
+          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden",
           "[&>iframe]:!absolute [&>iframe]:!inset-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
           "[&>iframe]:!object-cover [&>iframe]:!object-center",
@@ -451,6 +490,14 @@ export default function WatchPlayer({
           "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
           "[&>iframe]:!pointer-events-none",
         ].join(" ")}
+        style={
+          coverSize
+            ? { width: coverSize.w, height: coverSize.h }
+            : {
+                width: "max(100cqw, 177.78cqh)",
+                height: "max(100cqh, 56.25cqw)",
+              }
+        }
       >
         <div
           ref={hostRef}
