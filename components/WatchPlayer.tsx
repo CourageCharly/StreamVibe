@@ -117,9 +117,11 @@ export default function WatchPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [coverSize, setCoverSize] = useState<{ w: number; h: number } | null>(
-    null,
-  );
+  const [coverSize, setCoverSize] = useState<{
+    w: number;
+    h: number;
+    pin: "center" | "bottom";
+  } | null>(null);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -155,8 +157,9 @@ export default function WatchPlayer({
   }, []);
 
   /**
-   * Full container width, 16:9 of that width (do not change the frame height).
-   * Picture is centered; IMDb captions sit in the lower third of the picture.
+   * Netflix / IMDb: cover the parent completely.
+   * In-page 16:9 frame → exact fill. Fullscreen → cover the screen.
+   * When cropping vertically, pin to the bottom so captions stay on screen.
    */
   useEffect(() => {
     if (!mounted) return;
@@ -165,8 +168,23 @@ export default function WatchPlayer({
 
     const apply = () => {
       const width = el.clientWidth;
-      if (width <= 0) return;
-      setCoverSize({ w: width, h: width / (16 / 9) });
+      const height = el.clientHeight;
+      if (width <= 0 || height <= 0) return;
+      const videoRatio = 16 / 9;
+      const boxRatio = width / height;
+      if (boxRatio > videoRatio) {
+        setCoverSize({
+          w: width,
+          h: width / videoRatio,
+          pin: "bottom",
+        });
+      } else {
+        setCoverSize({
+          w: height * videoRatio,
+          h: height,
+          pin: "center",
+        });
+      }
     };
 
     apply();
@@ -462,156 +480,168 @@ export default function WatchPlayer({
   const transportBtn =
     "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 active:scale-95 sm:h-12 sm:w-12";
 
+  const videoStyle = coverSize
+    ? coverSize.pin === "bottom"
+      ? {
+          width: coverSize.w,
+          height: coverSize.h,
+          left: "50%",
+          bottom: 0,
+          transform: "translateX(-50%)",
+        }
+      : {
+          width: coverSize.w,
+          height: coverSize.h,
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        }
+    : {
+        width: "max(100%, 177.78%)",
+        height: "max(100%, 100%)",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+      };
+
   return (
     <div
       ref={coverBoxRef}
-      className={`absolute inset-0 h-full w-full min-h-full min-w-full overflow-hidden bg-black [container-type:size] ${className}`}
+      className={`absolute inset-0 h-full w-full overflow-hidden bg-black ${className}`}
       onMouseMove={bumpControls}
       onTouchStart={bumpControls}
     >
-      {/* Picture is always the wrap width; height stays 16:9 of that width */}
       <div
-        className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
-        style={
-          coverSize
-            ? { width: coverSize.w, height: coverSize.h }
-            : { width: "100cqw", height: "56.25cqw" }
-        }
+        className={[
+          "absolute overflow-hidden",
+          "[&>iframe]:!absolute [&>iframe]:!inset-0",
+          "[&>iframe]:!h-full [&>iframe]:!w-full",
+          "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
+          "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
+          "[&>iframe]:!pointer-events-none",
+        ].join(" ")}
+        style={videoStyle}
       >
         <div
-          className={[
-            "absolute inset-0",
-            "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
-            "[&>iframe]:!h-full [&>iframe]:!w-full",
-            "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
-            "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
-            "[&>iframe]:!pointer-events-none",
-          ].join(" ")}
-        >
-          <div
-            ref={hostRef}
-            id={elId}
-            title={title}
-            className="relative h-full w-full"
-          />
+          ref={hostRef}
+          id={elId}
+          title={title}
+          className="relative h-full w-full"
+        />
+      </div>
+
+      <button
+        type="button"
+        className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+        aria-label={isPlaying ? "Pause" : "Play"}
+        onClick={() => {
+          bumpControls();
+          togglePlayPause();
+        }}
+      />
+
+      <div
+        className={[
+          "absolute inset-0 z-20 transition-opacity duration-300",
+          showControls
+            ? "pointer-events-none opacity-100"
+            : "pointer-events-none opacity-0",
+        ].join(" ")}
+      >
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-5 sm:gap-8">
+          <button
+            type="button"
+            className={`pointer-events-auto ${transportBtn}`}
+            aria-label={`Rewind ${SEEK_STEP} seconds`}
+            onClick={(e) => {
+              e.stopPropagation();
+              seekBy(-SEEK_STEP);
+            }}
+          >
+            <span className="relative inline-flex items-center justify-center">
+              <FiRotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="absolute text-[8px] font-bold sm:text-[9px]">
+                {SEEK_STEP}
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            className={`pointer-events-auto ${transportBtn} !h-14 !w-14 sm:!h-16 sm:!w-16`}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlayPause();
+            }}
+          >
+            {isPlaying ? (
+              <FaPause className="h-5 w-5 sm:h-6 sm:w-6" />
+            ) : (
+              <FaPlay className="h-5 w-5 translate-x-0.5 sm:h-6 sm:w-6" />
+            )}
+          </button>
+          <button
+            type="button"
+            className={`pointer-events-auto ${transportBtn}`}
+            aria-label={`Forward ${SEEK_STEP} seconds`}
+            onClick={(e) => {
+              e.stopPropagation();
+              seekBy(SEEK_STEP);
+            }}
+          >
+            <span className="relative inline-flex items-center justify-center">
+              <FiRotateCw className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="absolute text-[8px] font-bold sm:text-[9px]">
+                {SEEK_STEP}
+              </span>
+            </span>
+          </button>
         </div>
 
-        <button
-          type="button"
-          className="absolute inset-0 z-10 cursor-pointer bg-transparent"
-          aria-label={isPlaying ? "Pause" : "Play"}
-          onClick={() => {
-            bumpControls();
-            togglePlayPause();
-          }}
-        />
-
-        <div
-          className={[
-            "absolute inset-0 z-20 transition-opacity duration-300",
-            showControls
-              ? "pointer-events-none opacity-100"
-              : "pointer-events-none opacity-0",
-          ].join(" ")}
-        >
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-5 sm:gap-8">
-            <button
-              type="button"
-              className={`pointer-events-auto ${transportBtn}`}
-              aria-label={`Rewind ${SEEK_STEP} seconds`}
-              onClick={(e) => {
-                e.stopPropagation();
-                seekBy(-SEEK_STEP);
-              }}
-            >
-              <span className="relative inline-flex items-center justify-center">
-                <FiRotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span className="absolute text-[8px] font-bold sm:text-[9px]">
-                  {SEEK_STEP}
-                </span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className={`pointer-events-auto ${transportBtn} !h-14 !w-14 sm:!h-16 sm:!w-16`}
-              aria-label={isPlaying ? "Pause" : "Play"}
-              onClick={(e) => {
-                e.stopPropagation();
-                togglePlayPause();
-              }}
-            >
-              {isPlaying ? (
-                <FaPause className="h-5 w-5 sm:h-6 sm:w-6" />
-              ) : (
-                <FaPlay className="h-5 w-5 translate-x-0.5 sm:h-6 sm:w-6" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              className={`pointer-events-auto ${transportBtn}`}
-              aria-label={`Forward ${SEEK_STEP} seconds`}
-              onClick={(e) => {
-                e.stopPropagation();
-                seekBy(SEEK_STEP);
-              }}
-            >
-              <span className="relative inline-flex items-center justify-center">
-                <FiRotateCw className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span className="absolute text-[8px] font-bold sm:text-[9px]">
-                  {SEEK_STEP}
-                </span>
-              </span>
-            </button>
-          </div>
-
-          {/* IMDb: captions sit centered in the lower third, above the bar */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-4 pb-3 pt-10 sm:px-6 sm:pb-4 sm:pt-12">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pt-12 sm:px-8 sm:pt-16 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div
+            className="pointer-events-auto mx-auto w-full max-w-5xl"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <div
-              className="pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <div
-                className="mx-auto mb-3 min-h-[2.75rem] w-[min(100%,42rem)] sm:mb-3.5 sm:min-h-[3.25rem]"
-                aria-hidden
-              />
-              <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
-                <span>{formatTime(currentTime)}</span>
-                <span className="rounded bg-black/50 px-1.5 py-0.5 text-white/95">
-                  {formatTime(duration)}
-                </span>
-              </div>
-              <label className="block cursor-pointer">
-                <span className="sr-only">Seek</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1000}
-                  step={1}
-                  value={Math.round(progress * 1000)}
-                  aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-                  className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/25 accent-[#E50000] sm:h-1.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cta sm:[&::-webkit-slider-thumb]:h-4 sm:[&::-webkit-slider-thumb]:w-4"
-                  style={{
-                    background: `linear-gradient(to right, #E50000 0%, #E50000 ${progress * 100}%, rgba(255,255,255,0.25) ${progress * 100}%, rgba(255,255,255,0.25) 100%)`,
-                  }}
-                  onPointerDown={() => {
-                    setDragging(true);
-                    bumpControls();
-                  }}
-                  onPointerUp={() => {
-                    setDragging(false);
-                    bumpControls();
-                  }}
-                  onChange={(e) => {
-                    const ratio = Number(e.target.value) / 1000;
-                    setCurrentTime(ratio * (duration || 0));
-                    seekToRatio(ratio);
-                  }}
-                />
-              </label>
+              className="mx-auto mb-3 min-h-[3rem] w-[min(100%,36rem)] sm:mb-4 sm:min-h-[3.5rem]"
+              aria-hidden
+            />
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
+              <span>{formatTime(currentTime)}</span>
+              <span className="rounded bg-black/50 px-1.5 py-0.5 text-white/95">
+                {formatTime(duration)}
+              </span>
             </div>
+            <label className="block cursor-pointer">
+              <span className="sr-only">Seek</span>
+              <input
+                type="range"
+                min={0}
+                max={1000}
+                step={1}
+                value={Math.round(progress * 1000)}
+                aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/25 accent-[#E50000] sm:h-1.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cta sm:[&::-webkit-slider-thumb]:h-4 sm:[&::-webkit-slider-thumb]:w-4"
+                style={{
+                  background: `linear-gradient(to right, #E50000 0%, #E50000 ${progress * 100}%, rgba(255,255,255,0.25) ${progress * 100}%, rgba(255,255,255,0.25) 100%)`,
+                }}
+                onPointerDown={() => {
+                  setDragging(true);
+                  bumpControls();
+                }}
+                onPointerUp={() => {
+                  setDragging(false);
+                  bumpControls();
+                }}
+                onChange={(e) => {
+                  const ratio = Number(e.target.value) / 1000;
+                  setCurrentTime(ratio * (duration || 0));
+                  seekToRatio(ratio);
+                }}
+              />
+            </label>
           </div>
         </div>
       </div>

@@ -894,7 +894,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   alt={movie.title}
                   fill
                   priority
-                  className="h-full w-full object-contain object-center"
+                  className="h-full w-full object-cover object-center"
                   sizes="100vw"
                 />
               ) : (
