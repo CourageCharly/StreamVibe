@@ -118,17 +118,30 @@ section {
 }
 
 /**
- * Cinema / hero / player frame — 16:9 of the wrap (page-container).
- * Full container width; height follows so it sits on small and large screens.
+ * Cinema / hero / player frame — same arrangement on every screen.
+ * Media inside must cover the full box (width + height).
  */
 .cinema-frame {
   position: relative;
   width: 100%;
   min-width: 0;
-  aspect-ratio: 16 / 9;
+  height: min(88vw, 460px);
   overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .cinema-frame {
+    height: 480px;
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cinema-frame {
+    height: 560px;
+  }
 }
 
 video,
@@ -139,12 +152,6 @@ video,
   height: 100%;
   object-fit: cover;
   object-position: center;
-}
-
-@media (min-width: 640px) {
-  .cinema-frame {
-    border-radius: 1rem;
-  }
 }
 
 .page-section {

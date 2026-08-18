@@ -117,11 +117,6 @@ export default function WatchPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [coverSize, setCoverSize] = useState<{
-    w: number;
-    h: number;
-    pin: "center" | "bottom";
-  } | null>(null);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -155,58 +150,6 @@ export default function WatchPlayer({
       });
     }, HIDE_MS);
   }, []);
-
-  /**
-   * Cover the parent with no gaps (Netflix).
-   * Overscan kills YouTube's inner letterbox. Pin to the bottom when
-   * cropping vertically so captions stay in the visible lower third.
-   */
-  useEffect(() => {
-    if (!mounted) return;
-    const el = coverBoxRef.current;
-    if (!el) return;
-
-    const apply = () => {
-      const width = el.clientWidth;
-      const height = el.clientHeight;
-      if (width <= 0 || height <= 0) return;
-      const videoRatio = 16 / 9;
-      const boxRatio = width / height;
-      const pad = 1.18;
-      if (boxRatio > videoRatio) {
-        const w = width * pad;
-        const h = w / videoRatio;
-        setCoverSize({
-          w,
-          h,
-          pin: h > height ? "bottom" : "center",
-        });
-      } else {
-        const h = height * pad;
-        setCoverSize({
-          w: h * videoRatio,
-          h,
-          pin: "center",
-        });
-      }
-    };
-
-    apply();
-    const ro =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(() => apply())
-        : null;
-    ro?.observe(el);
-    window.addEventListener("resize", apply);
-    const t1 = window.setTimeout(apply, 50);
-    const t2 = window.setTimeout(apply, 300);
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener("resize", apply);
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [mounted, videoKey]);
 
   // Progress / duration tick
   useEffect(() => {
@@ -288,8 +231,15 @@ export default function WatchPlayer({
         player.setOption?.("captions", "track", track);
         player.setOption?.("cc", "track", track);
         try {
-          // YouTube default-size captions (IMDb / industry mobile)
           player.setOption?.("captions", "fontSize", 1);
+          player.setOption?.("captions", "displaySettings", {
+            background: "#000000",
+            backgroundOpacity: 75,
+            windowOpacity: 0,
+            fontSizeIncrease: 0,
+            color: "#ffffff",
+            textOpacity: 100,
+          });
         } catch {
           /* optional */
         }
@@ -484,30 +434,6 @@ export default function WatchPlayer({
   const transportBtn =
     "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 active:scale-95 sm:h-12 sm:w-12";
 
-  const videoStyle = coverSize
-    ? coverSize.pin === "bottom"
-      ? {
-          width: coverSize.w,
-          height: coverSize.h,
-          left: "50%",
-          bottom: 0,
-          transform: "translateX(-50%)",
-        }
-      : {
-          width: coverSize.w,
-          height: coverSize.h,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-        }
-    : {
-        width: "max(100%, 177.78%)",
-        height: "max(100%, 100%)",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-      };
-
   return (
     <div
       ref={coverBoxRef}
@@ -517,14 +443,14 @@ export default function WatchPlayer({
     >
       <div
         className={[
-          "absolute overflow-hidden",
+          "absolute inset-0 h-full w-full overflow-hidden",
           "[&>iframe]:!absolute [&>iframe]:!inset-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
+          "[&>iframe]:!object-cover [&>iframe]:!object-center",
           "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
           "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
           "[&>iframe]:!pointer-events-none",
         ].join(" ")}
-        style={videoStyle}
       >
         <div
           ref={hostRef}
@@ -615,9 +541,9 @@ export default function WatchPlayer({
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-            {/* Netflix caption well — centered, mid-lower frame, above the bar */}
+            {/* Centered caption well (Netflix / IMDb) */}
             <div
-              className="mx-auto mb-2 min-h-[2.5rem] w-[min(80%,34rem)] sm:mb-3 sm:min-h-[3rem]"
+              className="mx-auto mb-2 min-h-[2.5rem] w-[min(80%,34rem)] text-center sm:mb-3 sm:min-h-[3rem]"
               aria-hidden
             />
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
