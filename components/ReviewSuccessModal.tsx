@@ -14,7 +14,7 @@ export default function ReviewSuccessModal({ open, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[320] flex items-end justify-center bg-black/70 p-[5%] sm:items-center sm:p-6"
+      className="fixed inset-0 z-[320] flex items-center justify-center bg-black/70 p-[5%] sm:p-6"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="review-success-title"
@@ -26,10 +26,26 @@ export default function ReviewSuccessModal({ open, onClose }: Props) {
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-[#262626] bg-[#1A1A1A] p-5 shadow-2xl sm:p-6">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-[#262626] bg-[#1A1A1A] p-6 text-center shadow-2xl sm:p-8">
+        <div
+          className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cta/15"
+          aria-hidden
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-7 w-7 text-cta"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </div>
         <h2
           id="review-success-title"
-          className="text-[20px] font-semibold text-white"
+          className="mt-4 text-[20px] font-semibold text-white sm:text-[22px]"
         >
           Success
         </h2>

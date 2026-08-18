@@ -366,7 +366,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
         {/* Hero — matches Movies & Shows hero (taller mobile, lighter title, full-width CTA) */}
         <section
           id="hero"
-          className="relative h-[min(88vw,460px)] w-full min-w-0 overflow-hidden rounded-xl sm:h-[480px] sm:rounded-2xl lg:h-[560px]"
+          className="relative h-[min(88vw,460px)] w-full min-w-0 overflow-hidden rounded-xl bg-black sm:h-[480px] sm:rounded-2xl lg:h-[560px]"
         >
           {bg ? (
             <Image
@@ -378,7 +378,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
               sizes="100vw"
             />
           ) : (
-            <div className="absolute inset-0 bg-[#1A1A1A]" />
+            <div className="absolute inset-0 h-full w-full bg-[#1A1A1A]" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/50 to-transparent" />
 

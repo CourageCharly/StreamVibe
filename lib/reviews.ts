@@ -3,8 +3,8 @@ import { addMovieNotice } from "@/lib/notifications";
 
 const KEY = "streamvibe:user-reviews";
 const SUCCESS_KEY = "streamvibe:review-success";
-/** Demo approval delay so users can see pending → approved + bell notice */
-export const REVIEW_APPROVE_MS = 10000;
+/** No admin queue — auto-approve after 2 hours */
+export const REVIEW_APPROVE_MS = 2 * 60 * 60 * 1000;
 
 type ReviewMap = Record<string, MovieReview[]>;
 

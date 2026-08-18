@@ -142,7 +142,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
 
   return (
     <section
-      className="relative w-full min-w-0 overflow-hidden rounded-b-2xl"
+      className="relative w-full min-w-0 overflow-hidden rounded-xl bg-black sm:rounded-2xl"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -152,8 +152,8 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
         }
       }}
     >
-      {/* First-screen stage: full container width, remaining viewport height (no top gap) */}
-      <div className="relative h-[calc(100svh-var(--header-h))] min-h-[min(88vw,460px)] w-full overflow-hidden sm:min-h-[480px] lg:min-h-[560px]">
+      {/* Same stage as the mobile play screen — image covers the box including the top */}
+      <div className="relative h-[min(88vw,460px)] w-full overflow-hidden sm:h-[480px] lg:h-[560px]">
         {slides.map((slide, i) => {
           const slideTitle = slide.title || slide.name || "Featured";
           const slideBg = backdropUrl(slide.backdrop_path, "w1280");
@@ -178,9 +178,8 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
                   alt={slideTitle}
                   fill
                   priority={i === 0 || i === (index + 1) % Math.max(slides.length, 1)}
-                  className="object-cover object-top"
+                  className="h-full w-full object-cover object-center"
                   sizes="100vw"
-                  style={{ objectFit: "cover", objectPosition: "top center" }}
                 />
               ) : (
                 <div className="absolute inset-0 h-full w-full bg-[#1A1A1A]" />
