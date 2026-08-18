@@ -4,8 +4,11 @@ import type { MediaKind } from "@/lib/user-lists";
 
 export function CatalogCardSkeleton() {
   return (
-    <div className="h-full min-h-[220px] w-full min-w-0">
-      <div className="relative h-full w-full overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F]">
+    <div className="h-full min-w-0 w-full">
+      <div
+        className="relative w-full overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F]"
+        style={{ aspectRatio: "285 / 317" }}
+      >
         <div className="absolute inset-0 animate-pulse bg-[#1A1A1A]" />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2 pt-8 sm:p-3 sm:pt-10">
           <div className="h-3 w-3/4 animate-pulse rounded bg-[#262626]" />
@@ -19,9 +22,13 @@ export function CatalogCardSkeleton() {
   );
 }
 
+/** Same grid as Movies & Shows genre listings / Trending rows (fluid 285×317). */
+export const CATALOG_POSTER_GRID_CLASS =
+  "grid w-full min-w-0 grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10";
+
 export function CatalogPosterSkeletonGrid({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid w-full min-h-[calc(100svh-var(--header-h)-13rem)] min-w-0 auto-rows-fr grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+    <div className={CATALOG_POSTER_GRID_CLASS}>
       {Array.from({ length: count }).map((_, i) => (
         <CatalogCardSkeleton key={i} />
       ))}
@@ -33,21 +40,23 @@ type Props = {
   movies: Movie[];
   kind: MediaKind;
   showRating?: boolean;
+  showRuntime?: boolean;
 };
 
 export default function CatalogPosterGrid({
   movies,
   kind,
   showRating = false,
+  showRuntime = true,
 }: Props) {
   return (
-    <div className="grid w-full min-h-[calc(100svh-var(--header-h)-13rem)] min-w-0 auto-rows-fr grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
+    <div className={CATALOG_POSTER_GRID_CLASS}>
       {movies.map((movie) => (
         <TrendingMovieCard
           key={`${kind}-${movie.id}`}
           movie={movie}
-          fill
-          showRuntime
+          fluid
+          showRuntime={showRuntime}
           showRating={showRating}
           mediaKind={kind}
         />

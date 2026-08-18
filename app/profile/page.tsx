@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { ProfileSkeleton } from "@/components/skeletons/PageSkeletons";
 import { getLikes, getMyList, getWatchHistory } from "@/lib/user-lists";
 import { userInitials } from "@/lib/initials";
 
 export default function ProfilePage() {
   return (
-    <RequireAuth>
+    <RequireAuth fallback={<ProfileSkeleton />}>
       <ProfileInner />
     </RequireAuth>
   );

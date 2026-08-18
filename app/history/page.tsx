@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RequireAuth from "@/components/auth/RequireAuth";
+import AccountCatalogSkeleton from "@/components/skeletons/AccountCatalogSkeleton";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import AccountBack from "@/components/AccountBack";
 import MoviesShowsTabs from "@/components/MoviesShowsTabs";
@@ -30,7 +31,7 @@ async function fetchItem(id: number, kind: "movie" | "tv"): Promise<Movie | null
 
 export default function HistoryPage() {
   return (
-    <RequireAuth>
+    <RequireAuth fallback={<AccountCatalogSkeleton />}>
       <HistoryInner />
     </RequireAuth>
   );

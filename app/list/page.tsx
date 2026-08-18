@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/components/auth/RequireAuth";
+import AccountCatalogSkeleton from "@/components/skeletons/AccountCatalogSkeleton";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import AccountBack from "@/components/AccountBack";
 import MoviesShowsTabs from "@/components/MoviesShowsTabs";
@@ -21,8 +22,8 @@ type Bucket = { movies: Movie[]; shows: Movie[] };
 
 export default function ListPage() {
   return (
-    <RequireAuth>
-      <Suspense fallback={null}>
+    <RequireAuth fallback={<AccountCatalogSkeleton />}>
+      <Suspense fallback={<AccountCatalogSkeleton />}>
         <ListInner />
       </Suspense>
     </RequireAuth>

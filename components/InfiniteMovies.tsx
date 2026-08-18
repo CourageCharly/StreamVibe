@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import TrendingMovieCard from "@/components/TrendingMovieCard";
+import CatalogPosterGrid from "@/components/CatalogPosterGrid";
 import type { CatalogListResponse, Movie } from "@/lib/types";
 
 type Props = {
@@ -106,19 +106,12 @@ export default function InfiniteMovies({
 
   return (
     <div>
-      {/* Same card style as Trending Now — 4 per row; generous row gap */}
-      <div className="grid w-full min-w-0 grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-10">
-        {movies.map((movie) => (
-          <TrendingMovieCard
-            key={movie.id}
-            movie={movie}
-            fluid
-            showRuntime={showRuntime}
-            showRating={showRating}
-            mediaKind={kind === "shows" ? "tv" : "movie"}
-          />
-        ))}
-      </div>
+      <CatalogPosterGrid
+        movies={movies}
+        kind={kind === "shows" ? "tv" : "movie"}
+        showRuntime={showRuntime}
+        showRating={showRating}
+      />
       <div ref={sentinelRef} className="h-10 w-full" aria-hidden />
       <div className="py-8 text-center text-sm text-[#999999]">
         {loading ? "Loading more…" : null}

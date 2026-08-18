@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { FiChevronRight } from "react-icons/fi";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { SettingsSkeleton } from "@/components/skeletons/PageSkeletons";
 import { CATEGORIES } from "@/lib/constants";
 import {
   DEFAULT_SETTINGS,
@@ -28,7 +29,7 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 
 export default function SettingsPage() {
   return (
-    <RequireAuth>
+    <RequireAuth fallback={<SettingsSkeleton />}>
       <SettingsInner />
     </RequireAuth>
   );

@@ -187,7 +187,7 @@ export default async function MoviesPage({ searchParams }: Props) {
         wrapperClassName="page-container pt-6 sm:pt-8"
       />
 
-      <div className="page-container space-y-8 py-5 sm:space-y-10 sm:py-7">
+      <div className="page-container space-y-8 pt-0 pb-5 sm:space-y-10 sm:pb-7">
         <MoviesHero movies={heroSlides} trailers={heroTrailers} />
 
         {/* Web only: more space between hero and Movies section */}

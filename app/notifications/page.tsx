@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import RequireAuth from "@/components/auth/RequireAuth";
+import { NotificationsSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   deleteNotice,
   getAllNotices,
@@ -14,7 +15,7 @@ import {
 
 export default function NotificationsPage() {
   return (
-    <RequireAuth>
+    <RequireAuth fallback={<NotificationsSkeleton />}>
       <NotificationsInner />
     </RequireAuth>
   );
