@@ -12,6 +12,8 @@ type Props = {
   showRating?: boolean;
   /** Fill grid cell width instead of fixed 285px */
   fluid?: boolean;
+  /** Stretch to the parent cell's width and height */
+  fill?: boolean;
   /** movie → /movies/[id]; tv → /shows/[id] */
   mediaKind?: "movie" | "tv";
 };
@@ -192,6 +194,7 @@ export default function TrendingMovieCard({
   showDate = false,
   showRating = false,
   fluid = false,
+  fill = false,
   mediaKind = "movie",
 }: Props) {
   const name = movie.title || movie.name || "Untitled";
@@ -206,16 +209,18 @@ export default function TrendingMovieCard({
 
   return (
     <article
-      className={`flex min-w-0 flex-col ${fluid ? "w-full" : "shrink-0"}`}
-      style={fluid ? undefined : { width: MEDIA_CARD_W }}
+      className={`min-w-0 ${fluid || fill ? "h-full w-full" : "shrink-0"}`}
+      style={fluid || fill ? undefined : { width: MEDIA_CARD_W }}
     >
       <Link
         href={href}
-        className="group relative block w-full overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] outline-none transition hover:border-cta/40 focus-visible:ring-2 focus-visible:ring-cta"
+        className="group relative block h-full w-full overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] outline-none transition hover:border-cta/40 focus-visible:ring-2 focus-visible:ring-cta"
         style={
-          fluid
-            ? { aspectRatio: `${MEDIA_CARD_W} / ${MEDIA_CARD_H}` }
-            : { height: MEDIA_CARD_H, width: MEDIA_CARD_W }
+          fill
+            ? { height: "100%", width: "100%" }
+            : fluid
+              ? { aspectRatio: `${MEDIA_CARD_W} / ${MEDIA_CARD_H}` }
+              : { height: MEDIA_CARD_H, width: MEDIA_CARD_W }
         }
       >
         {src ? (
@@ -223,11 +228,11 @@ export default function TrendingMovieCard({
             src={src}
             alt={name}
             fill
-            className="object-cover transition duration-300 group-hover:scale-[1.02]"
+            className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.02]"
             sizes={fluid ? "(max-width:768px) 50vw, 25vw" : "285px"}
           />
         ) : (
-          <div className="absolute inset-0 bg-[#1A1A1A]" />
+          <div className="absolute inset-0 h-full w-full bg-[#1A1A1A]" />
         )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2 pt-8 sm:p-3 sm:pt-10">
           <h3 className="truncate text-xs font-semibold text-white sm:text-sm">
