@@ -144,9 +144,12 @@ section {
   }
 }
 
-video,
-.cinema-frame video,
-.cinema-frame iframe,
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .cinema-frame img {
   width: 100%;
   height: 100%;
@@ -363,12 +366,10 @@ a:disabled,
   object-position: center;
 }
 
-/* Watch / hero iframes — same cover fill as <video> */
 .cinema-frame iframe,
 [class*="watch"] iframe,
 iframe[src*="youtube"] {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
+  object-fit: contain;
 }
