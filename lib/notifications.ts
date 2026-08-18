@@ -16,6 +16,7 @@ export type MovieNotice = {
 
 const READ_KEY = "streamvibe:notice-read";
 const USER_KEY = "streamvibe:user-notices";
+const DELETED_KEY = "streamvibe:notice-deleted";
 export const NOTICE_EVENT = "streamvibe:notices";
 
 export const MOVIE_NOTICES: MovieNotice[] = [
@@ -102,12 +103,25 @@ export function getReadNoticeIds(): string[] {
   }
 }
 
+function getDeletedIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(DELETED_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function getAllNotices(): MovieNotice[] {
   const read = new Set(getReadNoticeIds());
-  return [...readUserNotices(), ...MOVIE_NOTICES].map((n) => ({
-    ...n,
-    unread: !read.has(n.id) && n.unread,
-  }));
+  const deleted = new Set(getDeletedIds());
+  return [...readUserNotices(), ...MOVIE_NOTICES]
+    .filter((n) => !deleted.has(n.id))
+    .map((n) => ({
+      ...n,
+      unread: !read.has(n.id) && n.unread,
+    }));
 }
 
 export function addMovieNotice(input: {
@@ -148,6 +162,19 @@ export function markNoticeRead(id: string) {
 export function markAllNoticesRead(ids: string[]) {
   try {
     localStorage.setItem(READ_KEY, JSON.stringify(Array.from(new Set(ids))));
+  } catch {
+    /* quota */
+  }
+  emitNotices();
+}
+
+export function deleteNotice(id: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const user = readUserNotices().filter((n) => n.id !== id);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    const deleted = Array.from(new Set([...getDeletedIds(), id]));
+    localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
   } catch {
     /* quota */
   }
