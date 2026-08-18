@@ -2,29 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiChevronRight } from "react-icons/fi";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { getLikes, getMyList, getWatchHistory } from "@/lib/user-lists";
 import { userInitials } from "@/lib/initials";
-
-const LINKS = [
-  {
-    href: "/list",
-    label: "Your watchlist",
-    hint: "Titles you saved to watch later",
-  },
-  {
-    href: "/history",
-    label: "Watch history",
-    hint: "Movies and shows you have played",
-  },
-  {
-    href: "/settings",
-    label: "Account settings",
-    hint: "Playback, privacy, and preferences",
-  },
-] as const;
 
 export default function ProfilePage() {
   return (
@@ -73,31 +54,17 @@ function ProfileInner() {
         </div>
 
         <div className="mt-8 grid grid-cols-3 gap-3">
-          <Stat label="Watchlist" value={listCount} href="/list" />
-          <Stat label="History" value={historyCount} href="/history" />
-          <Stat label="Ratings" value={ratingCount} href="/list" />
-        </div>
-
-        <div className="mt-8 overflow-hidden rounded-xl border border-[#262626] bg-[#1A1A1A]">
-          {LINKS.map((item, i) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center justify-between gap-3 px-4 py-4 sm:px-5 ${
-                i === 0 ? "" : "border-t border-[#262626]"
-              }`}
-            >
-              <span>
-                <span className="block text-[16px] font-semibold text-white">
-                  {item.label}
-                </span>
-                <span className="mt-0.5 block text-[13px] text-[#999999]">
-                  {item.hint}
-                </span>
-              </span>
-              <FiChevronRight className="h-5 w-5 shrink-0 text-[#999999]" />
-            </Link>
-          ))}
+          <Stat label="Watchlist" value={listCount} href="/list?from=profile" />
+          <Stat
+            label="History"
+            value={historyCount}
+            href="/history?from=profile"
+          />
+          <Stat
+            label="Ratings"
+            value={ratingCount}
+            href="/list?from=profile&view=ratings"
+          />
         </div>
       </div>
     </div>

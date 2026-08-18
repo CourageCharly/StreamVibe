@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireAuth from "@/components/auth/RequireAuth";
 import EmptyCatalog from "@/components/EmptyCatalog";
+import AccountBack from "@/components/AccountBack";
 import { getWatchHistory, type HistoryItem } from "@/lib/user-lists";
 
 export default function HistoryPage() {
@@ -24,6 +25,7 @@ function HistoryInner() {
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
+        <AccountBack />
         <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
           Watch History
         </h1>

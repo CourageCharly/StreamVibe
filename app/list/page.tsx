@@ -1,30 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import RequireAuth from "@/components/auth/RequireAuth";
 import MovieGrid from "@/components/MovieGrid";
 import EmptyCatalog from "@/components/EmptyCatalog";
+import AccountBack from "@/components/AccountBack";
 import { getLikes, getMyList } from "@/lib/user-lists";
 import type { Movie } from "@/lib/types";
 
 export default function ListPage() {
   return (
     <RequireAuth>
-      <ListInner />
+      <Suspense fallback={null}>
+        <ListInner />
+      </Suspense>
     </RequireAuth>
   );
 }
 
 function ListInner() {
+  const view = useSearchParams().get("view");
+  const ratingsOnly = view === "ratings";
   const [items, setItems] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const ids = Array.from(new Set([...getMyList(), ...getLikes()]));
+    const ids = ratingsOnly ? getLikes() : getMyList();
     if (!ids.length) {
+      setItems([]);
       setLoading(false);
       return;
     }
+    setLoading(true);
     Promise.all(
       ids.map((id) =>
         fetch(`/api/movies/${id}`)
@@ -35,16 +43,19 @@ function ListInner() {
       setItems(rows.filter(Boolean) as Movie[]);
       setLoading(false);
     });
-  }, []);
+  }, [ratingsOnly]);
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
+        <AccountBack />
         <h1 className="text-[20px] font-bold leading-tight text-white sm:text-[28px]">
-          My List / Favorites
+          {ratingsOnly ? "Ratings" : "My List / Favorites"}
         </h1>
         <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
-          Titles you save to watch later.
+          {ratingsOnly
+            ? "Titles you have rated."
+            : "Titles you save to watch later."}
         </p>
         {loading ? (
           <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
@@ -56,10 +67,21 @@ function ListInner() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <EmptyCatalog message="Add movies and shows to your list and they will appear here." />
+          <EmptyCatalog
+            message={
+              ratingsOnly
+                ? "Rate a title and it will show up here."
+                : "Add movies and shows to your list and they will appear here."
+            }
+          />
         ) : (
           <div className="mt-10">
-            <MovieGrid movies={items} emptyMessage="No saved titles yet." />
+            <MovieGrid
+              movies={items}
+              emptyMessage={
+                ratingsOnly ? "No ratings yet." : "No saved titles yet."
+              }
+            />
           </div>
         )}
       </div>
