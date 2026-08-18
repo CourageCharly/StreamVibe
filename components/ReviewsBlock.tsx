@@ -83,7 +83,7 @@ export default function ReviewsBlock({ reviews }: Props) {
         ].join(" ")}
       >
         {slice.map((r) => {
-          const rating = r.rating != null ? r.rating / 2 : 4;
+          const rating = r.rating != null ? r.rating / 2 : 0;
           return (
             <article
               key={r.id}

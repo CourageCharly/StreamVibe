@@ -21,14 +21,12 @@ export async function POST(request: NextRequest) {
       mediaId?: number;
       mediaType?: "movie" | "tv";
       rating?: number;
-      title?: string;
       content?: string;
     };
 
     const mediaId = Number(body.mediaId);
     const rating = Number(body.rating);
     const content = body.content?.trim() ?? "";
-    const title = body.title?.trim() ?? "";
 
     if (!Number.isFinite(mediaId) || mediaId <= 0) {
       return NextResponse.json(
@@ -60,10 +58,11 @@ export async function POST(request: NextRequest) {
       author:
         [session.firstName, session.lastName].filter(Boolean).join(" ") ||
         session.email.split("@")[0],
-      content: title ? `${title}\n\n${content}` : content,
+      content,
       rating: rating * 2,
       created_at: new Date().toISOString(),
       location: "You",
+      status: "pending" as const,
     };
 
     return NextResponse.json({ review });

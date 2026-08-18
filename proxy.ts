@@ -12,9 +12,12 @@ const PROTECTED = [
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  );
+  const isReviewWrite = /\/(movies|shows)\/[^/]+\/review\/?$/.test(pathname);
+  const isProtected =
+    isReviewWrite ||
+    PROTECTED.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    );
   if (!isProtected) return NextResponse.next();
 
   const session = request.cookies.get(SESSION_COOKIE)?.value;
@@ -33,5 +36,7 @@ export const config = {
     "/list/:path*",
     "/history/:path*",
     "/notifications/:path*",
+    "/movies/:id/review",
+    "/shows/:id/review",
   ],
 };

@@ -11,7 +11,8 @@ export type MovieNotice = {
     | "coming"
     | "continue"
     | "trailer"
-    | "recommend";
+    | "recommend"
+    | "review";
 };
 
 const READ_KEY = "streamvibe:notice-read";

@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NavigationTracker from "@/components/NavigationTracker";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import ReviewApprovalWatcher from "@/components/ReviewApprovalWatcher";
 import Toaster from "@/components/Toaster";
 import "./globals.css";
 
@@ -43,6 +44,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Toaster />
+          <ReviewApprovalWatcher />
           <Header />
           <Suspense fallback={null}>
             <NavigationTracker />

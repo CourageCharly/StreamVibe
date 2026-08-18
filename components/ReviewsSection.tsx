@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import ReviewsBlock from "@/components/ReviewsBlock";
 import ReviewForm from "@/components/ReviewForm";
+import ReviewSuccessModal from "@/components/ReviewSuccessModal";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { NOTICE_EVENT } from "@/lib/notifications";
 import {
   getLocalReviews,
+  mediaReviewHref,
   mediaReviewKey,
+  mediaReviewWriteHref,
   mergeReviews,
+  takeReviewSuccess,
 } from "@/lib/reviews";
 import type { MovieReview } from "@/lib/types";
 
@@ -21,7 +27,7 @@ type Props = {
 
 /**
  * Reviews section shell — shared by movie/show detail + watch.
- * Guarantees identical mobile + web layout (title, Add Review, cards, arrows).
+ * Mobile: Add Review opens a page. Web: overlay modal (bg does not scroll).
  */
 export default function ReviewsSection({
   reviews,
@@ -29,13 +35,35 @@ export default function ReviewsSection({
   mediaType,
   title,
 }: Props) {
+  const router = useRouter();
   const { status } = useAuth();
   const loggedIn = status === "authenticated";
   const [formOpen, setFormOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const [tick, setTick] = useState(0);
   const reviewKey = mediaReviewKey(mediaType, mediaId);
+  const href = mediaReviewHref(mediaType, mediaId);
   const all = mergeReviews(reviews, getLocalReviews(reviewKey));
   void tick;
+
+  useEffect(() => {
+    if (takeReviewSuccess(href)) setSuccessOpen(true);
+  }, [href]);
+
+  useEffect(() => {
+    const refresh = () => setTick((n) => n + 1);
+    window.addEventListener(NOTICE_EVENT, refresh);
+    return () => window.removeEventListener(NOTICE_EVENT, refresh);
+  }, []);
+
+  function openReview() {
+    if (!loggedIn) return;
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      router.push(mediaReviewWriteHref(mediaType, mediaId));
+      return;
+    }
+    setFormOpen(true);
+  }
 
   return (
     <section className="min-w-0 rounded-xl border border-[#262626] bg-[#1A1A1A] p-4 sm:p-5 md:p-6">
@@ -48,9 +76,7 @@ export default function ReviewsSection({
             type="button"
             disabled={!loggedIn}
             aria-disabled={!loggedIn}
-            onClick={() => {
-              if (loggedIn) setFormOpen(true);
-            }}
+            onClick={openReview}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-1.5 text-[14px] font-semibold text-white outline-none transition hover:border-[#404040] disabled:cursor-not-allowed disabled:opacity-45 sm:px-3 sm:py-2"
           >
             <FaPlus className="h-3 w-3 text-white" />
@@ -73,6 +99,10 @@ export default function ReviewsSection({
         title={title}
         onClose={() => setFormOpen(false)}
         onCreated={() => setTick((n) => n + 1)}
+      />
+      <ReviewSuccessModal
+        open={successOpen}
+        onClose={() => setSuccessOpen(false)}
       />
     </section>
   );

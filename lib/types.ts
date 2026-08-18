@@ -106,6 +106,11 @@ export type MovieReview = {
   avatar_path?: string | null;
   /** Display-only location label */
   location?: string;
+  /** User reviews start pending until approved */
+  status?: "pending" | "approved";
+  mediaTitle?: string;
+  mediaHref?: string;
+  approveAt?: number;
 };
 
 /** YouTube video entry for watch / episode list */
