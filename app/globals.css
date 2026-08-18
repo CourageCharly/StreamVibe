@@ -118,14 +118,13 @@ section {
 }
 
 /**
- * Cinema / hero / player frame — same arrangement on every screen.
- * Media inside must cover the full box (width + height).
+ * Netflix-style theater: 16:9 of the page wrap, every screen.
  */
 .cinema-frame {
   position: relative;
   width: 100%;
   min-width: 0;
-  height: min(88vw, 460px);
+  aspect-ratio: 16 / 9;
   overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
@@ -133,14 +132,7 @@ section {
 
 @media (min-width: 640px) {
   .cinema-frame {
-    height: 480px;
     border-radius: 1rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .cinema-frame {
-    height: 560px;
   }
 }
 

@@ -756,6 +756,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 muted={muted}
                 subtitlesOn={subtitlesOn}
                 subtitleLang={subtitleLang}
+                layout={fullView ? "fullscreen" : "frame"}
                 onCaptionTracks={setCaptionTracks}
                 className="!absolute !inset-0 !h-full !w-full !min-h-full !min-w-full"
               />
