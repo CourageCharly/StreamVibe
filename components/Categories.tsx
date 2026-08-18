@@ -32,14 +32,21 @@ export default function Categories({ categoryMovies }: Props) {
       className="page-section !pt-1 sm:!pt-[clamp(2rem,4vw,4rem)]"
     >
       <SectionHeading
-        title={
+        title="Explore our wide variety of categories"
+        description={
           <>
-            {/* Mobile: exactly 2 lines · Desktop: one line */}
-            <span className="block sm:inline">Explore our wide variety of </span>
-            <span className="block sm:inline">categories</span>
+            <span className="sm:hidden">
+              Whether you&apos;re looking for a comedy to make you laugh, a
+              drama to make
+              <br />
+              you think, or a documentary to learn something new
+            </span>
+            <span className="hidden sm:inline">
+              Whether you&apos;re looking for a comedy to make you laugh, a
+              drama to make you think, or a documentary to learn something new
+            </span>
           </>
         }
-        description="Whether you're looking for a comedy to make you laugh, a drama to make you think, or a documentary to learn something new"
         action={
           <SliderControls
             variant="row"

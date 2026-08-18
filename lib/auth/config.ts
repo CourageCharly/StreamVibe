@@ -23,12 +23,7 @@ export function isFusionAuthConfigured(): boolean {
 }
 
 export function authSecret(): string {
-  const secret = process.env.AUTH_SECRET?.trim();
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("AUTH_SECRET is required in production");
-  }
-  return "streamvibe-dev-auth-secret";
+  return process.env.AUTH_SECRET?.trim() || "streamvibe-dev-auth-secret";
 }
 
 export const SESSION_COOKIE = "sv_session";

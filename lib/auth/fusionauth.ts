@@ -25,7 +25,13 @@ async function faFetch<T>(
   const tenantId = fusionAuthTenantId();
   if (tenantId) headers.set("X-FusionAuth-TenantId", tenantId);
 
-  const res = await fetch(url, { ...init, headers, cache: "no-store" });
+  let res: Response;
+  try {
+    res = await fetch(url, { ...init, headers, cache: "no-store" });
+  } catch (error) {
+    console.error("[fusionauth] network", error);
+    return { ok: false, status: 503, data: null, raw: { message: "network" } };
+  }
   let raw: unknown = null;
   const text = await res.text();
   if (text) {

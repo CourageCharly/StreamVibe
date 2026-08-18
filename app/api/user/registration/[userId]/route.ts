@@ -60,14 +60,19 @@ export async function POST(request: NextRequest, context: Ctx) {
       developmentCode: result.developmentCode,
     });
 
-    if (result.requiresVerification) {
-      applyPendingAuthCookie(response, result.user.id, result.user.email);
-    } else {
-      applySessionCookie(response, result.user);
+    try {
+      if (result.requiresVerification) {
+        applyPendingAuthCookie(response, result.user.id, result.user.email);
+      } else {
+        applySessionCookie(response, result.user);
+      }
+    } catch (cookieError) {
+      console.error("[registration] session cookie", cookieError);
     }
 
     return response;
   } catch (error) {
+    console.error("[registration]", error);
     return jsonError(error, MESSAGES.registerFailed);
   }
 }

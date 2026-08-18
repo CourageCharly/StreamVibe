@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type Props = {
   title: ReactNode;
-  description?: string;
+  description?: ReactNode;
   action?: ReactNode;
   className?: string;
   id?: string;
@@ -45,7 +45,7 @@ export default function SectionHeading({
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 max-w-3xl text-pretty text-[14px] font-normal leading-relaxed text-subtext sm:text-[16px]">
+          <p className="mt-2 max-w-3xl text-[14px] font-normal leading-relaxed text-subtext sm:text-[16px]">
             {description}
           </p>
         ) : null}
