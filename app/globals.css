@@ -144,10 +144,12 @@ section {
   }
 }
 
-video {
+.cinema-frame video,
+.cinema-frame iframe {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
 }
 
 .cinema-frame img {
@@ -366,10 +368,9 @@ a:disabled,
   object-position: center;
 }
 
-.cinema-frame iframe,
-[class*="watch"] iframe,
-iframe[src*="youtube"] {
+.cinema-frame iframe {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
 }

@@ -446,7 +446,7 @@ export default function WatchPlayer({
           "absolute inset-0 h-full w-full overflow-hidden",
           "[&>iframe]:!absolute [&>iframe]:!inset-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
-          "[&>iframe]:!object-contain [&>iframe]:!object-center",
+          "[&>iframe]:!object-cover [&>iframe]:!object-center",
           "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
           "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
           "[&>iframe]:!pointer-events-none",
