@@ -89,7 +89,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
 
   const onToggleList = () => {
     if (movieId == null) return;
-    setMyList(toggleMyList(movieId));
+    setMyList(toggleMyList(movieId, title));
   };
 
   const onToggleLike = () => {

@@ -14,7 +14,9 @@ export type MovieNotice = {
     | "recommend";
 };
 
-const KEY = "streamvibe:notice-read";
+const READ_KEY = "streamvibe:notice-read";
+const USER_KEY = "streamvibe:user-notices";
+export const NOTICE_EVENT = "streamvibe:notices";
 
 export const MOVIE_NOTICES: MovieNotice[] = [
   {
@@ -73,34 +75,85 @@ export const MOVIE_NOTICES: MovieNotice[] = [
   },
 ];
 
+function emitNotices() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(NOTICE_EVENT));
+}
+
+function readUserNotices(): MovieNotice[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as MovieNotice[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function getReadNoticeIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(READ_KEY);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
   }
 }
 
-export function markNoticeRead(id: string) {
-  const next = Array.from(new Set([...getReadNoticeIds(), id]));
+export function getAllNotices(): MovieNotice[] {
+  const read = new Set(getReadNoticeIds());
+  return [...readUserNotices(), ...MOVIE_NOTICES].map((n) => ({
+    ...n,
+    unread: !read.has(n.id) && n.unread,
+  }));
+}
+
+export function addMovieNotice(input: {
+  title: string;
+  body: string;
+  href: string;
+  kind?: MovieNotice["kind"];
+}) {
+  if (typeof window === "undefined") return;
+  const notice: MovieNotice = {
+    id: `u-${Date.now()}`,
+    title: input.title,
+    body: input.body,
+    href: input.href,
+    kind: input.kind ?? "watchlist",
+    unread: true,
+    at: "Just now",
+  };
   try {
-    localStorage.setItem(KEY, JSON.stringify(next));
+    const next = [notice, ...readUserNotices()].slice(0, 40);
+    localStorage.setItem(USER_KEY, JSON.stringify(next));
   } catch {
     /* quota */
   }
+  emitNotices();
+}
+
+export function markNoticeRead(id: string) {
+  const next = Array.from(new Set([...getReadNoticeIds(), id]));
+  try {
+    localStorage.setItem(READ_KEY, JSON.stringify(next));
+  } catch {
+    /* quota */
+  }
+  emitNotices();
 }
 
 export function markAllNoticesRead(ids: string[]) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(Array.from(new Set(ids))));
+    localStorage.setItem(READ_KEY, JSON.stringify(Array.from(new Set(ids))));
   } catch {
     /* quota */
   }
+  emitNotices();
 }
 
 export function getUnreadNoticeCount(): number {
-  const read = getReadNoticeIds();
-  return MOVIE_NOTICES.filter((n) => n.unread && !read.includes(n.id)).length;
+  return getAllNotices().filter((n) => n.unread).length;
 }

@@ -417,7 +417,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                 aria-label={inList ? "Remove from list" : "Add to list"}
                 aria-pressed={inList}
                 onClick={() => {
-                  const next = toggleMyList(movie.id);
+                  const next = toggleMyList(movie.id, movie.title);
                   setMyList(next);
                   toast.success(
                     next.includes(movie.id)

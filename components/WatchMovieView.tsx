@@ -910,7 +910,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     className={actionBtn}
                     aria-label={inList ? "Remove from list" : "Add to list"}
                     aria-pressed={inList}
-                    onClick={() => setMyList(toggleMyList(movie.id))}
+                    onClick={() => setMyList(toggleMyList(movie.id, movie.title))}
                   >
                     <IconMask src="/Icons/Plus.svg" active={inList} />
                   </button>

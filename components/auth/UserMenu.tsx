@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { AuthUser } from "@/lib/auth/types";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { userInitials } from "@/lib/initials";
 
 const ITEMS = [
   { href: "/profile", label: "Profile" },
@@ -22,9 +23,7 @@ export default function UserMenu({ user }: { user: AuthUser }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
-  const initials =
-    `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() ||
-    user.email.slice(0, 1).toUpperCase();
+  const initials = userInitials(user.firstName, user.lastName, user.email);
 
   useEffect(() => {
     if (!open) return;

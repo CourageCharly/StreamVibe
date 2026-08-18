@@ -76,12 +76,24 @@ export function addWatchHistory(item: Omit<HistoryItem, "at">) {
 }
 
 /** Returns new list after toggle */
-export function toggleMyList(id: number): number[] {
+export function toggleMyList(id: number, title?: string): number[] {
   const current = getMyList();
-  const next = current.includes(id)
-    ? current.filter((x) => x !== id)
-    : [...current, id];
+  const adding = !current.includes(id);
+  const next = adding
+    ? [...current, id]
+    : current.filter((x) => x !== id);
   writeIds(MY_LIST_KEY, next);
+  if (adding && typeof window !== "undefined") {
+    const label = title?.trim() || "A title";
+    void import("@/lib/notifications").then(({ addMovieNotice }) => {
+      addMovieNotice({
+        title: "Added to your list",
+        body: `${label} was saved to My List.`,
+        href: "/list",
+        kind: "watchlist",
+      });
+    });
+  }
   return next;
 }
 

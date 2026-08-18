@@ -9,7 +9,7 @@ import { NAV_LINKS } from "@/lib/constants";
 import { useAuth } from "@/components/auth/AuthProvider";
 import UserMenu from "@/components/auth/UserMenu";
 import { rememberReturnTo } from "@/lib/auth/return-to";
-import { getUnreadNoticeCount } from "@/lib/notifications";
+import { getUnreadNoticeCount, NOTICE_EVENT } from "@/lib/notifications";
 import type { Movie } from "@/lib/types";
 
 function HeaderInner() {
@@ -27,7 +27,14 @@ function HeaderInner() {
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
-    setUnread(getUnreadNoticeCount());
+    const sync = () => setUnread(getUnreadNoticeCount());
+    sync();
+    window.addEventListener(NOTICE_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(NOTICE_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
   }, [pathname]);
 
   const isActive = (href: string) => {

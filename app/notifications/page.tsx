@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireAuth from "@/components/auth/RequireAuth";
 import {
-  getReadNoticeIds,
+  getAllNotices,
   markAllNoticesRead,
   markNoticeRead,
-  MOVIE_NOTICES,
+  type MovieNotice,
 } from "@/lib/notifications";
 
 export default function NotificationsPage() {
@@ -19,20 +19,11 @@ export default function NotificationsPage() {
 }
 
 function NotificationsInner() {
-  const [read, setRead] = useState<string[]>([]);
+  const [items, setItems] = useState<MovieNotice[]>([]);
 
   useEffect(() => {
-    setRead(getReadNoticeIds());
+    setItems(getAllNotices());
   }, []);
-
-  const items = useMemo(
-    () =>
-      MOVIE_NOTICES.map((n) => ({
-        ...n,
-        unread: n.unread && !read.includes(n.id),
-      })),
-    [read],
-  );
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
@@ -50,9 +41,8 @@ function NotificationsInner() {
               type="button"
               className="shrink-0 text-[13px] font-semibold text-white hover:text-cta"
               onClick={() => {
-                const ids = MOVIE_NOTICES.map((n) => n.id);
-                markAllNoticesRead(ids);
-                setRead(ids);
+                markAllNoticesRead(items.map((n) => n.id));
+                setItems(getAllNotices());
               }}
             >
               Mark all read
@@ -69,9 +59,7 @@ function NotificationsInner() {
                   href={item.href}
                   onClick={() => {
                     markNoticeRead(item.id);
-                    setRead((prev) =>
-                      prev.includes(item.id) ? prev : [...prev, item.id],
-                    );
+                    setItems(getAllNotices());
                   }}
                   className="flex gap-3 px-4 py-4 sm:px-5"
                 >
