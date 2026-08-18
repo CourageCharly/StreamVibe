@@ -12,7 +12,7 @@ type Props = {
 
 /**
  * Shared section headers — 28px bold (matches categories).
- * Subtext: 14px regular #999999.
+ * Subtext: 16px regular #999999.
  */
 export default function SectionHeading({
   title,
@@ -42,7 +42,7 @@ export default function SectionHeading({
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 max-w-3xl text-pretty text-[14px] font-normal leading-relaxed text-subtext">
+          <p className="mt-2 max-w-3xl text-pretty text-[16px] font-normal leading-relaxed text-subtext">
             {description}
           </p>
         ) : null}

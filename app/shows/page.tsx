@@ -50,7 +50,7 @@ export default async function ShowsPage({ searchParams }: Props) {
           <h1 className="text-[28px] font-bold leading-tight text-white">
             {label}
           </h1>
-          <p className="mt-2 text-[14px] text-[#999999]">
+          <p className="mt-2 text-[16px] text-[#999999]">
             {hasCategory
               ? "All shows in this genre. Keep scrolling to load more."
               : "Browse shows. Keep scrolling to load more."}

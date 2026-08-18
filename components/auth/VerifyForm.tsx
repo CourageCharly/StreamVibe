@@ -102,7 +102,7 @@ export default function VerifyForm({
 
   return (
     <form onSubmit={onSubmit} className={cn("space-y-4", className)} noValidate>
-      <p className="text-[14px] leading-relaxed text-[#999999]">
+      <p className="text-[16px] leading-relaxed text-[#999999]">
         We sent a verification code to{" "}
         <span className="font-medium text-white">{email}</span>. Enter it below
         to finish creating your account.

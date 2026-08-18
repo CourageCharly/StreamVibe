@@ -220,7 +220,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
           {/* Description: web only — hidden on mobile */}
           <p
             key={`overview-${index}`}
-            className="mt-2.5 hidden max-w-2xl text-[14px] leading-relaxed text-[#999999] transition-opacity ease-in-out sm:mt-3 sm:line-clamp-2 sm:block"
+            className="mt-2.5 hidden max-w-2xl text-[16px] leading-relaxed text-[#999999] transition-opacity ease-in-out sm:mt-3 sm:line-clamp-2 sm:block"
             style={{ transitionDuration: `${FADE_MS}ms` }}
           >
             {overview}

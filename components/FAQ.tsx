@@ -62,7 +62,7 @@ export default function FAQ({ askHref = "/support" }: Props) {
             </div>
             <div className={`faq-answer ${open ? "open" : ""}`}>
               <div>
-                <p className="pt-3 text-[14px] font-normal leading-relaxed text-subtext">
+                <p className="pt-3 text-[16px] font-normal leading-relaxed text-subtext">
                   {item.answer}
                 </p>
               </div>

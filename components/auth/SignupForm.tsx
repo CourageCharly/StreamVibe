@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
+import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
 import { cn } from "@/lib";
 
@@ -197,19 +198,33 @@ export default function SignupForm({ onSuccess, className }: Props) {
       {rows.slice(2).map((row) => (
         <div key={row.key}>
           <label className="mb-2 block text-[13px] font-medium">{row.label}</label>
-          <input
-            type={row.type}
-            name={row.key}
-            autoComplete={row.autoComplete}
-            value={fields[row.key]}
-            onChange={(e) => setField(row.key, e.target.value)}
-            onBlur={() => {
-              setTouched((t) => ({ ...t, [row.key]: true }));
-              setErrors(validate());
-            }}
-            className={fieldChrome}
-            placeholder={row.placeholder}
-          />
+          {row.type === "password" ? (
+            <PasswordField
+              name={row.key}
+              autoComplete={row.autoComplete}
+              value={fields[row.key]}
+              onChange={(e) => setField(row.key, e.target.value)}
+              onBlur={() => {
+                setTouched((t) => ({ ...t, [row.key]: true }));
+                setErrors(validate());
+              }}
+              placeholder={row.placeholder}
+            />
+          ) : (
+            <input
+              type={row.type}
+              name={row.key}
+              autoComplete={row.autoComplete}
+              value={fields[row.key]}
+              onChange={(e) => setField(row.key, e.target.value)}
+              onBlur={() => {
+                setTouched((t) => ({ ...t, [row.key]: true }));
+                setErrors(validate());
+              }}
+              className={fieldChrome}
+              placeholder={row.placeholder}
+            />
+          )}
           {touched[row.key] && errors[row.key] ? (
             <p className="mt-1.5 text-[12px] text-cta">{errors[row.key]}</p>
           ) : null}

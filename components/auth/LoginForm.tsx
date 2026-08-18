@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
+import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
 import { cn } from "@/lib";
 
@@ -109,9 +110,8 @@ export default function LoginForm({
         >
           Password
         </label>
-        <input
+        <PasswordField
           id="login-password"
-          type="password"
           name="password"
           autoComplete="current-password"
           value={password}
@@ -123,7 +123,6 @@ export default function LoginForm({
             setTouched((t) => ({ ...t, password: true }));
             setErrors(validate());
           }}
-          className={fieldChrome}
           placeholder="Your password"
         />
         {touched.password && errors.password ? (

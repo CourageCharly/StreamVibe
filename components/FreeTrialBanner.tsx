@@ -114,7 +114,7 @@ export default function FreeTrialBanner({
                 Start your free trial today!
               </span>
             </h2>
-            <p className="mx-auto mt-3 max-w-[32rem] text-center text-[14px] font-normal leading-[1.5] text-[#999999] sm:mx-0 sm:max-w-full sm:text-left sm:text-pretty">
+            <p className="mx-auto mt-3 max-w-[32rem] text-center text-[16px] font-normal leading-[1.5] text-[#999999] sm:mx-0 sm:max-w-full sm:text-left sm:text-pretty">
               {/* Mobile: fixed 3-line break · Web: single flowing paragraph */}
               <span className="sm:hidden">
                 This is a clear and concise call to action that

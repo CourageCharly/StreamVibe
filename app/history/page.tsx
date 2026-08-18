@@ -26,7 +26,7 @@ function HistoryInner() {
       <PageWrapper className="py-8 sm:py-12">
         <h1 className="text-[28px] font-semibold text-white">Watch History</h1>
         {items.length === 0 ? (
-          <p className="mt-4 max-w-md text-[14px] text-[#999999]">
+          <p className="mt-4 max-w-md text-[16px] text-[#999999]">
             Movies you play will show up here.
           </p>
         ) : (

@@ -194,7 +194,7 @@ export default function Hero({ posters, trailers = [] }: Props) {
         </h1>
 
         {/* Subtext — same 14px / mt-2 as SectionHeading description */}
-        <p className="mx-auto mt-2 max-w-3xl text-pretty text-[14px] font-normal leading-relaxed text-subtext sm:line-clamp-2">
+        <p className="mx-auto mt-2 max-w-3xl text-pretty text-[16px] font-normal leading-relaxed text-subtext sm:line-clamp-2">
           <span className="sm:hidden">
             StreamVibe is the best streaming experience for watching your
             favorite movies and shows on demand, anytime, anywhere.

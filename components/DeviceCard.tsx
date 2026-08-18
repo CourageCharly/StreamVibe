@@ -37,7 +37,7 @@ export default function DeviceCard({
             {title}
           </h3>
         </div>
-        <p className="text-[14px] font-normal leading-relaxed text-subtext">
+        <p className="text-[16px] font-normal leading-relaxed text-subtext">
           {description}
         </p>
       </div>

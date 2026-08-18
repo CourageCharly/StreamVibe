@@ -385,7 +385,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
               {movie.title}
             </h1>
             {/* Description: web only — hidden on mobile */}
-            <p className="subtext-wide mt-2.5 hidden max-w-2xl text-[14px] leading-relaxed text-[#999999] sm:mt-3 sm:line-clamp-2 sm:block">
+            <p className="subtext-wide mt-2.5 hidden max-w-2xl text-[16px] leading-relaxed text-[#999999] sm:mt-3 sm:line-clamp-2 sm:block">
               {movie.overview || "No description available."}
             </p>
             <div className="mt-6 flex w-full max-w-2xl flex-wrap items-center justify-center gap-2 sm:mt-6 sm:w-auto sm:max-w-none sm:gap-3">

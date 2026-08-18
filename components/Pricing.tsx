@@ -104,7 +104,7 @@ export default function Pricing({
                 {plan.name}
               </h3>
               {/* Mobile: tighter stack subtext → price → CTAs; sm+ keeps original rhythm */}
-              <p className="mt-3 min-h-0 flex-1 text-[14px] font-normal leading-relaxed text-[#999999] sm:min-h-[4.5rem]">
+              <p className="mt-3 min-h-0 flex-1 text-[16px] font-normal leading-relaxed text-[#999999] sm:min-h-[4.5rem]">
                 {plan.description}
               </p>
               <p className="mt-3 flex min-h-0 flex-wrap items-baseline gap-x-1 sm:mt-6 sm:min-h-[2.75rem]">

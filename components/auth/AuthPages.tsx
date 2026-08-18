@@ -143,7 +143,7 @@ function AuthShell({
       <PageWrapper className="flex min-h-[70vh] items-center py-10 sm:py-14">
         <div className="mx-auto w-full max-w-md rounded-2xl border border-[#262626] bg-[#1A1A1A] p-5 sm:p-7">
           <h1 className="text-[28px] font-semibold text-white">{title}</h1>
-          <p className="mt-2 min-w-0 text-[14px] text-[#999999] sm:min-w-[min(100%,400px)]">
+          <p className="mt-2 min-w-0 text-[16px] text-[#999999] sm:min-w-[min(100%,400px)]">
             {subtitle}
           </p>
           <div className="mt-6">{children}</div>

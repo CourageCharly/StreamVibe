@@ -54,7 +54,7 @@ function ListInner() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="mt-4 max-w-md text-[14px] text-[#999999]">
+          <p className="mt-4 max-w-md text-[16px] text-[#999999]">
             Titles you add to your list will appear here.{" "}
             <Link href="/movies" className="text-white hover:text-cta">
               Browse movies

@@ -224,7 +224,7 @@ export default function SupportContact({ posters = [] }: Props) {
         <h1 className="max-w-md text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-tight text-white">
           Welcome to our support page!
         </h1>
-        <p className="mt-3 max-w-md text-[14px] font-normal leading-relaxed text-[#999999] sm:mt-4">
+        <p className="mt-3 max-w-md text-[16px] font-normal leading-relaxed text-[#999999] sm:mt-4">
           We&apos;re here to help you with any problems you may be having with
           our product.
         </p>
