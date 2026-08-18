@@ -37,9 +37,9 @@ export default function Categories({ categoryMovies }: Props) {
           <>
             <span className="sm:hidden">
               Whether you&apos;re looking for a comedy to make you laugh, a
-              drama to make
+              drama to make you think, or a documentary
               <br />
-              you think, or a documentary to learn something new
+              to learn something new
             </span>
             <span className="hidden sm:inline">
               Whether you&apos;re looking for a comedy to make you laugh, a
