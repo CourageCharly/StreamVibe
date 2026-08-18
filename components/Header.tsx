@@ -238,9 +238,9 @@ function HeaderInner() {
             {AuthActions}
           </div>
 
-          {/* Mobile: logo + search only, plus menu */}
+          {/* Mobile: search + notification + menu */}
           <div className="flex items-center gap-3 lg:hidden">
-            {SearchButton}
+            {SearchBell}
             <button
               type="button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center"
@@ -370,82 +370,7 @@ function HeaderInner() {
           </div>
 
           <div className="page-container flex flex-1 flex-col pb-10">
-            <form
-              onSubmit={onSearch}
-              className="flex items-center gap-3 rounded-xl border border-[#262626] bg-[#0F0F0F] px-3 py-3"
-              autoComplete="off"
-            >
-              <Image
-                src="/Icons/Search Icon.svg"
-                alt=""
-                width={20}
-                height={20}
-                className="h-5 w-5 shrink-0"
-                aria-hidden
-              />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search movies…"
-                className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-[#999999]"
-              />
-            </form>
-
-            {status === "anonymous" || status === "loading" ? (
-              <div className="mt-6 flex flex-col gap-3">
-                <Link
-                  href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
-                  onClick={() => {
-                    rememberReturnTo(returnTo);
-                    setOpen(false);
-                  }}
-                  className="flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
-                >
-                  Login
-                </Link>
-                <Link
-                  href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
-                  onClick={() => {
-                    rememberReturnTo(returnTo);
-                    setOpen(false);
-                  }}
-                  className="flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[14px] font-semibold text-white"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            ) : user ? (
-              <div className="mt-6 flex flex-col">
-                {[
-                  { href: "/profile", label: "Profile" },
-                  { href: "/list", label: "My List / Favorites" },
-                  { href: "/history", label: "Watch History" },
-                  { href: "/settings", label: "Settings" },
-                ].map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="border-b border-[#262626] py-4 text-[18px] font-medium text-white"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <button
-                  type="button"
-                  className="border-b border-[#262626] py-4 text-left text-[18px] font-medium text-white"
-                  onClick={() => {
-                    void logout();
-                    setOpen(false);
-                  }}
-                >
-                  Log Out
-                </button>
-              </div>
-            ) : null}
-
-            <nav className="mt-8 flex flex-col" aria-label="Mobile">
+            <nav className="flex flex-col" aria-label="Mobile">
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
                 return (
@@ -461,6 +386,62 @@ function HeaderInner() {
                   </Link>
                 );
               })}
+              {status === "authenticated" && user ? (
+                <>
+                  {[
+                    { href: "/profile", label: "Profile" },
+                    { href: "/list", label: "My List / Favorites" },
+                    { href: "/history", label: "Watch History" },
+                    { href: "/settings", label: "Settings" },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="border-b border-[#262626] py-4 text-[18px] font-medium text-white"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    className="border-b border-[#262626] py-4 text-left text-[18px] font-medium text-white"
+                    onClick={() => {
+                      void logout();
+                      setOpen(false);
+                    }}
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+                    onClick={() => {
+                      rememberReturnTo(returnTo);
+                      setOpen(false);
+                    }}
+                    className={`border-b border-[#262626] py-4 text-[18px] font-medium ${
+                      pathname === "/login" ? "text-white" : "text-[#999999]"
+                    }`}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
+                    onClick={() => {
+                      rememberReturnTo(returnTo);
+                      setOpen(false);
+                    }}
+                    className={`border-b border-[#262626] py-4 text-[18px] font-medium ${
+                      pathname === "/signup" ? "text-white" : "text-[#999999]"
+                    }`}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         </div>

@@ -29,6 +29,8 @@ import WatchPlayer, { type CaptionTrack } from "@/components/WatchPlayer";
 import AuthPrompt from "@/components/auth/AuthPrompt";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
+import { useIsMobile } from "@/lib/use-mobile";
+import { useRouter } from "next/navigation";
 import {
   addWatchHistory,
   getLikes,
@@ -286,6 +288,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   const { status } = useAuth();
   const canPlay = status === "authenticated";
   const [authOpen, setAuthOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const router = useRouter();
   // Only start playback after authentication is confirmed
   const [playing, setPlaying] = useState(false);
   const [active, setActive] = useState<Playable | null>(defaultPlayable);
@@ -371,8 +375,14 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     const timer = window.setTimeout(() => {
       if (!canPlay) {
         setPlaying(false);
-        setAuthOpen(true);
         rememberReturnTo(watchPath);
+        if (isMobile) {
+          router.replace(
+            `/auth?returnTo=${encodeURIComponent(watchPath)}`,
+          );
+          return;
+        }
+        setAuthOpen(true);
         return;
       }
       setActive({ id: "main", title: movie.title, videoKey: playKey });
@@ -384,7 +394,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       });
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, status]);
+  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, status, isMobile, router]);
 
   useEffect(() => {
     setSubtitleLang(defaultLang);
@@ -614,9 +624,12 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   const playNow = useCallback(() => {
     if (!playKey) return;
     if (!canPlay) {
-      rememberReturnTo(
-        `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`,
-      );
+      const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
+      rememberReturnTo(watchPath);
+      if (isMobile) {
+        router.push(`/auth?returnTo=${encodeURIComponent(watchPath)}`);
+        return;
+      }
       setAuthOpen(true);
       return;
     }
@@ -629,11 +642,17 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       title: movie.title,
       path: `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`,
     });
-  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay]);
+  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, isMobile, router]);
 
   const playEpisode = useCallback(
     (ep: ShowEpisode, season: ShowSeason) => {
       if (!canPlay) {
+        const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
+        rememberReturnTo(watchPath);
+        if (isMobile) {
+          router.push(`/auth?returnTo=${encodeURIComponent(watchPath)}`);
+          return;
+        }
         setAuthOpen(true);
         return;
       }
@@ -656,7 +675,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
-    [playKey, movie.videos, canPlay],
+    [playKey, movie.videos, canPlay, isMobile, router, movie.mediaType, movie.id],
   );
 
   return (
@@ -1056,7 +1075,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
-        open={authOpen && status === "anonymous"}
+        open={!isMobile && authOpen && status === "anonymous"}
         onClose={() => setAuthOpen(false)}
         onAuthenticated={() => {
           setAuthOpen(false);

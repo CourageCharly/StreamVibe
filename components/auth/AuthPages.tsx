@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,6 +14,41 @@ import {
   readReturnTo,
   sanitizeReturnTo,
 } from "@/lib/auth/return-to";
+
+export function AuthChoicePage() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const { status } = useAuth();
+  const returnTo = sanitizeReturnTo(params.get("returnTo") || readReturnTo());
+
+  if (status === "authenticated") {
+    clearReturnTo();
+    router.replace(returnTo);
+    return null;
+  }
+
+  return (
+    <AuthShell
+      title="Create an account to continue watching"
+      subtitle="An account is required to play this title. You can still browse movies and view details without signing in."
+    >
+      <div className="flex flex-col gap-3">
+        <Link
+          href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
+          className="inline-flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[14px] font-semibold text-white"
+        >
+          Sign Up
+        </Link>
+        <Link
+          href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+          className="inline-flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
+        >
+          Log In
+        </Link>
+      </div>
+    </AuthShell>
+  );
+}
 
 export function LoginPage() {
   const router = useRouter();

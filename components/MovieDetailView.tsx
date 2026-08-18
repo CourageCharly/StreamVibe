@@ -16,6 +16,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import AuthPrompt from "@/components/auth/AuthPrompt";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
+import { useIsMobile } from "@/lib/use-mobile";
 import type { Movie } from "@/lib/types";
 import {
   getLikes,
@@ -258,6 +259,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
   const [authOpen, setAuthOpen] = useState(false);
   const router = useRouter();
   const { status } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setHydrated(true);
@@ -397,6 +399,12 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                     return;
                   }
                   rememberReturnTo(watchHref);
+                  if (isMobile) {
+                    router.push(
+                      `/auth?returnTo=${encodeURIComponent(watchHref)}`,
+                    );
+                    return;
+                  }
                   setAuthOpen(true);
                 }}
               >
@@ -571,7 +579,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
-        open={authOpen}
+        open={!isMobile && authOpen}
         onClose={() => setAuthOpen(false)}
         onAuthenticated={() => {
           setAuthOpen(false);
