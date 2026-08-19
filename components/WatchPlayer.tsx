@@ -144,7 +144,7 @@ export default function WatchPlayer({
     setMounted(true);
   }, []);
 
-  // Fill the container's actual width and height (object-fit: cover).
+  // Fit the full picture in the container — nothing cropped off-screen.
   useEffect(() => {
     if (!mounted) return;
     const el = coverBoxRef.current;
@@ -155,12 +155,13 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const videoRatio = 16 / 9;
-      const boxRatio = width / height;
-      if (boxRatio > videoRatio) {
-        setCoverSize({ w: width, h: width / videoRatio });
-      } else {
-        setCoverSize({ w: height * videoRatio, h: height });
+      let w = width;
+      let h = width / videoRatio;
+      if (h > height) {
+        h = height;
+        w = height * videoRatio;
       }
+      setCoverSize({ w, h });
     };
 
     apply();
@@ -488,7 +489,7 @@ export default function WatchPlayer({
           "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden",
           "[&>iframe]:!absolute [&>iframe]:!inset-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
-          "[&>iframe]:!object-cover [&>iframe]:!object-center",
+          "[&>iframe]:!object-contain [&>iframe]:!object-center",
           "[&>iframe]:!max-h-none [&>iframe]:!max-w-none",
           "[&>iframe]:!min-h-full [&>iframe]:!min-w-full [&>iframe]:!border-0",
           "[&>iframe]:!pointer-events-none",
@@ -497,8 +498,8 @@ export default function WatchPlayer({
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
             : {
-                width: "max(100%, 177.78%)",
-                height: "max(100%, 100%)",
+                width: "min(100%, 177.78%)",
+                height: "min(100%, 100%)",
               }
         }
       >
@@ -578,22 +579,14 @@ export default function WatchPlayer({
           </button>
         </div>
 
-        <div
-          className={[
-            "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-3 sm:px-[8%]",
-            showControls
-              ? "pt-10 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-16 sm:pb-[max(5.25rem,calc(env(safe-area-inset-bottom)+4.25rem))]"
-              : "pt-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pt-10 sm:pb-[max(2.75rem,calc(env(safe-area-inset-bottom)+1.75rem))]",
-          ].join(" ")}
-        >
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent px-3 pt-12 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-16 sm:pb-6">
           <div
-            className="pointer-events-auto w-full sm:mx-auto sm:max-w-5xl"
+            className="pointer-events-auto w-full"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-            {/* Centered caption well (Netflix / IMDb) */}
             <div
-              className="mx-auto mb-1.5 min-h-[1.75rem] w-[min(86%,34rem)] text-center sm:mb-3 sm:min-h-[3rem] sm:w-[min(80%,34rem)]"
+              className="mx-auto mb-2 min-h-[2.25rem] w-[min(80%,36rem)] text-center sm:mb-3 sm:min-h-[2.75rem]"
               aria-hidden
             />
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
