@@ -118,13 +118,13 @@ section {
 }
 
 /**
- * Netflix-style theater: 16:9 of the page wrap, every screen.
+ * Cinema / hero / player frame — original heights, not reduced on mobile.
  */
 .cinema-frame {
   position: relative;
   width: 100%;
   min-width: 0;
-  aspect-ratio: 16 / 9;
+  height: min(88vw, 460px);
   overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
@@ -132,7 +132,14 @@ section {
 
 @media (min-width: 640px) {
   .cinema-frame {
+    height: 480px;
     border-radius: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cinema-frame {
+    height: 560px;
   }
 }
 
