@@ -766,11 +766,11 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 className={[
                   "pointer-events-none absolute inset-x-0 top-0 z-30 px-2 pt-2 sm:px-5 sm:pt-4",
                   fullView
-                    ? "pt-[max(0.5rem,env(safe-area-inset-top))] px-[max(0.5rem,env(safe-area-inset-right))]"
+                    ? "pt-[max(0.5rem,env(safe-area-inset-top))] px-[max(0.5rem,env(safe-area-inset-right))] sm:pt-[max(0.625rem,env(safe-area-inset-top))] sm:px-[max(0.625rem,env(safe-area-inset-right))]"
                     : "",
                 ].join(" ")}
               >
-                <div className="pointer-events-auto flex flex-nowrap items-center justify-end gap-1 sm:gap-2">
+                <div className="pointer-events-auto flex flex-nowrap items-center justify-end gap-1 sm:flex-wrap sm:gap-2">
                   <button
                     type="button"
                     className={[
