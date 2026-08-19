@@ -895,9 +895,9 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   alt={movie.title}
                   fill
                   priority
-                  className="object-cover object-center"
+                  className="object-contain object-center"
                   sizes="100vw"
-                  style={{ objectFit: "cover", objectPosition: "center" }}
+                  style={{ objectFit: "contain", objectPosition: "center" }}
                 />
               ) : (
                 <div className="absolute inset-0 h-full w-full bg-black" />

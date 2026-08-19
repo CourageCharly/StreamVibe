@@ -144,17 +144,12 @@ section {
 }
 
 video,
-.cinema-frame iframe {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
-
+.cinema-frame video,
+.cinema-frame iframe,
 .cinema-frame img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
