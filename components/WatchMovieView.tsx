@@ -764,13 +764,13 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
               {/* Always-visible chrome — safe-area aware in mobile full view */}
               <div
                 className={[
-                  "pointer-events-none absolute inset-x-0 top-0 z-30 px-2.5 pt-2.5 sm:px-5 sm:pt-4",
+                  "pointer-events-none absolute inset-x-0 top-0 z-30 px-2 pt-2 sm:px-5 sm:pt-4",
                   fullView
-                    ? "pt-[max(0.625rem,env(safe-area-inset-top))] px-[max(0.625rem,env(safe-area-inset-right))]"
+                    ? "pt-[max(0.5rem,env(safe-area-inset-top))] px-[max(0.5rem,env(safe-area-inset-right))]"
                     : "",
                 ].join(" ")}
               >
-                <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                <div className="pointer-events-auto flex flex-nowrap items-center justify-end gap-1 sm:gap-2">
                   <button
                     type="button"
                     className={[
@@ -791,10 +791,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     Language menu — same on mobile + web:
                     short frame, overflow scroll (native thin scrollbar), no progress bar.
                   */}
-                  <div ref={langMenuRef} className="relative max-w-[min(100%,160px)] sm:max-w-[200px]">
+                  <div ref={langMenuRef} className="relative min-w-0 max-w-[7.25rem] sm:max-w-[200px]">
                     <button
                       type="button"
-                      className="flex h-10 w-full min-w-[7.5rem] items-center gap-1 rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
+                      className="flex h-10 w-full min-w-0 items-center gap-1 rounded-lg border border-[#262626] bg-[#0F0F0F] px-1.5 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
                       aria-label="Choose language and subtitle track"
                       aria-haspopup="listbox"
                       aria-expanded={langMenuOpen}

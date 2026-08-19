@@ -528,7 +528,7 @@ export default function WatchPlayer({
             : "pointer-events-none opacity-0",
         ].join(" ")}
       >
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-5 sm:gap-8">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-4 sm:gap-8">
           <button
             type="button"
             className={`pointer-events-auto ${transportBtn}`}
@@ -580,20 +580,20 @@ export default function WatchPlayer({
 
         <div
           className={[
-            "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-[6%] sm:px-[8%]",
+            "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-3 sm:px-5 lg:px-6",
             showControls
-              ? "pt-16 pb-[max(5.25rem,calc(env(safe-area-inset-bottom)+4.25rem))]"
-              : "pt-10 pb-[max(2.75rem,calc(env(safe-area-inset-bottom)+1.75rem))]",
+              ? "pt-10 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-16 sm:pb-[max(5.25rem,calc(env(safe-area-inset-bottom)+4.25rem))]"
+              : "pt-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pt-10 sm:pb-[max(2.75rem,calc(env(safe-area-inset-bottom)+1.75rem))]",
           ].join(" ")}
         >
           <div
-            className="pointer-events-auto mx-auto w-full max-w-5xl"
+            className="pointer-events-auto w-full sm:mx-auto sm:max-w-5xl"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
             {/* Centered caption well (Netflix / IMDb) */}
             <div
-              className="mx-auto mb-2 min-h-[2.5rem] w-[min(80%,34rem)] text-center sm:mb-3 sm:min-h-[3rem]"
+              className="mx-auto mb-1.5 min-h-[1.75rem] w-[min(86%,34rem)] text-center sm:mb-3 sm:min-h-[3rem]"
               aria-hidden
             />
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
