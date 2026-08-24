@@ -164,7 +164,7 @@ const arrowBtnClass =
   "flex h-9 w-9 items-center justify-center rounded-full border border-[#262626] bg-[#141414] text-[#999999] transition hover:text-white sm:h-10 sm:w-10";
 
 const pillClass =
-  "rounded-md border border-[#262626] bg-[#141414] px-3 py-1.5 text-xs font-medium text-white";
+  "rounded-md border border-[#262626] bg-[#141414] px-3 py-1.5 text-xs font-medium text-[#999999]";
 const innerCardClass =
   "flex items-center gap-3 rounded-lg border border-[#262626] bg-[#141414] p-3";
 
@@ -540,10 +540,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     };
   }, [langMenuOpen]);
 
-  // Close language menu when player stops or title changes
+  // Close language menu when player stops, title changes, or only one track
   useEffect(() => {
     setLangMenuOpen(false);
-  }, [playing, movie.id, active?.id]);
+  }, [playing, movie.id, active?.id, languages.length]);
 
   // Lock body scroll while mobile full view is open
   useEffect(() => {
@@ -873,74 +873,81 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   >
                     CC
                   </button>
-                  {/*
-                    Language menu — same on mobile + web:
-                    short frame, overflow scroll (native thin scrollbar), no progress bar.
-                  */}
-                  <div ref={langMenuRef} className="relative min-w-0 max-w-[9.5rem] sm:max-w-[200px]">
-                    <button
-                      type="button"
-                      className="flex h-10 w-full min-w-0 items-center gap-1 rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
-                      aria-label="Choose subtitle language for this title"
-                      aria-haspopup="listbox"
-                      aria-expanded={langMenuOpen}
-                      onClick={() => setLangMenuOpen((o) => !o)}
-                    >
-                      <span className="min-w-0 flex-1 truncate text-left text-[11px] font-medium sm:text-[12px]">
-                        {languages.find((l) => l.iso_639_1 === languageSelectValue)
-                          ?.english_name ||
-                          languageSelectValue.toUpperCase() ||
-                          "Language"}
-                      </span>
-                      <FiChevronDown
-                        className={[
-                          "h-3.5 w-3.5 shrink-0 text-[#999999] transition-transform",
-                          langMenuOpen ? "rotate-180" : "",
-                        ].join(" ")}
-                        aria-hidden
-                      />
-                    </button>
-                    {langMenuOpen ? (
-                      <ul
-                        role="listbox"
-                        aria-label="Subtitle languages"
-                        className="lang-dropdown-scroll absolute right-0 top-[calc(100%+4px)] z-40 max-h-[min(40vh,12.5rem)] w-[min(calc(100vw-2rem),14rem)] overflow-y-auto overscroll-contain rounded-lg border border-[#262626] bg-[#0F0F0F] py-1 shadow-lg sm:max-h-[11rem] sm:w-[12.5rem]"
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
+                  {languages.length > 1 ? (
+                    <div ref={langMenuRef} className="relative min-w-0 max-w-[9.5rem] sm:max-w-[200px]">
+                      <button
+                        type="button"
+                        className="flex h-10 w-full min-w-0 items-center gap-1 rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
+                        aria-label="Choose subtitle language for this title"
+                        aria-haspopup="listbox"
+                        aria-expanded={langMenuOpen}
+                        onClick={() => setLangMenuOpen((o) => !o)}
                       >
-                        {languages.map((lang) => {
-                          const code = lang.iso_639_1 || "en";
-                          const selected = code === languageSelectValue;
-                          return (
-                            <li
-                              key={code + lang.english_name}
-                              role="presentation"
-                            >
-                              <button
-                                type="button"
-                                role="option"
-                                aria-selected={selected}
-                                className={[
-                                  "flex w-full items-center px-3 py-1.5 text-left text-[11px] font-medium transition sm:py-2 sm:text-[12px]",
-                                  selected
-                                    ? "bg-white/10 text-cta"
-                                    : "text-white hover:bg-white/[0.06]",
-                                ].join(" ")}
-                                onClick={() => {
-                                  onLanguageChange(code);
-                                  setLangMenuOpen(false);
-                                }}
+                        <span className="min-w-0 flex-1 truncate text-left text-[11px] font-medium sm:text-[12px]">
+                          {languages.find((l) => l.iso_639_1 === languageSelectValue)
+                            ?.english_name ||
+                            languageSelectValue.toUpperCase() ||
+                            "Language"}
+                        </span>
+                        <FiChevronDown
+                          className={[
+                            "h-3.5 w-3.5 shrink-0 text-[#999999] transition-transform",
+                            langMenuOpen ? "rotate-180" : "",
+                          ].join(" ")}
+                          aria-hidden
+                        />
+                      </button>
+                      {langMenuOpen ? (
+                        <ul
+                          role="listbox"
+                          aria-label="Subtitle languages"
+                          className="lang-dropdown-scroll absolute right-0 top-[calc(100%+4px)] z-40 max-h-[min(40vh,12.5rem)] w-[min(calc(100vw-2rem),14rem)] overflow-y-auto overscroll-contain rounded-lg border border-[#262626] bg-[#0F0F0F] py-1 shadow-lg sm:max-h-[11rem] sm:w-[12.5rem]"
+                          onClick={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                        >
+                          {languages.map((lang) => {
+                            const code = lang.iso_639_1 || "en";
+                            const selected = code === languageSelectValue;
+                            return (
+                              <li
+                                key={code + lang.english_name}
+                                role="presentation"
                               >
-                                <span className="truncate">
-                                  {lang.english_name}
-                                </span>
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    ) : null}
-                  </div>
+                                <button
+                                  type="button"
+                                  role="option"
+                                  aria-selected={selected}
+                                  className={[
+                                    "flex w-full items-center px-3 py-1.5 text-left text-[11px] font-medium transition sm:py-2 sm:text-[12px]",
+                                    selected
+                                      ? "bg-white/10 text-cta"
+                                      : "text-white hover:bg-white/[0.06]",
+                                  ].join(" ")}
+                                  onClick={() => {
+                                    onLanguageChange(code);
+                                    setLangMenuOpen(false);
+                                  }}
+                                >
+                                  <span className="truncate">
+                                    {lang.english_name}
+                                  </span>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : languages.length === 1 ? (
+                    <div
+                      className="pointer-events-none flex h-10 max-w-[9.5rem] min-w-0 items-center rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 sm:h-12 sm:max-w-[200px] sm:min-w-[9rem] sm:px-2.5"
+                      aria-label={`Subtitle language ${languages[0].english_name}`}
+                    >
+                      <span className="min-w-0 truncate text-left text-[11px] font-medium text-white sm:text-[12px]">
+                        {languages[0].english_name}
+                      </span>
+                    </div>
+                  ) : null}
                   <button
                     type="button"
                     className={actionBtn}
@@ -1072,7 +1079,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
             ) : null}
 
             <InfoCard title="Description">
-              <p className="text-[12px] font-normal leading-relaxed text-white sm:text-[13px]">
+              <p className="text-[12px] font-normal leading-relaxed text-[#999999] sm:text-[13px]">
                 {movie.overview || "No description available for this title."}
               </p>
             </InfoCard>

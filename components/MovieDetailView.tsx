@@ -153,7 +153,7 @@ const arrowBtnClass =
 
 /** Pills / inner cards: fill #141414, stroke #262626 */
 const pillClass =
-  "rounded-md border border-[#262626] bg-[#141414] px-3 py-1.5 text-xs font-medium text-white";
+  "rounded-md border border-[#262626] bg-[#141414] px-3 py-1.5 text-xs font-medium text-[#999999]";
 const innerCardClass =
   "flex items-center gap-3 rounded-lg border border-[#262626] bg-[#141414] p-3";
 
@@ -470,7 +470,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
         <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             <InfoCard title="Description">
-              <p className="text-[12px] font-normal leading-relaxed text-white sm:text-[13px]">
+              <p className="text-[12px] font-normal leading-relaxed text-[#999999] sm:text-[13px]">
                 {movie.overview || "No description available for this title."}
               </p>
             </InfoCard>

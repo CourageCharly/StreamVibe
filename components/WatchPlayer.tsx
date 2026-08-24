@@ -584,8 +584,8 @@ export default function WatchPlayer({
     >
       <div
         className={[
-          "pointer-events-none absolute left-1/2 top-1/2",
-          "-translate-x-1/2 -translate-y-1/2",
+          "pointer-events-none absolute left-1/2 bottom-0",
+          "-translate-x-1/2",
           "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
           "[&>iframe]:!max-h-none [&>iframe]:!max-w-none [&>iframe]:!min-h-full [&>iframe]:!min-w-full",
