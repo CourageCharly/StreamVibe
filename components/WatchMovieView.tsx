@@ -1067,7 +1067,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           )}
         </section>
 
-        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6 mt-0 sm:mt-[100px]">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             {/* Seasonal titles only — real TMDB seasons/episodes */}
             {isSeasonal && movie.seasons ? (
@@ -1198,7 +1198,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         </div>
       </div>
 
-      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} className="!pt-[120px]" />
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
         open={!isMobile && authOpen && status === "anonymous"}
