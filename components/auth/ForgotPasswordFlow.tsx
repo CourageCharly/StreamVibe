@@ -93,6 +93,7 @@ export function ForgotPasswordFlow() {
         setError(data.message || "That code is incorrect.");
         return;
       }
+      toast.success("PASSWORD RESET CONFIRMED");
       setStep("reset");
     } catch {
       toast.error(MESSAGES.network);
@@ -141,7 +142,7 @@ export function ForgotPasswordFlow() {
     },
     otp: {
       title: "Enter verification code",
-      subtitle: `We sent a 6-digit code to ${email}.`,
+      subtitle: `If an account exists, a reset code was sent. We sent a 6-digit code to ${email}.`,
     },
     reset: {
       title: "Create a new password",
