@@ -281,9 +281,28 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   const playKey = useMemo(() => resolvePlayKey(movie), [movie]);
 
-  const defaultPlayable: Playable | null = playKey
-    ? { id: "main", title: movie.title, videoKey: playKey }
-    : null;
+  /** Shows start on episode 1 the same way movies start on the title. */
+  const firstEpisodePlayable = useMemo(() => {
+    if (!isSeasonal || !movie.seasons) return null;
+    for (const season of movie.seasons) {
+      for (const ep of season.episodes) {
+        const key = ep.videoKey || playKey;
+        if (!key) continue;
+        return {
+          id: `s${season.seasonNumber}e${ep.episodeNumber}`,
+          title: ep.title,
+          videoKey: key,
+        };
+      }
+    }
+    return null;
+  }, [isSeasonal, movie.seasons, playKey]);
+
+  const defaultPlayable: Playable | null = firstEpisodePlayable
+    ? firstEpisodePlayable
+    : playKey
+      ? { id: "main", title: movie.title, videoKey: playKey }
+      : null;
 
   const { status } = useAuth();
   const canPlay = status === "authenticated";
@@ -318,21 +337,74 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   );
 
   /**
-   * Language menu = available subtitle tracks when known (streaming standard),
-   * otherwise spoken languages for the title.
+   * Player language menu = subtitle tracks for THIS video.
+   * Native tracks always; auto-translate langs only when the title uses them
+   * (e.g. French on a French title, or when YouTube has a French track).
    */
   const languages = useMemo(() => {
-    if (captionTracks.length > 0) {
-      return captionTracks
-        .filter((t) => Boolean(t.languageCode))
-        .map((t) => ({
-          iso_639_1: t.languageCode,
-          english_name:
-            t.languageName || t.languageCode.toUpperCase(),
-        }));
+    const spokenCodes = new Set(
+      spokenLanguages
+        .map((l) => (l.iso_639_1 || "").toLowerCase().slice(0, 2))
+        .filter(Boolean),
+    );
+    const original = (movie.original_language || "").toLowerCase().slice(0, 2);
+    if (original) spokenCodes.add(original);
+
+    const byKey = new Map<
+      string,
+      { iso_639_1: string; english_name: string }
+    >();
+    const put = (code: string, name?: string) => {
+      const key = code.toLowerCase().slice(0, 2);
+      if (!key || byKey.has(key)) return;
+      byKey.set(key, {
+        iso_639_1: code,
+        english_name: name || code.toUpperCase(),
+      });
+    };
+
+    if (captionTracks.length) {
+      for (const t of captionTracks) {
+        if (!t.languageCode) continue;
+        const key = t.languageCode.toLowerCase().slice(0, 2);
+        if (t.translation && !spokenCodes.has(key)) continue;
+        put(t.languageCode, t.languageName);
+      }
+    } else {
+      for (const l of spokenLanguages) {
+        if (l.iso_639_1) put(l.iso_639_1, l.english_name);
+      }
     }
-    return spokenLanguages.filter((l) => Boolean(l.iso_639_1));
-  }, [captionTracks, spokenLanguages]);
+
+    const list = [...byKey.values()];
+    list.sort((a, b) => {
+      const ak = a.iso_639_1.toLowerCase().slice(0, 2);
+      const bk = b.iso_639_1.toLowerCase().slice(0, 2);
+      if (ak === "en") return -1;
+      if (bk === "en") return 1;
+      if (original && ak === original) return -1;
+      if (original && bk === original) return 1;
+      return a.english_name.localeCompare(b.english_name);
+    });
+    return list;
+  }, [captionTracks, spokenLanguages, movie.original_language]);
+
+  const handleCaptionTracks = useCallback((tracks: CaptionTrack[]) => {
+    setCaptionTracks((prev) => {
+      const byKey = new Map<string, CaptionTrack>();
+      for (const t of [...prev, ...tracks]) {
+        const key = (t.languageCode || "").toLowerCase().slice(0, 2);
+        if (!key) continue;
+        const cur = byKey.get(key);
+        if (!cur || (cur.translation && !t.translation)) {
+          byKey.set(key, t);
+        } else if (cur && !cur.languageName && t.languageName) {
+          byKey.set(key, { ...cur, languageName: t.languageName });
+        }
+      }
+      return [...byKey.values()];
+    });
+  }, []);
 
   const defaultLang =
     movie.original_language ||
@@ -396,7 +468,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   // Keep the player up after auth; guests still get the login gate
   useEffect(() => {
-    if (!playKey) return;
+    if (!playKey && !firstEpisodePlayable) return;
     if (status === "loading") return;
     const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
     if (!canPlay) {
@@ -411,19 +483,40 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     }
     setPlaying(true);
     if (!active?.videoKey) {
-      setActive({ id: "main", title: movie.title, videoKey: playKey });
+      setActive(
+        firstEpisodePlayable ?? {
+          id: "main",
+          title: movie.title,
+          videoKey: playKey as string,
+        },
+      );
     }
     addWatchHistory({
       id: movie.id,
       title: movie.title,
       path: watchPath,
     });
-  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, status, isMobile, router, active?.videoKey]);
+  }, [
+    playKey,
+    firstEpisodePlayable,
+    movie.title,
+    movie.id,
+    movie.mediaType,
+    canPlay,
+    status,
+    isMobile,
+    router,
+    active?.videoKey,
+  ]);
 
   useEffect(() => {
     setSubtitleLang(defaultLang);
     setCaptionTracks([]);
   }, [defaultLang, movie.id]);
+
+  useEffect(() => {
+    setCaptionTracks([]);
+  }, [active?.videoKey]);
 
   // When caption tracks load, keep current lang if available; else first track
   useEffect(() => {
@@ -642,7 +735,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   );
 
   const playNow = useCallback(() => {
-    if (!playKey) return;
+    if (!playKey && !firstEpisodePlayable) return;
     if (!canPlay) {
       const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
       rememberReturnTo(watchPath);
@@ -653,7 +746,13 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       setAuthOpen(true);
       return;
     }
-    setActive({ id: "main", title: movie.title, videoKey: playKey });
+    setActive(
+      firstEpisodePlayable ?? {
+        id: "main",
+        title: movie.title,
+        videoKey: playKey as string,
+      },
+    );
     setPlaying(true);
     // User gesture — can unmute for full movie watch
     setMuted(false);
@@ -662,7 +761,16 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       title: movie.title,
       path: `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`,
     });
-  }, [playKey, movie.title, movie.id, movie.mediaType, canPlay, isMobile, router]);
+  }, [
+    playKey,
+    firstEpisodePlayable,
+    movie.title,
+    movie.id,
+    movie.mediaType,
+    canPlay,
+    isMobile,
+    router,
+  ]);
 
   const playEpisode = useCallback(
     (ep: ShowEpisode, season: ShowSeason) => {
@@ -757,7 +865,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 subtitlesOn={subtitlesOn}
                 subtitleLang={subtitleLang}
                 layout={fullView ? "fullscreen" : "frame"}
-                onCaptionTracks={setCaptionTracks}
+                onCaptionTracks={handleCaptionTracks}
                 className="!absolute !inset-0 !h-full !w-full !min-h-full !min-w-full"
               />
 
@@ -791,11 +899,11 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     Language menu — same on mobile + web:
                     short frame, overflow scroll (native thin scrollbar), no progress bar.
                   */}
-                  <div ref={langMenuRef} className="relative min-w-0 max-w-[8.5rem] sm:max-w-[200px]">
+                  <div ref={langMenuRef} className="relative min-w-0 max-w-[9.5rem] sm:max-w-[200px]">
                     <button
                       type="button"
                       className="flex h-10 w-full min-w-0 items-center gap-1 rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
-                      aria-label="Choose language and subtitle track"
+                      aria-label="Choose subtitle language for this title"
                       aria-haspopup="listbox"
                       aria-expanded={langMenuOpen}
                       onClick={() => setLangMenuOpen((o) => !o)}
@@ -818,7 +926,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                       <ul
                         role="listbox"
                         aria-label="Subtitle languages"
-                        className="lang-dropdown-scroll absolute right-0 top-[calc(100%+4px)] z-40 max-h-[9.5rem] w-[min(100vw-2rem,11.5rem)] overflow-y-auto overscroll-contain rounded-lg border border-[#262626] bg-[#0F0F0F] py-1 shadow-lg sm:max-h-[11rem] sm:w-[12.5rem]"
+                        className="lang-dropdown-scroll absolute right-0 top-[calc(100%+4px)] z-40 max-h-[min(40vh,12.5rem)] w-[min(calc(100vw-2rem),14rem)] overflow-y-auto overscroll-contain rounded-lg border border-[#262626] bg-[#0F0F0F] py-1 shadow-lg sm:max-h-[11rem] sm:w-[12.5rem]"
                         onClick={(e) => e.stopPropagation()}
                         onPointerDown={(e) => e.stopPropagation()}
                       >
@@ -1015,7 +1123,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     Available Languages
                   </FieldLabel>
                   <div className="flex flex-wrap gap-2">
-                    {languages.map((lang) => (
+                    {spokenLanguages.map((lang) => (
                       <span
                         key={lang.iso_639_1 || lang.english_name}
                         className={pillClass}
@@ -1111,8 +1219,14 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         onClose={() => setAuthOpen(false)}
         onAuthenticated={() => {
           setAuthOpen(false);
-          if (!playKey) return;
-          setActive({ id: "main", title: movie.title, videoKey: playKey });
+          if (!playKey && !firstEpisodePlayable) return;
+          setActive(
+            firstEpisodePlayable ?? {
+              id: "main",
+              title: movie.title,
+              videoKey: playKey as string,
+            },
+          );
           setPlaying(true);
           addWatchHistory({
             id: movie.id,

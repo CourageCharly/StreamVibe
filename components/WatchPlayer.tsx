@@ -60,6 +60,8 @@ function loadYouTubeApi() {
 export type CaptionTrack = {
   languageCode: string;
   languageName?: string;
+  kind?: string;
+  translation?: boolean;
 };
 
 type Props = {
@@ -230,9 +232,27 @@ export default function WatchPlayer({
           `/api/captions?videoId=${encodeURIComponent(videoKey)}&lang=${encodeURIComponent(lang)}`,
         );
         if (!res.ok || cancelled) return;
-        const data = (await res.json()) as { cues?: CaptionCue[] };
+        const data = (await res.json()) as {
+          cues?: CaptionCue[];
+          tracks?: CaptionTrack[];
+          languages?: CaptionTrack[];
+        };
         if (cancelled) return;
         setCues(Array.isArray(data.cues) ? data.cues : []);
+        const langs =
+          (data.languages && data.languages.length
+            ? data.languages
+            : data.tracks) ?? [];
+        if (langs.length) {
+          onTracksRef.current?.(
+            langs.map((t) => ({
+              languageCode: t.languageCode,
+              languageName: t.languageName,
+              kind: t.kind,
+              translation: t.translation,
+            })),
+          );
+        }
       } catch {
         if (!cancelled) setCues([]);
       }
@@ -242,29 +262,23 @@ export default function WatchPlayer({
     };
   }, [mounted, videoKey, subtitleLang]);
 
-  /** Resolve best caption track for a language (streaming-standard matching). */
-  function resolveCaptionTrack(
+  /** Native track for a language — no silent English fallback. */
+  function findNativeTrack(
     list: CaptionTrack[] | undefined,
     lang: string,
-  ): { languageCode: string } {
+  ): CaptionTrack | null {
     const code = (lang || "en").toLowerCase();
-    if (!list?.length) return { languageCode: code };
+    if (!list?.length) return null;
     const exact = list.find(
       (t) => (t.languageCode || "").toLowerCase() === code,
     );
-    if (exact?.languageCode) return { languageCode: exact.languageCode };
+    if (exact?.languageCode) return exact;
     const prefix = list.find((t) => {
       const c = (t.languageCode || "").toLowerCase();
       if (!c) return false;
-      return c.startsWith(code) || code.startsWith(c.slice(0, 2));
+      return c.startsWith(code.slice(0, 2)) || code.startsWith(c.slice(0, 2));
     });
-    if (prefix?.languageCode) return { languageCode: prefix.languageCode };
-    // Prefer English track, else first available
-    const en = list.find((t) =>
-      (t.languageCode || "").toLowerCase().startsWith("en"),
-    );
-    const fallback = en?.languageCode || list[0]?.languageCode || code;
-    return { languageCode: fallback };
+    return prefix?.languageCode ? prefix : null;
   }
 
   function readTrackList(player: YTPlayer): CaptionTrack[] {
@@ -296,6 +310,7 @@ export default function WatchPlayer({
           list.map((t) => ({
             languageCode: t.languageCode,
             languageName: t.languageName,
+            kind: t.kind,
           })),
         );
       }
@@ -305,9 +320,33 @@ export default function WatchPlayer({
         player.setOption?.("captions", "track", {});
         player.setOption?.("cc", "track", {});
       } else if (subtitlesOnRef.current) {
-        const track = resolveCaptionTrack(list, subtitleLangRef.current || "en");
-        player.setOption?.("captions", "track", track);
-        player.setOption?.("cc", "track", track);
+        const wanted = subtitleLangRef.current || "en";
+        const native = findNativeTrack(list, wanted);
+        const source =
+          native ||
+          findNativeTrack(list, "en") ||
+          list[0] ||
+          ({ languageCode: wanted } satisfies CaptionTrack);
+        const trackPayload: Record<string, unknown> = {
+          languageCode: source.languageCode,
+        };
+        if (source.kind) trackPayload.kind = source.kind;
+        const translateTo =
+          !native && wanted
+            ? { languageCode: wanted }
+            : undefined;
+        if (translateTo) {
+          trackPayload.translationLanguage = translateTo;
+        }
+        player.setOption?.("captions", "track", trackPayload);
+        player.setOption?.("cc", "track", trackPayload);
+        if (translateTo) {
+          player.setOption?.("captions", "translationLanguage", translateTo);
+          player.setOption?.("cc", "translationLanguage", translateTo);
+        } else {
+          player.setOption?.("captions", "translationLanguage", {});
+          player.setOption?.("cc", "translationLanguage", {});
+        }
         try {
           player.setOption?.("captions", "fontSize", -1);
           player.setOption?.("cc", "fontSize", -1);

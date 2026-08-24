@@ -12,6 +12,15 @@ export type CaptionTrackInfo = {
   languageName?: string;
   kind?: string;
   baseUrl: string;
+  isTranslatable?: boolean;
+};
+
+export type CaptionLang = {
+  languageCode: string;
+  languageName?: string;
+  kind?: string;
+  /** True when this language is served via auto-translate, not a native track */
+  translation?: boolean;
 };
 
 const YT_UA =
@@ -61,7 +70,10 @@ function extractPlayerResponse(html: string): Record<string, unknown> | null {
   return null;
 }
 
-function readTracks(player: Record<string, unknown>): CaptionTrackInfo[] {
+function readCaptionRenderer(player: Record<string, unknown>): {
+  tracks: CaptionTrackInfo[];
+  translations: CaptionLang[];
+} {
   const captions = player.captions as
     | {
         playerCaptionsTracklistRenderer?: {
@@ -69,21 +81,83 @@ function readTracks(player: Record<string, unknown>): CaptionTrackInfo[] {
             baseUrl?: string;
             languageCode?: string;
             kind?: string;
+            isTranslatable?: boolean;
             name?: { simpleText?: string };
+          }>;
+          translationLanguages?: Array<{
+            languageCode?: string;
+            languageName?: { simpleText?: string };
           }>;
         };
       }
     | undefined;
-  const raw = captions?.playerCaptionsTracklistRenderer?.captionTracks;
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((t) => t.baseUrl && t.languageCode)
+  const renderer = captions?.playerCaptionsTracklistRenderer;
+  const raw = renderer?.captionTracks;
+  const tracks = Array.isArray(raw)
+    ? raw
+        .filter((t) => t.baseUrl && t.languageCode)
+        .map((t) => ({
+          languageCode: t.languageCode as string,
+          languageName: t.name?.simpleText,
+          kind: t.kind,
+          baseUrl: t.baseUrl as string,
+          isTranslatable: Boolean(t.isTranslatable),
+        }))
+    : [];
+  const translations = (renderer?.translationLanguages ?? [])
+    .filter((t) => t.languageCode)
     .map((t) => ({
       languageCode: t.languageCode as string,
-      languageName: t.name?.simpleText,
-      kind: t.kind,
-      baseUrl: t.baseUrl as string,
+      languageName: t.languageName?.simpleText,
+      translation: true as const,
     }));
+  return { tracks, translations };
+}
+
+function langKey(code: string): string {
+  return (code || "").toLowerCase().slice(0, 2);
+}
+
+function buildAvailableLanguages(
+  tracks: CaptionTrackInfo[],
+  translations: CaptionLang[],
+): CaptionLang[] {
+  const byKey = new Map<string, CaptionLang>();
+  const ranked = [...tracks].sort((a, b) => {
+    const aAuto = a.kind === "asr" ? 1 : 0;
+    const bAuto = b.kind === "asr" ? 1 : 0;
+    return aAuto - bAuto;
+  });
+  for (const t of ranked) {
+    const key = langKey(t.languageCode);
+    if (!key || byKey.has(key)) continue;
+    byKey.set(key, {
+      languageCode: t.languageCode,
+      languageName: t.languageName,
+      kind: t.kind,
+    });
+  }
+  const translatable = tracks.some((t) => t.isTranslatable);
+  if (translatable) {
+    for (const t of translations) {
+      const key = langKey(t.languageCode);
+      if (!key || byKey.has(key)) continue;
+      byKey.set(key, {
+        languageCode: t.languageCode,
+        languageName: t.languageName,
+        translation: true,
+      });
+    }
+  }
+  const list = [...byKey.values()];
+  list.sort((a, b) => {
+    const ak = langKey(a.languageCode);
+    const bk = langKey(b.languageCode);
+    if (ak === "en") return -1;
+    if (bk === "en") return 1;
+    return (a.languageName || ak).localeCompare(b.languageName || bk);
+  });
+  return list;
 }
 
 function pickTrack(
@@ -209,18 +283,33 @@ async function fetchText(
   return res.text();
 }
 
-async function fetchCuesFromTrack(track: CaptionTrackInfo): Promise<CaptionCue[]> {
+function withQuery(url: string, extra: string): string {
+  if (!extra) return url;
+  return url.includes("?") ? `${url}&${extra.replace(/^&/, "")}` : `${url}?${extra.replace(/^&/, "")}`;
+}
+
+async function fetchCuesFromTrack(
+  track: CaptionTrackInfo,
+  tlang?: string,
+): Promise<CaptionCue[]> {
   const extras = [
-    "&fmt=json3&xorb=2&xobt=3&xovt=3",
-    "&fmt=vtt&xorb=2&xobt=3&xovt=3",
-    "&fmt=srv3&xorb=2&xobt=3&xovt=3",
-    "&fmt=json3",
-    "&fmt=vtt",
+    "fmt=json3&xorb=2&xobt=3&xovt=3",
+    "fmt=vtt&xorb=2&xobt=3&xovt=3",
+    "fmt=srv3&xorb=2&xobt=3&xovt=3",
+    "fmt=json3",
+    "fmt=vtt",
   ];
+  const tlangQ =
+    tlang && langKey(tlang) !== langKey(track.languageCode)
+      ? `tlang=${encodeURIComponent(tlang)}`
+      : "";
   for (const extra of extras) {
-    const url = track.baseUrl.includes("fmt=")
-      ? track.baseUrl
-      : `${track.baseUrl}${extra}`;
+    const url = withQuery(
+      track.baseUrl,
+      [tlangQ, track.baseUrl.includes("fmt=") ? "" : extra]
+        .filter(Boolean)
+        .join("&"),
+    );
     const body = await fetchText(url, {
       Referer: "https://www.youtube.com/",
       Origin: "https://www.youtube.com",
@@ -236,16 +325,33 @@ async function fetchCuesFromTrack(track: CaptionTrackInfo): Promise<CaptionCue[]
 export async function getYoutubeCaptions(
   videoId: string,
   lang = "en",
-): Promise<{ cues: CaptionCue[]; tracks: CaptionTrackInfo[] }> {
+): Promise<{
+  cues: CaptionCue[];
+  tracks: CaptionTrackInfo[];
+  languages: CaptionLang[];
+}> {
   const id = videoId.trim();
-  if (!id) return { cues: [], tracks: [] };
+  if (!id) return { cues: [], tracks: [], languages: [] };
 
-  const html = await fetchText(`https://www.youtube.com/watch?v=${encodeURIComponent(id)}`);
+  const html = await fetchText(
+    `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`,
+  );
   const player = extractPlayerResponse(html);
-  const tracks = player ? readTracks(player) : [];
-  const track = pickTrack(tracks, lang);
-  if (!track) return { cues: [], tracks };
+  const { tracks, translations } = player
+    ? readCaptionRenderer(player)
+    : { tracks: [], translations: [] };
+  const languages = buildAvailableLanguages(tracks, translations);
+  const native = pickTrack(tracks, lang);
+  const wanted = langKey(lang);
+  const useTranslate =
+    !native || langKey(native.languageCode) !== wanted;
+  const source =
+    native && !useTranslate
+      ? native
+      : pickTrack(tracks, "en") || tracks[0];
+  if (!source) return { cues: [], tracks, languages };
 
-  const cues = await fetchCuesFromTrack(track);
-  return { cues, tracks };
+  const tlang = useTranslate && wanted ? lang : undefined;
+  const cues = await fetchCuesFromTrack(source, tlang);
+  return { cues, tracks, languages };
 }

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   try {
     const data = await getYoutubeCaptions(videoId, lang);
     return NextResponse.json(
-      { cues: data.cues, tracks: data.tracks },
+      { cues: data.cues, tracks: data.tracks, languages: data.languages },
       {
         headers: {
           "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
