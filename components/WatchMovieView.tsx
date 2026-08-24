@@ -832,7 +832,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "h-[100svh] h-[100dvh] max-h-[100dvh]",
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
-              : "cinema-frame",
+              : "cinema-frame watch-fill",
           ].join(" ")}
         >
           {playing && active?.videoKey ? (
@@ -880,13 +880,13 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     <div ref={langMenuRef} className="relative min-w-0 max-w-[9.5rem] sm:max-w-[200px]">
                       <button
                         type="button"
-                        className="flex h-10 w-full min-w-0 items-center gap-1 rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
+                        className="flex h-10 w-full min-w-0 items-center gap-1 rounded-lg bg-[#0F0F0F] px-2 text-white sm:h-12 sm:min-w-[9rem] sm:gap-1.5 sm:px-2.5"
                         aria-label="Choose subtitle language for this title"
                         aria-haspopup="listbox"
                         aria-expanded={langMenuOpen}
                         onClick={() => setLangMenuOpen((o) => !o)}
                       >
-                        <span className="min-w-0 flex-1 truncate text-left text-[11px] font-medium sm:text-[12px]">
+                        <span className="min-w-0 flex-1 truncate text-left text-[11px] font-medium text-white sm:text-[12px]">
                           {languages.find((l) => l.iso_639_1 === languageSelectValue)
                             ?.english_name ||
                             languageSelectValue.toUpperCase() ||
@@ -894,7 +894,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                         </span>
                         <FiChevronDown
                           className={[
-                            "h-3.5 w-3.5 shrink-0 text-[#999999] transition-transform",
+                            "h-3.5 w-3.5 shrink-0 text-white transition-transform",
                             langMenuOpen ? "rotate-180" : "",
                           ].join(" ")}
                           aria-hidden
@@ -904,7 +904,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                         <ul
                           role="listbox"
                           aria-label="Subtitle languages"
-                          className="lang-dropdown-scroll absolute right-0 top-[calc(100%+4px)] z-40 max-h-[min(40vh,12.5rem)] w-[min(calc(100vw-2rem),14rem)] overflow-y-auto overscroll-contain rounded-lg border border-[#262626] bg-[#0F0F0F] py-1 shadow-lg sm:max-h-[11rem] sm:w-[12.5rem]"
+                          className="lang-dropdown-scroll absolute right-0 top-[calc(100%+4px)] z-40 max-h-[min(40vh,12.5rem)] w-[min(calc(100vw-2rem),14rem)] overflow-y-auto overscroll-contain rounded-lg bg-[#0F0F0F] py-1 shadow-lg sm:max-h-[11rem] sm:w-[12.5rem]"
                           onClick={(e) => e.stopPropagation()}
                           onPointerDown={(e) => e.stopPropagation()}
                         >
@@ -921,17 +921,17 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                                   role="option"
                                   aria-selected={selected}
                                   className={[
-                                    "flex w-full items-center px-3 py-1.5 text-left text-[11px] font-medium transition sm:py-2 sm:text-[12px]",
+                                    "flex w-full items-center px-3 py-1.5 text-left text-[11px] font-medium text-white transition sm:py-2 sm:text-[12px]",
                                     selected
-                                      ? "bg-white/10 text-cta"
-                                      : "text-white hover:bg-white/[0.06]",
+                                      ? "bg-white/10"
+                                      : "hover:bg-white/[0.06]",
                                   ].join(" ")}
                                   onClick={() => {
                                     onLanguageChange(code);
                                     setLangMenuOpen(false);
                                   }}
                                 >
-                                  <span className="truncate">
+                                  <span className="truncate text-white">
                                     {lang.english_name}
                                   </span>
                                 </button>

@@ -143,6 +143,13 @@ section {
   }
 }
 
+/* Watch player — full content width, 16:9 so the picture fills the frame */
+.cinema-frame.watch-fill {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
 video,
 .cinema-frame video,
 .cinema-frame iframe,
