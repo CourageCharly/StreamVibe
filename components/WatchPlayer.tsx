@@ -316,7 +316,7 @@ export default function WatchPlayer({
       }
 
       if (subtitlesOnRef.current && overlayCuesRef.current) {
-        // Overlay renders Netflix-style captions — hide native YT text
+        // Overlay is painting current cues — hide native YT text
         player.setOption?.("captions", "track", {});
         player.setOption?.("cc", "track", {});
       } else if (subtitlesOnRef.current) {
@@ -331,32 +331,16 @@ export default function WatchPlayer({
           languageCode: source.languageCode,
         };
         if (source.kind) trackPayload.kind = source.kind;
-        const translateTo =
-          !native && wanted
-            ? { languageCode: wanted }
-            : undefined;
-        if (translateTo) {
-          trackPayload.translationLanguage = translateTo;
-        }
-        player.setOption?.("captions", "track", trackPayload);
-        player.setOption?.("cc", "track", trackPayload);
-        if (translateTo) {
-          player.setOption?.("captions", "translationLanguage", translateTo);
-          player.setOption?.("cc", "translationLanguage", translateTo);
-        } else {
-          player.setOption?.("captions", "translationLanguage", {});
-          player.setOption?.("cc", "translationLanguage", {});
-        }
         try {
-          player.setOption?.("captions", "fontSize", -1);
-          player.setOption?.("cc", "fontSize", -1);
+          player.setOption?.("captions", "fontSize", 0);
+          player.setOption?.("cc", "fontSize", 0);
           const modern = {
             background: "#000000",
             backgroundOpacity: 0,
             windowColor: "#000000",
             windowOpacity: 0,
-            fontSizeIncrease: -1,
-            fontSizeIncrement: -1,
+            fontSizeIncrease: 0,
+            fontSizeIncrement: 0,
             color: "#ffffff",
             charColor: "#ffffff",
             textOpacity: 100,
@@ -368,10 +352,13 @@ export default function WatchPlayer({
           };
           player.setOption?.("captions", "displaySettings", modern);
           player.setOption?.("cc", "displaySettings", modern);
-          player.setOption?.("captions", "reload", true);
         } catch {
           /* optional */
         }
+        player.setOption?.("captions", "track", trackPayload);
+        player.setOption?.("cc", "track", trackPayload);
+        player.setOption?.("captions", "translationLanguage", {});
+        player.setOption?.("cc", "translationLanguage", {});
       } else {
         // Hide captions (keep modules loaded for fast re-enable)
         player.setOption?.("captions", "track", {});

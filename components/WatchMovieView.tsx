@@ -337,45 +337,24 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   );
 
   /**
-   * Player language menu = subtitle tracks for THIS video.
-   * Native tracks always; auto-translate langs only when the title uses them
-   * (e.g. French on a French title, or when YouTube has a French track).
+   * Player language menu = subtitle tracks that actually exist on this video.
+   * Never list TMDB spoken languages or auto-translate guesses.
    */
   const languages = useMemo(() => {
-    const spokenCodes = new Set(
-      spokenLanguages
-        .map((l) => (l.iso_639_1 || "").toLowerCase().slice(0, 2))
-        .filter(Boolean),
-    );
     const original = (movie.original_language || "").toLowerCase().slice(0, 2);
-    if (original) spokenCodes.add(original);
-
     const byKey = new Map<
       string,
       { iso_639_1: string; english_name: string }
     >();
-    const put = (code: string, name?: string) => {
-      const key = code.toLowerCase().slice(0, 2);
-      if (!key || byKey.has(key)) return;
+    for (const t of captionTracks) {
+      if (!t.languageCode || t.translation) continue;
+      const key = t.languageCode.toLowerCase().slice(0, 2);
+      if (!key || byKey.has(key)) continue;
       byKey.set(key, {
-        iso_639_1: code,
-        english_name: name || code.toUpperCase(),
+        iso_639_1: t.languageCode,
+        english_name: t.languageName || t.languageCode.toUpperCase(),
       });
-    };
-
-    if (captionTracks.length) {
-      for (const t of captionTracks) {
-        if (!t.languageCode) continue;
-        const key = t.languageCode.toLowerCase().slice(0, 2);
-        if (t.translation && !spokenCodes.has(key)) continue;
-        put(t.languageCode, t.languageName);
-      }
-    } else {
-      for (const l of spokenLanguages) {
-        if (l.iso_639_1) put(l.iso_639_1, l.english_name);
-      }
     }
-
     const list = [...byKey.values()];
     list.sort((a, b) => {
       const ak = a.iso_639_1.toLowerCase().slice(0, 2);
@@ -387,7 +366,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       return a.english_name.localeCompare(b.english_name);
     });
     return list;
-  }, [captionTracks, spokenLanguages, movie.original_language]);
+  }, [captionTracks, movie.original_language]);
 
   const handleCaptionTracks = useCallback((tracks: CaptionTrack[]) => {
     setCaptionTracks((prev) => {
@@ -518,11 +497,11 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     setCaptionTracks([]);
   }, [active?.videoKey]);
 
-  // When caption tracks load, keep current lang if available; else first track
+  // Keep the selected language on a track that actually exists for this video
   useEffect(() => {
-    if (!captionTracks.length) return;
-    const has = captionTracks.some((t) => {
-      const code = t.languageCode || "";
+    if (!languages.length) return;
+    const has = languages.some((l) => {
+      const code = l.iso_639_1 || "";
       if (!code) return false;
       return (
         code === subtitleLang ||
@@ -531,11 +510,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           code.startsWith(subtitleLang.slice(0, 2)))
       );
     });
-    if (!has && captionTracks[0]?.languageCode) {
-      setSubtitleLang(captionTracks[0].languageCode);
-      setSubtitlesOn(true);
+    if (!has && languages[0]?.iso_639_1) {
+      setSubtitleLang(languages[0].iso_639_1);
     }
-  }, [captionTracks, subtitleLang]);
+  }, [languages, subtitleLang]);
 
   // Exit full view when playback stops
   useEffect(() => {

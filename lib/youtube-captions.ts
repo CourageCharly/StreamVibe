@@ -118,10 +118,7 @@ function langKey(code: string): string {
   return (code || "").toLowerCase().slice(0, 2);
 }
 
-function buildAvailableLanguages(
-  tracks: CaptionTrackInfo[],
-  translations: CaptionLang[],
-): CaptionLang[] {
+function buildAvailableLanguages(tracks: CaptionTrackInfo[]): CaptionLang[] {
   const byKey = new Map<string, CaptionLang>();
   const ranked = [...tracks].sort((a, b) => {
     const aAuto = a.kind === "asr" ? 1 : 0;
@@ -136,18 +133,6 @@ function buildAvailableLanguages(
       languageName: t.languageName,
       kind: t.kind,
     });
-  }
-  const translatable = tracks.some((t) => t.isTranslatable);
-  if (translatable) {
-    for (const t of translations) {
-      const key = langKey(t.languageCode);
-      if (!key || byKey.has(key)) continue;
-      byKey.set(key, {
-        languageCode: t.languageCode,
-        languageName: t.languageName,
-        translation: true,
-      });
-    }
   }
   const list = [...byKey.values()];
   list.sort((a, b) => {
@@ -270,17 +255,29 @@ function parseCaptionBody(body: string): CaptionCue[] {
 async function fetchText(
   url: string,
   extraHeaders: Record<string, string> = {},
-): Promise<string> {
+): Promise<{ text: string; cookie: string }> {
   const res = await fetch(url, {
     headers: {
       "User-Agent": YT_UA,
       "Accept-Language": "en-US,en;q=0.9",
+      Cookie: "CONSENT=YES+; SOCS=CAI",
       ...extraHeaders,
     },
     redirect: "follow",
   });
-  if (!res.ok) return "";
-  return res.text();
+  const setCookies =
+    typeof res.headers.getSetCookie === "function"
+      ? res.headers.getSetCookie()
+      : [];
+  const cookie = [
+    "CONSENT=YES+",
+    "SOCS=CAI",
+    ...setCookies.map((c) => c.split(";")[0] || ""),
+  ]
+    .filter(Boolean)
+    .join("; ");
+  if (!res.ok) return { text: "", cookie };
+  return { text: await res.text(), cookie };
 }
 
 function withQuery(url: string, extra: string): string {
@@ -290,7 +287,8 @@ function withQuery(url: string, extra: string): string {
 
 async function fetchCuesFromTrack(
   track: CaptionTrackInfo,
-  tlang?: string,
+  tlang: string | undefined,
+  cookie: string,
 ): Promise<CaptionCue[]> {
   const extras = [
     "fmt=json3&xorb=2&xobt=3&xovt=3",
@@ -310,10 +308,11 @@ async function fetchCuesFromTrack(
         .filter(Boolean)
         .join("&"),
     );
-    const body = await fetchText(url, {
+    const { text: body } = await fetchText(url, {
       Referer: "https://www.youtube.com/",
       Origin: "https://www.youtube.com",
       Accept: "application/json,text/vtt,text/xml,*/*",
+      Cookie: cookie || "CONSENT=YES+; SOCS=CAI",
     });
     const cues = parseCaptionBody(body);
     if (cues.length) return cues;
@@ -333,14 +332,14 @@ export async function getYoutubeCaptions(
   const id = videoId.trim();
   if (!id) return { cues: [], tracks: [], languages: [] };
 
-  const html = await fetchText(
+  const watch = await fetchText(
     `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`,
   );
-  const player = extractPlayerResponse(html);
-  const { tracks, translations } = player
+  const player = extractPlayerResponse(watch.text);
+  const { tracks } = player
     ? readCaptionRenderer(player)
-    : { tracks: [], translations: [] };
-  const languages = buildAvailableLanguages(tracks, translations);
+    : { tracks: [] };
+  const languages = buildAvailableLanguages(tracks);
   const native = pickTrack(tracks, lang);
   const wanted = langKey(lang);
   const useTranslate =
@@ -352,6 +351,6 @@ export async function getYoutubeCaptions(
   if (!source) return { cues: [], tracks, languages };
 
   const tlang = useTranslate && wanted ? lang : undefined;
-  const cues = await fetchCuesFromTrack(source, tlang);
+  const cues = await fetchCuesFromTrack(source, tlang, watch.cookie);
   return { cues, tracks, languages };
 }

@@ -89,46 +89,50 @@ function ListInner() {
             skeleton={loading}
             movies={
               <SectionFrame tag="Movies" skeleton={loading}>
-                {loading ? (
-                  <CatalogPosterSkeletonGrid />
-                ) : bucket.movies.length === 0 ? (
-                  <EmptyCatalog
-                    title="No Movies found"
-                    message={
-                      ratingsOnly
-                        ? "Rate a movie and it will show up here."
-                        : "Movies you save will appear here."
-                    }
-                  />
-                ) : (
-                  <CatalogPosterGrid
-                    movies={bucket.movies}
-                    kind="movie"
-                    showRating={ratingsOnly}
-                  />
-                )}
+                <div className="mt-3 lg:mt-6">
+                  {loading ? (
+                    <CatalogPosterSkeletonGrid />
+                  ) : bucket.movies.length === 0 ? (
+                    <EmptyCatalog
+                      title="No Movies found"
+                      message={
+                        ratingsOnly
+                          ? "Rate a movie and it will show up here."
+                          : "Movies you save will appear here."
+                      }
+                    />
+                  ) : (
+                    <CatalogPosterGrid
+                      movies={bucket.movies}
+                      kind="movie"
+                      showRating={ratingsOnly}
+                    />
+                  )}
+                </div>
               </SectionFrame>
             }
             shows={
               <SectionFrame tag="Shows" skeleton={loading}>
-                {loading ? (
-                  <CatalogPosterSkeletonGrid />
-                ) : bucket.shows.length === 0 ? (
-                  <EmptyCatalog
-                    title="No Shows found"
-                    message={
-                      ratingsOnly
-                        ? "Rate a show and it will show up here."
-                        : "Shows you save will appear here."
-                    }
-                  />
-                ) : (
-                  <CatalogPosterGrid
-                    movies={bucket.shows}
-                    kind="tv"
-                    showRating={ratingsOnly}
-                  />
-                )}
+                <div className="mt-3 lg:mt-6">
+                  {loading ? (
+                    <CatalogPosterSkeletonGrid />
+                  ) : bucket.shows.length === 0 ? (
+                    <EmptyCatalog
+                      title="No Shows found"
+                      message={
+                        ratingsOnly
+                          ? "Rate a show and it will show up here."
+                          : "Shows you save will appear here."
+                      }
+                    />
+                  ) : (
+                    <CatalogPosterGrid
+                      movies={bucket.shows}
+                      kind="tv"
+                      showRating={ratingsOnly}
+                    />
+                  )}
+                </div>
               </SectionFrame>
             }
           />
