@@ -25,10 +25,29 @@ export function ForgotPasswordFlow() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [otpHint, setOtpHint] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  async function requestResetCode() {
+    const res = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = (await res.json()) as {
+      message?: string;
+      developmentCode?: string;
+    };
+    if (!res.ok) {
+      throw new Error(data.message || "Unable to send a reset code.");
+    }
+    setOtpHint(data.developmentCode || "");
+    setCode("");
+    setStep("otp");
+  }
 
   async function sendCode(e: FormEvent) {
     e.preventDefault();
@@ -40,21 +59,15 @@ export function ForgotPasswordFlow() {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (!res.ok) {
-        const data = (await res.json()) as { message?: string };
-        setError(data.message || "Unable to send a reset code.");
-        return;
+      await requestResetCode();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unable to send a reset code.";
+      if (message === MESSAGES.network || message.includes("fetch")) {
+        toast.error(MESSAGES.network);
+      } else {
+        setError(message);
       }
-      toast.success("If an account exists, a reset code was sent.");
-      setCode("");
-      setStep("otp");
-    } catch {
-      toast.error(MESSAGES.network);
     } finally {
       setSubmitting(false);
     }
@@ -174,6 +187,16 @@ export function ForgotPasswordFlow() {
 
             {step === "otp" ? (
               <form onSubmit={(e) => void confirmOtp(e)} className="space-y-5" noValidate>
+                {otpHint ? (
+                  <p className="rounded-lg bg-[#141414] px-3 py-2 text-center text-[14px] text-white">
+                    Your reset code is{" "}
+                    <span className="font-semibold tracking-[0.2em]">{otpHint}</span>
+                  </p>
+                ) : (
+                  <p className="text-[14px] text-[#999999]">
+                    Check your email for the 6-digit code.
+                  </p>
+                )}
                 <OtpInput
                   value={code}
                   onChange={(next) => {
@@ -190,7 +213,28 @@ export function ForgotPasswordFlow() {
                   type="button"
                   className="w-full text-center text-[13px] text-[#999999] hover:text-white"
                   onClick={() => {
+                    if (submitting) return;
+                    setSubmitting(true);
+                    setError("");
+                    void requestResetCode()
+                      .catch((err) => {
+                        setError(
+                          err instanceof Error
+                            ? err.message
+                            : "Unable to send a reset code.",
+                        );
+                      })
+                      .finally(() => setSubmitting(false));
+                  }}
+                >
+                  Resend code
+                </button>
+                <button
+                  type="button"
+                  className="w-full text-center text-[13px] text-[#999999] hover:text-white"
+                  onClick={() => {
                     setStep("email");
+                    setOtpHint("");
                     setError("");
                   }}
                 >
