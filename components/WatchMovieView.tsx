@@ -829,7 +829,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "h-[100svh] h-[100dvh] max-h-[100dvh]",
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
-              : "cinema-frame",
+              : "cinema-frame watch-fill",
           ].join(" ")}
         >
           {playing && active?.videoKey ? (

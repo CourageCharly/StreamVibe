@@ -143,6 +143,13 @@ section {
   }
 }
 
+/* Watch movies + shows — 16:9 box so the picture fills the frame edge-to-edge */
+.cinema-frame.watch-fill {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-height: min(85vh, 900px);
+}
+
 video,
 .cinema-frame video,
 .cinema-frame iframe,

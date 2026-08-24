@@ -10,6 +10,7 @@ import {
   getAllNotices,
   markAllNoticesRead,
   markNoticeRead,
+  NOTICE_EVENT,
   type MovieNotice,
 } from "@/lib/notifications";
 
@@ -26,7 +27,10 @@ function NotificationsInner() {
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
-    setItems(getAllNotices());
+    const refreshList = () => setItems(getAllNotices());
+    refreshList();
+    window.addEventListener(NOTICE_EVENT, refreshList);
+    return () => window.removeEventListener(NOTICE_EVENT, refreshList);
   }, []);
 
   function refresh() {
@@ -41,7 +45,7 @@ function NotificationsInner() {
         </h1>
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className="min-w-0 text-[14px] text-[#999999] sm:text-[16px]">
-            New episodes, watchlist alerts, trailers, and recommendations.
+            Alerts from your list, likes, and reviews.
           </p>
           <button
             type="button"
@@ -55,6 +59,12 @@ function NotificationsInner() {
           </button>
         </div>
 
+        {items.length === 0 ? (
+          <p className="mt-6 text-[14px] text-[#999999] sm:text-[16px]">
+            No notifications yet. Saving a title, liking one, or posting a
+            review will show up here.
+          </p>
+        ) : (
         <ul className="mt-6 overflow-hidden rounded-2xl border border-[#262626] bg-[#1A1A1A]">
           {items.map((item, i) => (
             <li
@@ -115,6 +125,7 @@ function NotificationsInner() {
             </li>
           ))}
         </ul>
+        )}
       </div>
     </div>
   );
