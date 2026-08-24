@@ -523,6 +523,13 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     if (!playing) setFullView(false);
   }, [playing]);
 
+  // Auto-enter mobile full view when playback starts on small screens
+  useEffect(() => {
+    if (isMobile && playing && active?.videoKey) {
+      setFullView(true);
+    }
+  }, [isMobile, playing, active?.videoKey]);
+
   // Close language menu on outside click / Escape
   useEffect(() => {
     if (!langMenuOpen) return;
