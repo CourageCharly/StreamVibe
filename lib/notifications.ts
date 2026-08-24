@@ -2,7 +2,7 @@ export type MovieNotice = {
   id: string;
   title: string;
   body: string;
-  at: string;
+  at: number;
   unread: boolean;
   href: string;
   kind:
@@ -85,7 +85,7 @@ export function addMovieNotice(input: {
     href: input.href,
     kind: input.kind ?? "watchlist",
     unread: true,
-    at: "Just now",
+    at: Date.now(),
   };
   try {
     const next = [notice, ...readUserNotices()].slice(0, 40);
