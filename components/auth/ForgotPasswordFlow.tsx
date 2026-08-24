@@ -93,7 +93,6 @@ export function ForgotPasswordFlow() {
         setError(data.message || "That code is incorrect.");
         return;
       }
-      toast.success("PASSWORD RESET CONFIRMED");
       setStep("reset");
     } catch {
       toast.error(MESSAGES.network);
