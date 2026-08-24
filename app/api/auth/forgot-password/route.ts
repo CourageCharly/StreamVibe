@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { localFindByEmail, localStartPasswordReset } from "@/lib/auth/local-store";
+import { localStartPasswordReset } from "@/lib/auth/local-store";
 
 async function sendResetOtpEmail(to: string, code: string) {
   const user =
@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
     }
 
     const result = localStartPasswordReset(email);
-    const exists = Boolean(localFindByEmail(email));
     const developmentCode = result.started ? result.developmentCode : undefined;
 
     if (result.started && developmentCode) {
@@ -60,7 +59,6 @@ export async function POST(request: NextRequest) {
       sent: true,
       email,
       developmentCode,
-      exists,
     });
   } catch (error) {
     console.error("[forgot-password]", error);
