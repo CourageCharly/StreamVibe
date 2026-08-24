@@ -150,6 +150,14 @@ section {
   aspect-ratio: 16 / 9;
 }
 
+/* Make the minimized watch player height consistent with other mobile cards (e.g. posters) */
+@media (max-width: 639px) {
+  .cinema-frame.watch-fill {
+    aspect-ratio: auto;
+    height: 300px; /* matches other mobile card min-heights */
+  }
+}
+
 video,
 .cinema-frame video,
 .cinema-frame iframe,
