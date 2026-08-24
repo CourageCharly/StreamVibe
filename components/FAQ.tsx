@@ -85,7 +85,6 @@ export default function FAQ({ askHref = "/support", className = "" }: Props) {
     <section id="faq" className={["page-section", className].filter(Boolean).join(" ")}>
       <SectionHeading
         title="Frequently Asked Questions"
-        titleClassName="!text-[18px] !font-medium sm:!text-[20px]"
         description="Got questions? We've got answers! Check out our FAQ section to find answers to the most common questions about StreamVibe."
         action={<Button href={askHref}>Ask a Question</Button>}
       />

@@ -18,7 +18,7 @@ export default function SubscriptionPlans() {
         onBillingChange={setBilling}
         choosePlanHref="/subscriptions"
         /* Tighter space under back arrow + “Subscriptions” */
-        className="!pt-3 sm:!pt-4"
+        className="mt-0 sm:mt-[100px]"
       />
       <PlanComparison billing={billing} />
     </>
