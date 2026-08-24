@@ -66,7 +66,7 @@ export default async function ShowsPage({ searchParams }: Props) {
           />
         </div>
       </div>
-      <FreeTrialBanner posters={popular.slice(0, 12)} />
+      <FreeTrialBanner posters={popular.slice(0, 12)} className="!pt-[120px]" />
     </div>
   );
 }

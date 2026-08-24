@@ -10,9 +10,10 @@ import RedGradientOverlay from "@/components/RedGradientOverlay";
 type Props = {
   /** CTA for Ask a Question — support page uses #contact */
   askHref?: string;
+  className?: string;
 };
 
-export default function FAQ({ askHref = "/support" }: Props) {
+export default function FAQ({ askHref = "/support", className = "" }: Props) {
   const [openId, setOpenId] = useState<string>("");
 
   const left = FAQS.slice(0, 4);
@@ -81,7 +82,7 @@ export default function FAQ({ askHref = "/support" }: Props) {
   };
 
   return (
-    <section id="faq" className="page-section">
+    <section id="faq" className={["page-section", className].filter(Boolean).join(" ")}>
       <SectionHeading
         title="Frequently Asked Questions"
         titleClassName="!text-[18px] !font-medium sm:!text-[20px]"

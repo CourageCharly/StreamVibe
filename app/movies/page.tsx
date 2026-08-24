@@ -191,7 +191,7 @@ export default async function MoviesPage({ searchParams }: Props) {
         <MoviesHero movies={heroSlides} trailers={heroTrailers} />
 
         {/* Web only: more space between hero and Movies section */}
-        <div className="mt-0 sm:mt-12 lg:mt-16">
+        <div className="mt-0 sm:mt-[100px] lg:mt-[100px]">
         {/* Mobile: Movies / Shows tabs right under hero · Desktop: both sections */}
         <MoviesShowsTabs
           movies={
@@ -288,7 +288,7 @@ export default async function MoviesPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <FreeTrialBanner posters={popular.slice(0, 12)} />
+      <FreeTrialBanner posters={popular.slice(0, 12)} className="!pt-[120px]" />
     </div>
   );
 }

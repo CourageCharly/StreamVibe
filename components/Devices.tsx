@@ -2,9 +2,9 @@ import { DEVICES } from "@/lib/constants";
 import DeviceCard from "@/components/DeviceCard";
 import SectionHeading from "@/components/SectionHeading";
 
-export default function Devices() {
+export default function Devices({ className = "" }: { className?: string }) {
   return (
-    <section id="devices" className="page-section">
+    <section id="devices" className={["page-section", className].filter(Boolean).join(" ")}>
       <SectionHeading
         title={
           <>

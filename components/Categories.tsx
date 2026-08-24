@@ -29,7 +29,7 @@ export default function Categories({ categoryMovies }: Props) {
   return (
     <section
       id="categories"
-      className="page-section !pt-1 sm:!pt-[clamp(2rem,4vw,4rem)]"
+      className="page-section !pt-1 sm:!pt-[clamp(2rem,4vw,4rem)] lg:!pt-[150px]"
     >
       <SectionHeading
         title="Explore our wide variety of categories"

@@ -36,15 +36,17 @@ export default async function HomePage() {
     >
       <Hero posters={heroPosters} trailers={trailers} />
       <Categories categoryMovies={categories} />
-      <Devices />
-      <FAQ askHref="/support?from=faq#contact" />
+      <Devices className="!pt-3 !pb-3" />
+      <FAQ askHref="/support?from=faq#contact" className="!pt-3 !pb-3" />
       <Pricing
         choosePlanHref="/subscriptions?from=pricing"
         trialHref="/movies?from=pricing"
+        className="!pt-3 !pb-3"
       />
       <FreeTrialBanner
         posters={bannerPosters}
         ctaHref="/movies?from=free-trial"
+        className="!pt-3 !pb-3"
       />
     </div>
   );
