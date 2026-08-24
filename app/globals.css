@@ -143,13 +143,6 @@ section {
   }
 }
 
-/* Watch movies + shows — 16:9 box so the picture fills the frame edge-to-edge */
-.cinema-frame.watch-fill {
-  height: auto;
-  aspect-ratio: 16 / 9;
-  max-height: min(85vh, 900px);
-}
-
 video,
 .cinema-frame video,
 .cinema-frame iframe,
@@ -158,48 +151,6 @@ video,
   height: 100%;
   object-fit: cover;
   object-position: center;
-}
-
-/* Home (web): 150px hero → Explore; 12px between the rest */
-@media (min-width: 1024px) {
-  .home-explore-gap {
-    margin-top: 150px;
-  }
-  .home-explore-gap > .page-section {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  .home-section-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .home-section-stack > .page-section {
-    padding-block: 0 !important;
-  }
-}
-
-/* Movies & Shows (web): 100px hero → Movies; 120px between sections */
-@media (min-width: 1024px) {
-  .movies-hero-gap {
-    margin-top: 100px;
-  }
-  .movies-section-stack {
-    gap: 120px;
-  }
-  .movies-before-footer {
-    margin-top: 120px;
-  }
-}
-
-/* Detail + watch (web): 100px hero/player → body; 120px body → footer */
-@media (min-width: 1024px) {
-  .title-after-hero {
-    margin-top: 100px;
-  }
-  .title-before-footer {
-    margin-bottom: 120px;
-  }
 }
 
 .page-section {

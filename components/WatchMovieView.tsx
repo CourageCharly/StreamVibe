@@ -365,6 +365,9 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       if (original && bk === original) return 1;
       return a.english_name.localeCompare(b.english_name);
     });
+    if (!list.length) {
+      return [{ iso_639_1: "en", english_name: "English" }];
+    }
     return list;
   }, [captionTracks, movie.original_language]);
 
@@ -786,10 +789,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8 lg:space-y-0 lg:pb-0">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
         <nav
           aria-label="Breadcrumb"
-          className="mb-5 flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
+          className="flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
         >
           {/* Watch → detail hero (replace so player is not left on the stack) */}
           <BackLink
@@ -829,7 +832,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "h-[100svh] h-[100dvh] max-h-[100dvh]",
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
-              : "cinema-frame watch-fill",
+              : "cinema-frame",
           ].join(" ")}
         >
           {playing && active?.videoKey ? (
@@ -1057,7 +1060,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           )}
         </section>
 
-        <div className="mt-5 grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:mt-8 sm:gap-5 lg:mt-[100px] lg:grid-cols-3 lg:gap-6">
+        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             {/* Seasonal titles only — real TMDB seasons/episodes */}
             {isSeasonal && movie.seasons ? (
@@ -1188,9 +1191,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         </div>
       </div>
 
-      <div className="lg:mb-[120px]">
-        <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
-      </div>
+      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
         open={!isMobile && authOpen && status === "anonymous"}

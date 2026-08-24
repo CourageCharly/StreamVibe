@@ -69,7 +69,7 @@ export default function MoviesShowsTabs({
   const active = ready ? tab : "movies";
 
   return (
-    <div className="movies-section-stack flex w-full min-w-0 flex-col gap-14 sm:gap-16 lg:gap-[120px]">
+    <div className="flex w-full min-w-0 flex-col gap-14 sm:gap-16 lg:gap-24">
       <div className="w-full lg:hidden">
         {skeleton ? (
           <div
