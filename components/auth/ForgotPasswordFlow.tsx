@@ -11,7 +11,7 @@ import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
 
-type Step = "email" | "otp" | "reset";
+type Step = "email" | "otp" | "reset" | "success";
 
 const fieldChrome =
   "w-full rounded-lg border border-[#262626] bg-[#141414] px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-[#999999] focus:border-[#404040]";
@@ -125,8 +125,7 @@ export function ForgotPasswordFlow() {
         setError(data.message || "Unable to reset your password.");
         return;
       }
-      toast.success("Password updated. You can log in now.");
-      router.replace(loginHref);
+      setStep("success");
     } catch {
       toast.error(MESSAGES.network);
     } finally {
@@ -146,6 +145,10 @@ export function ForgotPasswordFlow() {
     reset: {
       title: "Create a new password",
       subtitle: "Choose a new password for your StreamVibe account.",
+    },
+    success: {
+      title: "Password updated",
+      subtitle: "Your password has been changed. You can log in with it now.",
     },
   };
 
@@ -241,6 +244,18 @@ export function ForgotPasswordFlow() {
                   Use a different email
                 </button>
               </form>
+            ) : null}
+
+            {step === "success" ? (
+              <div className="space-y-4">
+                <Button
+                  type="button"
+                  className="!w-full"
+                  onClick={() => router.replace(loginHref)}
+                >
+                  Log In
+                </Button>
+              </div>
             ) : null}
 
             {step === "reset" ? (

@@ -150,13 +150,7 @@ section {
   aspect-ratio: 16 / 9;
 }
 
-/* Make the minimized watch player height consistent with other mobile cards (e.g. posters) */
-@media (max-width: 639px) {
-  .cinema-frame.watch-fill {
-    aspect-ratio: auto;
-    height: 300px; /* matches other mobile card min-heights */
-  }
-}
+
 
 video,
 .cinema-frame video,
@@ -346,20 +340,21 @@ a:disabled,
   min-height: 0;
 }
 
-/* Modern captions — no box, outline, inset from the player edges */
+/* Standard captions — centered, no box, inset from the player edges */
 .player-subtitles {
   position: absolute;
   left: 50%;
-  bottom: max(22%, 4.75rem);
+  bottom: max(20%, 4.5rem);
   z-index: 25;
-  width: calc(100% - 1.75rem);
+  width: calc(100% - 2rem);
   max-width: 36rem;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.12em;
-  padding-inline: 0.25rem;
+  padding-inline: 0.5rem;
   box-sizing: border-box;
   text-align: center;
   font-size: clamp(13px, 2.6cqh, 18px);
@@ -398,6 +393,7 @@ a:disabled,
   display: block;
   width: 100%;
   text-align: center;
+  margin-inline: auto;
 }
 
 @media (min-width: 1024px) {

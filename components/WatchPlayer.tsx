@@ -265,25 +265,6 @@ export default function WatchPlayer({
     };
   }, [mounted, videoKey, subtitleLang]);
 
-  /** Native track for a language — no silent English fallback. */
-  function findNativeTrack(
-    list: CaptionTrack[] | undefined,
-    lang: string,
-  ): CaptionTrack | null {
-    const code = (lang || "en").toLowerCase();
-    if (!list?.length) return null;
-    const exact = list.find(
-      (t) => (t.languageCode || "").toLowerCase() === code,
-    );
-    if (exact?.languageCode) return exact;
-    const prefix = list.find((t) => {
-      const c = (t.languageCode || "").toLowerCase();
-      if (!c) return false;
-      return c.startsWith(code.slice(0, 2)) || code.startsWith(c.slice(0, 2));
-    });
-    return prefix?.languageCode ? prefix : null;
-  }
-
   function readTrackList(player: YTPlayer): CaptionTrack[] {
     try {
       const a = player.getOption?.("captions", "tracklist") as
@@ -318,55 +299,9 @@ export default function WatchPlayer({
         );
       }
 
-      if (subtitlesOnRef.current && overlayCuesRef.current) {
-        // Overlay is painting current cues — hide native YT text
-        player.setOption?.("captions", "track", {});
-        player.setOption?.("cc", "track", {});
-      } else if (subtitlesOnRef.current) {
-        const wanted = subtitleLangRef.current || "en";
-        const native = findNativeTrack(list, wanted);
-        const source =
-          native ||
-          findNativeTrack(list, "en") ||
-          list[0] ||
-          ({ languageCode: wanted } satisfies CaptionTrack);
-        const trackPayload: Record<string, unknown> = {
-          languageCode: source.languageCode,
-        };
-        if (source.kind) trackPayload.kind = source.kind;
-        try {
-          player.setOption?.("captions", "fontSize", 0);
-          player.setOption?.("cc", "fontSize", 0);
-          const modern = {
-            background: "#000000",
-            backgroundOpacity: 0,
-            windowColor: "#000000",
-            windowOpacity: 0,
-            fontSizeIncrease: 0,
-            fontSizeIncrement: 0,
-            color: "#ffffff",
-            charColor: "#ffffff",
-            textOpacity: 100,
-            fontFamily: 4,
-            fontStyle: 0,
-            edgeStyle: 3,
-            characterEdgeStyle: 3,
-            textAlign: "center",
-          };
-          player.setOption?.("captions", "displaySettings", modern);
-          player.setOption?.("cc", "displaySettings", modern);
-        } catch {
-          /* optional */
-        }
-        player.setOption?.("captions", "track", trackPayload);
-        player.setOption?.("cc", "track", trackPayload);
-        player.setOption?.("captions", "translationLanguage", {});
-        player.setOption?.("cc", "translationLanguage", {});
-      } else {
-        // Hide captions (keep modules loaded for fast re-enable)
-        player.setOption?.("captions", "track", {});
-        player.setOption?.("cc", "track", {});
-      }
+      // Overlay paints centered captions; keep native YT text hidden.
+      player.setOption?.("captions", "track", {});
+      player.setOption?.("cc", "track", {});
     } catch {
       /* captions not available for this video */
     }

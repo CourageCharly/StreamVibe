@@ -78,18 +78,23 @@ export function addMovieNotice(input: {
   kind?: MovieNotice["kind"];
 }) {
   if (typeof window === "undefined") return;
+  const kind = input.kind ?? "watchlist";
+  const current = readUserNotices();
+  const already = current.some(
+    (n) => n.kind === kind && n.href === input.href && n.title === input.title,
+  );
+  if (already) return;
   const notice: MovieNotice = {
     id: `u-${Date.now()}`,
     title: input.title,
     body: input.body,
     href: input.href,
-    kind: input.kind ?? "watchlist",
+    kind,
     unread: true,
     at: Date.now(),
   };
   try {
-    const next = [notice, ...readUserNotices()].slice(0, 40);
-    localStorage.setItem(USER_KEY, JSON.stringify(next));
+    localStorage.setItem(USER_KEY, JSON.stringify([notice, ...current].slice(0, 40)));
   } catch {
     /* quota */
   }

@@ -24,8 +24,9 @@ export default async function SubscriptionsPage() {
         legacyHomeAs="pricing"
         wrapperClassName="page-container pt-6 sm:pt-8"
       />
-
-      <SubscriptionPlans />
+      <div className="page-container bg-[#141414] pt-0 pb-5 sm:pb-7">
+        <SubscriptionPlans />
+      </div>
 
       <FreeTrialBanner posters={popular.slice(0, 12)} />
     </div>
