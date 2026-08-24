@@ -344,11 +344,11 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8 lg:space-y-0 lg:pb-0">
         {/* Breadcrumb — back + Movies & Shows only */}
         <nav
           aria-label="Breadcrumb"
-          className="flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
+          className="mb-5 flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
         >
           <BackLink
             preferHistory
@@ -467,7 +467,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
         </section>
 
         {/* Info grid — description, cast, reviews only (watch/episodes on Play Now) */}
-        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        <div className="mt-5 grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:mt-8 sm:gap-5 lg:mt-[100px] lg:grid-cols-3 lg:gap-6">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             <InfoCard title="Description">
               <p className="text-[12px] font-normal leading-relaxed text-[#999999] sm:text-[13px]">
@@ -589,7 +589,9 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
         </div>
       </div>
 
-      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      <div className="lg:mb-[120px]">
+        <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      </div>
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
         open={!isMobile && authOpen}

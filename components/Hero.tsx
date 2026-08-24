@@ -153,7 +153,7 @@ export default function Hero({ posters, trailers = [] }: Props) {
           "page-container relative z-[2] flex min-w-0 flex-col items-center text-center",
           "h-[min(100svh,680px)] justify-center",
           /* Mobile: tight bottom gap before Explore; sm+ keeps page-section rhythm */
-          "pt-[calc(var(--header-h)+clamp(2rem,4vw,4rem))] pb-0 sm:pb-[clamp(2rem,4vw,4rem)]",
+          "pt-[calc(var(--header-h)+clamp(2rem,4vw,4rem))] pb-0 sm:pb-[clamp(2rem,4vw,4rem)] lg:pb-0",
           "sm:h-auto sm:min-h-[min(100dvh,880px)] sm:justify-end",
         ].join(" ")}
       >

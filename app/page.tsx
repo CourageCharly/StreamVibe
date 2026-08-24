@@ -35,17 +35,21 @@ export default async function HomePage() {
       style={{ overflowX: "hidden", maxWidth: "100%" }}
     >
       <Hero posters={heroPosters} trailers={trailers} />
-      <Categories categoryMovies={categories} />
-      <Devices />
-      <FAQ askHref="/support?from=faq#contact" />
-      <Pricing
-        choosePlanHref="/subscriptions?from=pricing"
-        trialHref="/movies?from=pricing"
-      />
-      <FreeTrialBanner
-        posters={bannerPosters}
-        ctaHref="/movies?from=free-trial"
-      />
+      <div className="home-explore-gap lg:mt-[150px]">
+        <Categories categoryMovies={categories} />
+      </div>
+      <div className="home-section-stack">
+        <Devices />
+        <FAQ askHref="/support?from=faq#contact" />
+        <Pricing
+          choosePlanHref="/subscriptions?from=pricing"
+          trialHref="/movies?from=pricing"
+        />
+        <FreeTrialBanner
+          posters={bannerPosters}
+          ctaHref="/movies?from=free-trial"
+        />
+      </div>
     </div>
   );
 }

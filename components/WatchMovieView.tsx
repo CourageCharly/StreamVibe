@@ -540,10 +540,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     };
   }, [langMenuOpen]);
 
-  // Close language menu when player stops, title changes, or only one track
+  // Close language menu when player stops or title changes
   useEffect(() => {
     setLangMenuOpen(false);
-  }, [playing, movie.id, active?.id, languages.length]);
+  }, [playing, movie.id, active?.id]);
 
   // Lock body scroll while mobile full view is open
   useEffect(() => {
@@ -786,10 +786,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8 lg:space-y-0 lg:pb-0">
         <nav
           aria-label="Breadcrumb"
-          className="flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
+          className="mb-5 flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
         >
           {/* Watch → detail hero (replace so player is not left on the stack) */}
           <BackLink
@@ -873,7 +873,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   >
                     CC
                   </button>
-                  {languages.length > 1 ? (
+                  {languages.length > 0 ? (
                     <div ref={langMenuRef} className="relative min-w-0 max-w-[9.5rem] sm:max-w-[200px]">
                       <button
                         type="button"
@@ -937,15 +937,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                           })}
                         </ul>
                       ) : null}
-                    </div>
-                  ) : languages.length === 1 ? (
-                    <div
-                      className="pointer-events-none flex h-10 max-w-[9.5rem] min-w-0 items-center rounded-lg border border-[#262626] bg-[#0F0F0F] px-2 sm:h-12 sm:max-w-[200px] sm:min-w-[9rem] sm:px-2.5"
-                      aria-label={`Subtitle language ${languages[0].english_name}`}
-                    >
-                      <span className="min-w-0 truncate text-left text-[11px] font-medium text-white sm:text-[12px]">
-                        {languages[0].english_name}
-                      </span>
                     </div>
                   ) : null}
                   <button
@@ -1066,7 +1057,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           )}
         </section>
 
-        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        <div className="mt-5 grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:mt-8 sm:gap-5 lg:mt-[100px] lg:grid-cols-3 lg:gap-6">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             {/* Seasonal titles only — real TMDB seasons/episodes */}
             {isSeasonal && movie.seasons ? (
@@ -1197,7 +1188,9 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         </div>
       </div>
 
-      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      <div className="lg:mb-[120px]">
+        <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
+      </div>
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
         open={!isMobile && authOpen && status === "anonymous"}
