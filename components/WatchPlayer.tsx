@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { FaPause, FaPlay } from "react-icons/fa";
 import { FiRotateCcw, FiRotateCw } from "react-icons/fi";
+import { cueTextAt, type CaptionCue } from "@/lib/caption-cues";
 
 type YTPlayer = {
   destroy: () => void;
@@ -120,6 +121,8 @@ export default function WatchPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [cues, setCues] = useState<CaptionCue[]>([]);
+  const overlayCuesRef = useRef(false);
   const [coverSize, setCoverSize] = useState<{ w: number; h: number } | null>(
     null,
   );
@@ -216,6 +219,29 @@ export default function WatchPlayer({
     return () => window.clearInterval(id);
   }, [mounted, videoKey, dragging]);
 
+  // Timed cues for the centered overlay
+  useEffect(() => {
+    if (!mounted || !videoKey) return;
+    let cancelled = false;
+    const lang = subtitleLang || "en";
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/captions?videoId=${encodeURIComponent(videoKey)}&lang=${encodeURIComponent(lang)}`,
+        );
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { cues?: CaptionCue[] };
+        if (cancelled) return;
+        setCues(Array.isArray(data.cues) ? data.cues : []);
+      } catch {
+        if (!cancelled) setCues([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted, videoKey, subtitleLang]);
+
   /** Resolve best caption track for a language (streaming-standard matching). */
   function resolveCaptionTrack(
     list: CaptionTrack[] | undefined,
@@ -274,20 +300,36 @@ export default function WatchPlayer({
         );
       }
 
-      if (subtitlesOnRef.current) {
+      if (subtitlesOnRef.current && overlayCuesRef.current) {
+        // Overlay renders Netflix-style captions — hide native YT text
+        player.setOption?.("captions", "track", {});
+        player.setOption?.("cc", "track", {});
+      } else if (subtitlesOnRef.current) {
         const track = resolveCaptionTrack(list, subtitleLangRef.current || "en");
         player.setOption?.("captions", "track", track);
         player.setOption?.("cc", "track", track);
         try {
-          player.setOption?.("captions", "fontSize", 1);
-          player.setOption?.("captions", "displaySettings", {
+          player.setOption?.("captions", "fontSize", -1);
+          player.setOption?.("cc", "fontSize", -1);
+          const modern = {
             background: "#000000",
-            backgroundOpacity: 75,
+            backgroundOpacity: 0,
+            windowColor: "#000000",
             windowOpacity: 0,
-            fontSizeIncrease: 0,
+            fontSizeIncrease: -1,
+            fontSizeIncrement: -1,
             color: "#ffffff",
+            charColor: "#ffffff",
             textOpacity: 100,
-          });
+            fontFamily: 4,
+            fontStyle: 0,
+            edgeStyle: 3,
+            characterEdgeStyle: 3,
+            textAlign: "center",
+          };
+          player.setOption?.("captions", "displaySettings", modern);
+          player.setOption?.("cc", "displaySettings", modern);
+          player.setOption?.("captions", "reload", true);
         } catch {
           /* optional */
         }
@@ -429,6 +471,7 @@ export default function WatchPlayer({
   useEffect(() => {
     subtitlesOnRef.current = subtitlesOn;
     subtitleLangRef.current = subtitleLang;
+    overlayCuesRef.current = subtitlesOn && cues.length > 0;
     const player = playerRef.current;
     if (!player) return;
     applyCaptions(player);
@@ -440,7 +483,7 @@ export default function WatchPlayer({
       window.clearTimeout(t2);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subtitlesOn, subtitleLang]);
+  }, [subtitlesOn, subtitleLang, cues.length]);
 
   const togglePlayPause = useCallback(() => {
     const player = playerRef.current;
@@ -499,6 +542,9 @@ export default function WatchPlayer({
   );
 
   const progress = duration > 0 ? Math.min(1, currentTime / duration) : 0;
+  const overlayOn = subtitlesOn && cues.length > 0;
+  overlayCuesRef.current = overlayOn;
+  const cueText = overlayOn ? cueTextAt(cues, currentTime) : "";
 
   const transportBtn =
     "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 active:scale-95 sm:h-12 sm:w-12";
@@ -536,6 +582,22 @@ export default function WatchPlayer({
           className="relative h-full w-full"
         />
       </div>
+
+      {subtitlesOn && cueText ? (
+        <div
+          className={[
+            "player-subtitles",
+            showControls ? "player-subtitles--raised" : "",
+          ].join(" ")}
+          aria-live="polite"
+        >
+          {cueText.split("\n").map((line, i) => (
+            <span key={`${i}-${line}`} className="player-subtitles__line">
+              {line}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <button
         type="button"
