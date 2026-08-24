@@ -149,7 +149,7 @@ video,
 .cinema-frame img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
 }
 
@@ -365,6 +365,8 @@ a:disabled,
 .cinema-frame iframe {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
   object-position: center;
 }

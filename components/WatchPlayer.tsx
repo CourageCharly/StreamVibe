@@ -88,8 +88,8 @@ function formatTime(sec: number): string {
 
 /**
  * Full watch player — streaming-style UX:
- * full-width cover fill, auto-hide controls, tap to play/pause,
- * seek bar + duration, ±10s skip (web + mobile / full view).
+ * cover-fill the cinema frame (width + height), auto-hide controls,
+ * tap to play/pause, seek bar + duration, ±10s skip (web + mobile).
  */
 export default function WatchPlayer({
   videoKey,
@@ -144,7 +144,7 @@ export default function WatchPlayer({
     setMounted(true);
   }, []);
 
-  // Fit the full picture in the container — nothing cropped off-screen.
+  // Size the 16:9 video to cover the frame (same fill as FastTrailerPlayer).
   useEffect(() => {
     if (!mounted) return;
     const el = coverBoxRef.current;
@@ -155,13 +155,18 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const videoRatio = 16 / 9;
-      let w = width;
-      let h = width / videoRatio;
-      if (h > height) {
+      const boxRatio = width / height;
+      let w: number;
+      let h: number;
+      if (boxRatio > videoRatio) {
+        w = width;
+        h = width / videoRatio;
+      } else {
         h = height;
         w = height * videoRatio;
       }
-      setCoverSize({ w, h });
+      const pad = 1.12;
+      setCoverSize({ w: w * pad, h: h * pad });
     };
 
     apply();
@@ -333,6 +338,27 @@ export default function WatchPlayer({
               else e.target.unMute();
               e.target.playVideo();
               setIsPlaying(true);
+              // Remeasure cover after iframe mounts (esp. mobile)
+              if (coverBoxRef.current) {
+                const box = coverBoxRef.current;
+                const width = box.clientWidth;
+                const height = box.clientHeight;
+                if (width > 0 && height > 0) {
+                  const videoRatio = 16 / 9;
+                  const boxRatio = width / height;
+                  let w: number;
+                  let h: number;
+                  if (boxRatio > videoRatio) {
+                    w = width;
+                    h = width / videoRatio;
+                  } else {
+                    h = height;
+                    w = height * videoRatio;
+                  }
+                  const pad = 1.12;
+                  setCoverSize({ w: w * pad, h: h * pad });
+                }
+              }
               // Retry captions — tracks often appear after a short delay
               applyCaptions(e.target);
               setTimeout(() => applyCaptions(e.target), 400);
@@ -486,11 +512,11 @@ export default function WatchPlayer({
     >
       <div
         className={[
-          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden",
-          "[&>iframe]:!absolute [&>iframe]:!inset-0",
+          "pointer-events-none absolute left-1/2 top-1/2",
+          "-translate-x-1/2 -translate-y-1/2",
+          "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
           "[&>iframe]:!h-full [&>iframe]:!w-full",
-          "[&>iframe]:!object-contain [&>iframe]:!object-center",
-          "[&>iframe]:!max-h-full [&>iframe]:!max-w-full",
+          "[&>iframe]:!max-h-none [&>iframe]:!max-w-none [&>iframe]:!min-h-full [&>iframe]:!min-w-full",
           "[&>iframe]:!border-0",
           "[&>iframe]:!pointer-events-none",
         ].join(" ")}
@@ -498,8 +524,8 @@ export default function WatchPlayer({
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
             : {
-                width: "min(100%, 177.78%)",
-                height: "min(100%, 100%)",
+                width: "max(100cqw, 177.78cqh)",
+                height: "max(100cqh, 56.25cqw)",
               }
         }
       >
