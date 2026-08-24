@@ -186,54 +186,49 @@ function CastRow({
   cast: MoviePerson[];
   scrollRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  if (!cast.length) {
-    return (
-      <p className="text-[13px] text-[#999999]">Cast information unavailable.</p>
-    );
-  }
-
   return (
-    <div
-      ref={scrollRef}
-      className="flex gap-3 overflow-x-auto pb-1"
-      style={{ scrollbarWidth: "none" }}
-    >
-      {cast.map((person) => {
-        const src = profileUrl(person.profile_path);
-        return (
-          <div
-            key={`${person.id}-${person.character}`}
-            className="w-[72px] shrink-0 text-center"
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
+        >
+          {/* Watch → detail hero (replace so player is not left on the stack) */}
+          <BackLink
+            href={`${basePath}/${movie.id}`}
+            fallbackHref={`${basePath}/${movie.id}`}
+            replace
+            aria-label="Back to title"
+          />
+          <Link
+            href="/movies"
+            className="truncate text-cta transition hover:text-white"
           >
-            <div className="relative mx-auto h-16 w-16 overflow-hidden rounded-full border border-[#262626] bg-[#141414]">
-              {src ? (
-                <Image
-                  src={src}
-                  alt={person.name}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-xs text-[#666]">
-                  {person.name.slice(0, 1)}
-                </div>
-              )}
-            </div>
-            <p className="mt-2 truncate text-[11px] font-medium text-white">
-              {person.name}
-            </p>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+            Movies & Shows
+          </Link>
+        </nav>
+      </div>
 
-function CastSection({ cast }: { cast: MoviePerson[] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: -1 | 1) => {
-    ref.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
+      {/* Spacer keeps layout when player is fixed full-view on mobile */}
+      {fullView ? (
+        <div className="h-[100svh] h-[100dvh] w-full sm:hidden" aria-hidden />
+      ) : null}
+
+      {/* Full-bleed player section (renders outside page-container to take full width) */}
+      <section
+        ref={playerShellRef}
+        className={[
+          "relative w-full min-w-0 overflow-hidden bg-black",
+          fullView
+            ? [
+                "fixed inset-0 z-[200] rounded-none",
+                /* Fallbacks for all mobile viewports; JS visualViewport refines */
+                "h-[100svh] h-[100dvh] max-h-[100dvh]",
+                "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
+              ].join(" ")
+            : "cinema-frame watch-fill",
+        ].join(" ")}
+      >
   };
 
   return (
@@ -1067,6 +1062,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           )}
         </section>
 
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
         <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6 mt-0 sm:mt-[100px]">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             {/* Seasonal titles only — real TMDB seasons/episodes */}
