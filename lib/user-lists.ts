@@ -31,10 +31,13 @@ export function setActiveListUser(userId: string | null) {
   emitLists();
 }
 
+export function storageUserId() {
+  if (typeof window === "undefined") return "anon";
+  return localStorage.getItem(ACTIVE_USER_KEY)?.trim() || "anon";
+}
+
 function scopedKey(base: string) {
-  if (typeof window === "undefined") return `${base}:anon`;
-  const id = localStorage.getItem(ACTIVE_USER_KEY)?.trim() || "anon";
-  return `${base}:${id}`;
+  return `${base}:${storageUserId()}`;
 }
 
 function readRefs(key: string): CatalogRef[] {

@@ -16,10 +16,16 @@ export type MovieNotice = {
     | "like";
 };
 
+import { storageUserId } from "@/lib/user-lists";
+
 const READ_KEY = "streamvibe:notice-read";
 const USER_KEY = "streamvibe:user-notices";
 const DELETED_KEY = "streamvibe:notice-deleted";
 export const NOTICE_EVENT = "streamvibe:notices";
+
+function scoped(base: string) {
+  return `${base}:${storageUserId()}`;
+}
 
 /** Only notices created by a real user action (list, like, review). */
 
@@ -31,7 +37,7 @@ function emitNotices() {
 function readUserNotices(): MovieNotice[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = localStorage.getItem(scoped(USER_KEY));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as MovieNotice[];
     return Array.isArray(parsed) ? parsed : [];
@@ -43,7 +49,7 @@ function readUserNotices(): MovieNotice[] {
 export function getReadNoticeIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(READ_KEY);
+    const raw = localStorage.getItem(scoped(READ_KEY));
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
@@ -53,7 +59,7 @@ export function getReadNoticeIds(): string[] {
 function getDeletedIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(DELETED_KEY);
+    const raw = localStorage.getItem(scoped(DELETED_KEY));
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
@@ -94,7 +100,10 @@ export function addMovieNotice(input: {
     at: Date.now(),
   };
   try {
-    localStorage.setItem(USER_KEY, JSON.stringify([notice, ...current].slice(0, 40)));
+    localStorage.setItem(
+      scoped(USER_KEY),
+      JSON.stringify([notice, ...current].slice(0, 40)),
+    );
   } catch {
     /* quota */
   }
@@ -104,7 +113,7 @@ export function addMovieNotice(input: {
 export function markNoticeRead(id: string) {
   const next = Array.from(new Set([...getReadNoticeIds(), id]));
   try {
-    localStorage.setItem(READ_KEY, JSON.stringify(next));
+    localStorage.setItem(scoped(READ_KEY), JSON.stringify(next));
   } catch {
     /* quota */
   }
@@ -113,7 +122,10 @@ export function markNoticeRead(id: string) {
 
 export function markAllNoticesRead(ids: string[]) {
   try {
-    localStorage.setItem(READ_KEY, JSON.stringify(Array.from(new Set(ids))));
+    localStorage.setItem(
+      scoped(READ_KEY),
+      JSON.stringify(Array.from(new Set(ids))),
+    );
   } catch {
     /* quota */
   }
@@ -124,9 +136,9 @@ export function deleteNotice(id: string) {
   if (typeof window === "undefined") return;
   try {
     const user = readUserNotices().filter((n) => n.id !== id);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(scoped(USER_KEY), JSON.stringify(user));
     const deleted = Array.from(new Set([...getDeletedIds(), id]));
-    localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+    localStorage.setItem(scoped(DELETED_KEY), JSON.stringify(deleted));
   } catch {
     /* quota */
   }

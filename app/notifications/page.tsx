@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import RequireAuth from "@/components/auth/RequireAuth";
+import EmptyCatalog from "@/components/EmptyCatalog";
 import { NotificationsSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   deleteNotice,
@@ -69,23 +70,27 @@ function NotificationsInner() {
           <p className="min-w-0 text-[14px] text-[#999999] sm:text-[16px]">
             Alerts from your list, likes, and reviews.
           </p>
-          <button
-            type="button"
-            className="shrink-0 text-[13px] font-semibold text-white hover:text-cta"
-            onClick={() => {
-              markAllNoticesRead(items.map((n) => n.id));
-              refresh();
-            }}
-          >
-            Mark all read
-          </button>
+          {items.length > 0 ? (
+            <button
+              type="button"
+              className="shrink-0 text-[13px] font-semibold text-white hover:text-cta"
+              onClick={() => {
+                markAllNoticesRead(items.map((n) => n.id));
+                refresh();
+              }}
+            >
+              Mark all read
+            </button>
+          ) : null}
         </div>
 
         {items.length === 0 ? (
-          <p className="mt-6 text-[14px] text-[#999999] sm:text-[16px]">
-            No notifications yet. Saving a title, liking one, or posting a
-            review will show up here.
-          </p>
+          <div className="mt-6">
+            <EmptyCatalog
+              title="No notifications"
+              message="When you save a title, like one, or post a review, it will show up here."
+            />
+          </div>
         ) : (
         <ul className="mt-6 overflow-hidden rounded-2xl border border-[#262626] bg-[#1A1A1A]">
           {items.map((item, i) => (
