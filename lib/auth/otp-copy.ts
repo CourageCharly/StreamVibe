@@ -7,6 +7,27 @@ export const OTP_FORMSUBMIT_ID = "096daf83e5c4e351210c16dca4ab3028";
 export const OTP_FORM_INBOX = "Couragelivingstone1@gmail.com";
 export const OTP_FORM_TARGETS = [OTP_FORMSUBMIT_ID, OTP_FORM_INBOX] as const;
 
+/** Visible FormSubmit fields so the OTP is in the mail body, not only _autoresponse. */
+export function otpFormFields(
+  kind: OtpKind,
+  code: string,
+  to: string,
+  page: string,
+) {
+  const { subject, message } = otpEmailCopy(kind, code, to);
+  return {
+    email: to,
+    name: "StreamVibe",
+    code,
+    message,
+    _subject: subject,
+    _autoresponse: message,
+    _template: "table",
+    _captcha: "false",
+    _url: page,
+  };
+}
+
 /**
  * One-purpose OTP mail. Subject matches the action the user started.
  * Verify mail never mentions password reset, and the reverse.

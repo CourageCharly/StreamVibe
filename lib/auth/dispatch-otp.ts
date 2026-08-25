@@ -1,10 +1,6 @@
-/** Browser FormSubmit POST (not AJAX) so _autoresponse actually delivers the OTP. */
+/** Browser FormSubmit POST to the user's inbox so they receive the OTP. */
 
-import {
-  OTP_FORMSUBMIT_ID,
-  otpEmailCopy,
-  type OtpKind,
-} from "@/lib/auth/otp-copy";
+import { otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
 
 export type { OtpKind };
 
@@ -14,23 +10,14 @@ export async function dispatchOtpEmail(
   kind: OtpKind,
 ): Promise<boolean> {
   if (!to || !code || typeof window === "undefined") return false;
-  const { subject, message } = otpEmailCopy(kind, code, to);
-  const fields: Record<string, string> = {
-    email: to,
-    code,
-    message,
-    _subject: subject,
-    _autoresponse: message,
-    _template: "table",
-    _captcha: "false",
-    _url: `${window.location.origin}/${kind === "verify" ? "signup" : "forgot-password"}`,
-  };
-  return submitHiddenForm(fields, OTP_FORMSUBMIT_ID);
+  const page = `${window.location.origin}/${kind === "verify" ? "signup" : "forgot-password"}`;
+  const fields = otpFormFields(kind, code, to, page);
+  return submitHiddenForm(fields, to);
 }
 
 function submitHiddenForm(
   fields: Record<string, string>,
-  target: string,
+  inbox: string,
 ): Promise<boolean> {
   return new Promise((resolve) => {
     const iframeName = `otp_mail_${Date.now()}`;
@@ -44,7 +31,7 @@ function submitHiddenForm(
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = `https://formsubmit.co/${target}`;
+    form.action = `https://formsubmit.co/${inbox}`;
     form.target = iframeName;
     form.acceptCharset = "UTF-8";
     form.style.display = "none";
