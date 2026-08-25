@@ -2,65 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { TrailerClip } from "@/lib/types";
-
-type YTPlayer = {
-  destroy: () => void;
-  setPlaybackRate: (rate: number) => void;
-  mute: () => void;
-  unMute: () => void;
-  playVideo: () => void;
-  pauseVideo: () => void;
-};
-
-type YTNamespace = {
-  Player: new (
-    el: HTMLElement,
-    opts: {
-      videoId: string;
-      playerVars?: Record<string, number | string>;
-      events?: {
-        onReady?: (e: { target: YTPlayer }) => void;
-        onStateChange?: (e: { data: number; target: YTPlayer }) => void;
-      };
-    },
-  ) => YTPlayer;
-  PlayerState?: { PLAYING: number };
-};
-
-declare global {
-  interface Window {
-    YT?: YTNamespace;
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-let apiPromise: Promise<void> | null = null;
-
-function loadYouTubeApi() {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.YT?.Player) return Promise.resolve();
-  if (apiPromise) return apiPromise;
-
-  apiPromise = new Promise<void>((resolve) => {
-    const prior = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      prior?.();
-      resolve();
-    };
-    const existing = document.querySelector(
-      'script[src="https://www.youtube.com/iframe_api"]',
-    );
-    if (!existing) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.head.appendChild(tag);
-    }
-    // If API already loaded between checks
-    if (window.YT?.Player) resolve();
-  });
-
-  return apiPromise;
-}
+import {
+  destroyYouTubePlayer,
+  mountYouTubePlayer,
+  youtubeIframeReady,
+  type YouTubePlayerInstance,
+} from "@/lib/youtube-iframe";
 
 type Props = {
   clip: TrailerClip;
@@ -93,7 +40,8 @@ export default function FastTrailerPlayer({
   onEnded,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<YTPlayer | null>(null);
+  const playerRef = useRef<YouTubePlayerInstance | null>(null);
+  const readyRef = useRef(false);
   const onEndedRef = useRef(onEnded);
   const mutedRef = useRef(muted);
   const reactId = useId().replace(/:/g, "");
@@ -167,17 +115,16 @@ export default function FastTrailerPlayer({
   useEffect(() => {
     if (!mounted) return;
     let cancelled = false;
+    readyRef.current = false;
 
     async function mount() {
-      await loadYouTubeApi();
-      if (cancelled || !hostRef.current || !window.YT?.Player) return;
-
-      // Ensure the host has the stable id for YT.Player
+      if (!hostRef.current) return;
       hostRef.current.id = elId;
 
-      playerRef.current = new window.YT.Player(hostRef.current, {
-        videoId: clip.key,
-        playerVars: {
+      const player = await mountYouTubePlayer(
+        hostRef.current,
+        clip.key,
+        {
           autoplay: 1,
           mute: 1,
           controls: 0,
@@ -190,12 +137,14 @@ export default function FastTrailerPlayer({
           iv_load_policy: 3,
           disablekb: 1,
         },
-        events: {
+        {
           onReady: (e) => {
+            if (cancelled) return;
+            readyRef.current = true;
             try {
               if (mutedRef.current) e.target.mute();
               else e.target.unMute();
-              e.target.setPlaybackRate(playbackRate);
+              e.target.setPlaybackRate?.(playbackRate);
               e.target.playVideo();
               // Remeasure cover after iframe mounts (esp. mobile)
               if (objectFit === "cover" && coverBoxRef.current) {
@@ -223,10 +172,11 @@ export default function FastTrailerPlayer({
             }
           },
           onStateChange: (e) => {
+            if (cancelled) return;
             // Re-apply speed if player resets it
             if (e.data === 1 /* PLAYING */) {
               try {
-                e.target.setPlaybackRate(playbackRate);
+                e.target.setPlaybackRate?.(playbackRate);
                 if (mutedRef.current) e.target.mute();
                 else e.target.unMute();
               } catch {
@@ -239,26 +189,31 @@ export default function FastTrailerPlayer({
             }
           },
         },
-      });
+      );
+
+      if (cancelled) {
+        destroyYouTubePlayer(player, hostRef.current);
+        return;
+      }
+      playerRef.current = player;
     }
 
     void mount();
 
     return () => {
       cancelled = true;
-      try {
-        playerRef.current?.destroy();
-      } catch {
-        /* ignore */
-      }
+      readyRef.current = false;
+      destroyYouTubePlayer(playerRef.current, hostRef.current);
       playerRef.current = null;
     };
-  }, [mounted, clip.key, elId, playbackRate, loop]);
+  }, [mounted, clip.key, elId, playbackRate, loop, objectFit]);
 
   // Live mute / unmute without remounting the player
   useEffect(() => {
     const player = playerRef.current;
-    if (!player) return;
+    if (!player || !readyRef.current || !youtubeIframeReady(hostRef.current)) {
+      return;
+    }
     try {
       if (muted) player.mute();
       else player.unMute();
@@ -284,10 +239,10 @@ export default function FastTrailerPlayer({
           className={[
             "pointer-events-none absolute left-1/2 top-1/2",
             "-translate-x-1/2 -translate-y-1/2",
-            "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
-            "[&>iframe]:!h-full [&>iframe]:!w-full",
-            "[&>iframe]:!max-h-none [&>iframe]:!max-w-none [&>iframe]:!min-h-full [&>iframe]:!min-w-full",
-            "[&>iframe]:!border-0",
+            "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
+            "[&_iframe]:!h-full [&_iframe]:!w-full",
+            "[&_iframe]:!max-h-none [&_iframe]:!max-w-none [&_iframe]:!min-h-full [&_iframe]:!min-w-full",
+            "[&_iframe]:!border-0",
           ].join(" ")}
           style={
             coverSize
@@ -319,7 +274,7 @@ export default function FastTrailerPlayer({
         ref={hostRef}
         id={elId}
         title={clip.title}
-        className="absolute inset-0 h-full w-full [&>iframe]:absolute [&>iframe]:inset-0 [&>iframe]:h-full [&>iframe]:w-full [&>iframe]:max-h-none [&>iframe]:max-w-none"
+        className="absolute inset-0 h-full w-full [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:max-h-none [&_iframe]:max-w-none"
       />
     </div>
   );

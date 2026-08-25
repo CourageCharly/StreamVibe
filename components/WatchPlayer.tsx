@@ -4,58 +4,19 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { FaPause, FaPlay } from "react-icons/fa";
 import { FiRotateCcw, FiRotateCw } from "react-icons/fi";
 import { cueTextAt, type CaptionCue } from "@/lib/caption-cues";
+import {
+  destroyYouTubePlayer,
+  mountYouTubePlayer,
+  youtubeIframeReady,
+  type YouTubePlayerInstance,
+} from "@/lib/youtube-iframe";
 
-type YTPlayer = {
-  destroy: () => void;
-  mute: () => void;
-  unMute: () => void;
-  playVideo: () => void;
-  pauseVideo: () => void;
-  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
-  getCurrentTime: () => number;
-  getDuration?: () => number;
-  getPlayerState?: () => number;
-  loadModule?: (module: string) => void;
-  unloadModule?: (module: string) => void;
-  setOption?: (module: string, option: string, value: unknown) => void;
-  getOption?: (module: string, option: string) => unknown;
-};
+type YTPlayer = YouTubePlayerInstance;
 
 const YT_PLAYING = 1;
 const YT_PAUSED = 2;
 const SEEK_STEP = 10;
 const HIDE_MS = 2800;
-
-/** Shared YouTube API loader (same script as FastTrailerPlayer). */
-let apiPromise: Promise<void> | null = null;
-
-function loadYouTubeApi() {
-  if (typeof window === "undefined") return Promise.resolve();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((window as any).YT?.Player) return Promise.resolve();
-  if (apiPromise) return apiPromise;
-
-  apiPromise = new Promise<void>((resolve) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const prior = w.onYouTubeIframeAPIReady;
-    w.onYouTubeIframeAPIReady = () => {
-      prior?.();
-      resolve();
-    };
-    const existing = document.querySelector(
-      'script[src="https://www.youtube.com/iframe_api"]',
-    );
-    if (!existing) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.head.appendChild(tag);
-    }
-    if (w.YT?.Player) resolve();
-  });
-
-  return apiPromise;
-}
 
 export type CaptionTrack = {
   languageCode: string;
@@ -108,6 +69,7 @@ export default function WatchPlayer({
   const hostRef = useRef<HTMLDivElement>(null);
   const coverBoxRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
+  const readyRef = useRef(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onEndedRef = useRef(onEnded);
   const onTracksRef = useRef(onCaptionTracks);
@@ -212,7 +174,7 @@ export default function WatchPlayer({
     if (!mounted) return;
     const id = window.setInterval(() => {
       const p = playerRef.current;
-      if (!p || dragging) return;
+      if (!p || dragging || !readyRef.current) return;
       try {
         setCurrentTime(p.getCurrentTime?.() ?? 0);
         const d = p.getDuration?.() ?? 0;
@@ -285,6 +247,7 @@ export default function WatchPlayer({
    * CC on → show captions in selected language; CC off → hide.
    */
   function applyCaptions(player: YTPlayer) {
+    if (!youtubeIframeReady(hostRef.current)) return;
     try {
       player.loadModule?.("captions");
       player.loadModule?.("cc");
@@ -310,18 +273,16 @@ export default function WatchPlayer({
   useEffect(() => {
     if (!mounted || !videoKey) return;
     let cancelled = false;
+    readyRef.current = false;
 
     async function mount() {
-      await loadYouTubeApi();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const YT = (window as any).YT;
-      if (cancelled || !hostRef.current || !YT?.Player) return;
-
+      if (!hostRef.current) return;
       hostRef.current.id = elId;
 
-      playerRef.current = new YT.Player(hostRef.current, {
-        videoId: videoKey,
-        playerVars: {
+      const player = await mountYouTubePlayer(
+        hostRef.current,
+        videoKey,
+        {
           autoplay: 1,
           mute: mutedRef.current ? 1 : 0,
           // Custom chrome only — hide YT bar (standard app player)
@@ -335,10 +296,11 @@ export default function WatchPlayer({
           // Always request captions (standard streaming: CC available on play)
           cc_load_policy: 1,
           cc_lang_pref: subtitleLangRef.current || "en",
-          origin: window.location.origin,
         },
-        events: {
+        {
           onReady: (e: { target: YTPlayer }) => {
+            if (cancelled) return;
+            readyRef.current = true;
             try {
               if (mutedRef.current) e.target.mute();
               else e.target.unMute();
@@ -355,9 +317,13 @@ export default function WatchPlayer({
               }
               // Retry captions — tracks often appear after a short delay
               applyCaptions(e.target);
-              setTimeout(() => applyCaptions(e.target), 400);
-              setTimeout(() => applyCaptions(e.target), 1200);
-              setTimeout(() => applyCaptions(e.target), 2500);
+              const retry = (ms: number) =>
+                window.setTimeout(() => {
+                  if (!cancelled && playerRef.current) applyCaptions(e.target);
+                }, ms);
+              retry(400);
+              retry(1200);
+              retry(2500);
               const d = e.target.getDuration?.() ?? 0;
               if (d > 0) setDuration(d);
             } catch {
@@ -365,6 +331,7 @@ export default function WatchPlayer({
             }
           },
           onStateChange: (e: { data: number; target: YTPlayer }) => {
+            if (cancelled) return;
             if (e.data === YT_PLAYING) {
               setIsPlaying(true);
               try {
@@ -386,10 +353,17 @@ export default function WatchPlayer({
             }
           },
           onApiChange: (e: { target: YTPlayer }) => {
+            if (cancelled) return;
             applyCaptions(e.target);
           },
         },
-      }) as YTPlayer;
+      );
+
+      if (cancelled) {
+        destroyYouTubePlayer(player, hostRef.current);
+        return;
+      }
+      playerRef.current = player;
     }
 
     void mount();
@@ -397,12 +371,9 @@ export default function WatchPlayer({
 
     return () => {
       cancelled = true;
+      readyRef.current = false;
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      try {
-        playerRef.current?.destroy();
-      } catch {
-        /* ignore */
-      }
+      destroyYouTubePlayer(playerRef.current, hostRef.current);
       playerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -410,7 +381,9 @@ export default function WatchPlayer({
 
   useEffect(() => {
     const player = playerRef.current;
-    if (!player) return;
+    if (!player || !readyRef.current || !youtubeIframeReady(hostRef.current)) {
+      return;
+    }
     try {
       if (muted) player.mute();
       else player.unMute();
@@ -425,7 +398,9 @@ export default function WatchPlayer({
     subtitleLangRef.current = subtitleLang;
     overlayCuesRef.current = subtitlesOn && cues.length > 0;
     const player = playerRef.current;
-    if (!player) return;
+    if (!player || !readyRef.current || !youtubeIframeReady(hostRef.current)) {
+      return;
+    }
     applyCaptions(player);
     // Tracks may load late — re-apply shortly after language change
     const t1 = window.setTimeout(() => applyCaptions(player), 300);
@@ -513,11 +488,11 @@ export default function WatchPlayer({
           layout === "frame"
             ? "pointer-events-none absolute inset-0 h-full w-full"
             : "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "[&>iframe]:!absolute [&>iframe]:!left-0 [&>iframe]:!top-0",
-          "[&>iframe]:!h-full [&>iframe]:!w-full",
-          "[&>iframe]:!max-h-none [&>iframe]:!max-w-none [&>iframe]:!min-h-full [&>iframe]:!min-w-full",
-          "[&>iframe]:!border-0",
-          "[&>iframe]:!pointer-events-none",
+          "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
+          "[&_iframe]:!h-full [&_iframe]:!w-full",
+          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none [&_iframe]:!min-h-full [&_iframe]:!min-w-full",
+          "[&_iframe]:!border-0",
+          "[&_iframe]:!pointer-events-none",
         ].join(" ")}
         style={
           coverSize
