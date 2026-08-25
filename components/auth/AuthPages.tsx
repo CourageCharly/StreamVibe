@@ -128,7 +128,7 @@ export function SignupPage() {
         <div className="space-y-3">
           <Button
             type="button"
-            className="!w-full"
+            className="!w-full border border-cta !bg-transparent hover:!bg-transparent"
             onClick={() => setMethod("email")}
           >
             Sign up with email
