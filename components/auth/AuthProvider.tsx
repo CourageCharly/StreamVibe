@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { AuthUser } from "@/lib/auth/types";
+import { setActiveListUser } from "@/lib/user-lists";
 
 type AuthStatus = "loading" | "authenticated" | "anonymous";
 
@@ -30,12 +31,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch("/api/auth/me", { cache: "no-store" });
       const data = (await res.json()) as { user: AuthUser | null };
-      setUser(data.user ?? null);
-      setStatus(data.user ? "authenticated" : "anonymous");
-      return data.user ?? null;
+      const next = data.user ?? null;
+      setUser(next);
+      setStatus(next ? "authenticated" : "anonymous");
+      setActiveListUser(next?.id ?? null);
+      return next;
     } catch {
       setUser(null);
       setStatus("anonymous");
+      setActiveListUser(null);
       return null;
     }
   }, []);
@@ -46,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       setStatus("anonymous");
+      setActiveListUser(null);
     }
   }, []);
 
@@ -55,13 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((res) => res.json())
       .then((data: { user: AuthUser | null }) => {
         if (cancelled) return;
-        setUser(data.user ?? null);
-        setStatus(data.user ? "authenticated" : "anonymous");
+        const next = data.user ?? null;
+        setUser(next);
+        setStatus(next ? "authenticated" : "anonymous");
+        setActiveListUser(next?.id ?? null);
       })
       .catch(() => {
         if (cancelled) return;
         setUser(null);
         setStatus("anonymous");
+        setActiveListUser(null);
       });
     return () => {
       cancelled = true;

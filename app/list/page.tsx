@@ -11,9 +11,12 @@ import SectionFrame from "@/components/SectionFrame";
 import CatalogPosterGrid, {
   CatalogPosterSkeletonGrid,
 } from "@/components/CatalogPosterGrid";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
+  LISTS_EVENT,
   getLikeRefs,
   getMyListRefs,
+  setActiveListUser,
   type CatalogRef,
 } from "@/lib/user-lists";
 import type { Movie } from "@/lib/types";
@@ -42,32 +45,46 @@ async function fetchRef(ref: CatalogRef): Promise<Movie | null> {
 }
 
 function ListInner() {
+  const { user } = useAuth();
   const ratingsOnly = useSearchParams().get("view") === "ratings";
   const [bucket, setBucket] = useState<Bucket>({ movies: [], shows: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const refs = ratingsOnly ? getLikeRefs() : getMyListRefs();
-    if (!refs.length) {
-      setBucket({ movies: [], shows: [] });
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    Promise.all(
-      refs.map(async (ref) => ({ ref, movie: await fetchRef(ref) })),
-    ).then((rows) => {
-      const movies: Movie[] = [];
-      const shows: Movie[] = [];
-      for (const row of rows) {
-        if (!row.movie) continue;
-        if (row.ref.kind === "tv") shows.push(row.movie);
-        else movies.push(row.movie);
+    if (user?.id) setActiveListUser(user.id);
+    let cancelled = false;
+
+    function load() {
+      const refs = ratingsOnly ? getLikeRefs() : getMyListRefs();
+      if (!refs.length) {
+        setBucket({ movies: [], shows: [] });
+        setLoading(false);
+        return;
       }
-      setBucket({ movies, shows });
-      setLoading(false);
-    });
-  }, [ratingsOnly]);
+      setLoading(true);
+      Promise.all(
+        refs.map(async (ref) => ({ ref, movie: await fetchRef(ref) })),
+      ).then((rows) => {
+        if (cancelled) return;
+        const movies: Movie[] = [];
+        const shows: Movie[] = [];
+        for (const row of rows) {
+          if (!row.movie) continue;
+          if (row.ref.kind === "tv") shows.push(row.movie);
+          else movies.push(row.movie);
+        }
+        setBucket({ movies, shows });
+        setLoading(false);
+      });
+    }
+
+    load();
+    window.addEventListener(LISTS_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(LISTS_EVENT, load);
+    };
+  }, [ratingsOnly, user?.id]);
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">

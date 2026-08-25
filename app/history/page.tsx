@@ -10,9 +10,12 @@ import SectionFrame from "@/components/SectionFrame";
 import CatalogPosterGrid, {
   CatalogPosterSkeletonGrid,
 } from "@/components/CatalogPosterGrid";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
+  LISTS_EVENT,
   getWatchHistory,
   historyKind,
+  setActiveListUser,
 } from "@/lib/user-lists";
 import type { Movie } from "@/lib/types";
 
@@ -38,33 +41,47 @@ export default function HistoryPage() {
 }
 
 function HistoryInner() {
+  const { user } = useAuth();
   const [bucket, setBucket] = useState<Bucket>({ movies: [], shows: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const rows = getWatchHistory();
-    if (!rows.length) {
-      setBucket({ movies: [], shows: [] });
-      setLoading(false);
-      return;
-    }
-    Promise.all(
-      rows.map(async (item) => ({
-        kind: historyKind(item),
-        movie: await fetchItem(item.id, historyKind(item)),
-      })),
-    ).then((loaded) => {
-      const movies: Movie[] = [];
-      const shows: Movie[] = [];
-      for (const row of loaded) {
-        if (!row.movie) continue;
-        if (row.kind === "tv") shows.push(row.movie);
-        else movies.push(row.movie);
+    if (user?.id) setActiveListUser(user.id);
+    let cancelled = false;
+
+    function load() {
+      const rows = getWatchHistory();
+      if (!rows.length) {
+        setBucket({ movies: [], shows: [] });
+        setLoading(false);
+        return;
       }
-      setBucket({ movies, shows });
-      setLoading(false);
-    });
-  }, []);
+      Promise.all(
+        rows.map(async (item) => ({
+          kind: historyKind(item),
+          movie: await fetchItem(item.id, historyKind(item)),
+        })),
+      ).then((loaded) => {
+        if (cancelled) return;
+        const movies: Movie[] = [];
+        const shows: Movie[] = [];
+        for (const row of loaded) {
+          if (!row.movie) continue;
+          if (row.kind === "tv") shows.push(row.movie);
+          else movies.push(row.movie);
+        }
+        setBucket({ movies, shows });
+        setLoading(false);
+      });
+    }
+
+    load();
+    window.addEventListener(LISTS_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(LISTS_EVENT, load);
+    };
+  }, [user?.id]);
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">

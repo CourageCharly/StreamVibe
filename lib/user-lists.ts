@@ -1,4 +1,4 @@
-/** Client-side My List / Likes / History (localStorage). */
+/** Client-side My List / Likes / History (localStorage), scoped per account. */
 
 export type MediaKind = "movie" | "tv";
 
@@ -7,14 +7,40 @@ export type CatalogRef = {
   kind: MediaKind;
 };
 
+export const LISTS_EVENT = "streamvibe:lists";
+
 const MY_LIST_KEY = "streamvibe:my-list";
 const LIKES_KEY = "streamvibe:likes";
 const HISTORY_KEY = "streamvibe:watch-history";
+const ACTIVE_USER_KEY = "streamvibe:active-user";
+
+function emitLists() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(LISTS_EVENT));
+}
+
+/** Bind list/history storage to the signed-in account. New users start at 0. */
+export function setActiveListUser(userId: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (userId) localStorage.setItem(ACTIVE_USER_KEY, userId);
+    else localStorage.removeItem(ACTIVE_USER_KEY);
+  } catch {
+    /* private mode */
+  }
+  emitLists();
+}
+
+function scopedKey(base: string) {
+  if (typeof window === "undefined") return `${base}:anon`;
+  const id = localStorage.getItem(ACTIVE_USER_KEY)?.trim() || "anon";
+  return `${base}:${id}`;
+}
 
 function readRefs(key: string): CatalogRef[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(key);
+    const raw = localStorage.getItem(scopedKey(key));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -41,7 +67,8 @@ function readRefs(key: string): CatalogRef[] {
 function writeRefs(key: string, refs: CatalogRef[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(key, JSON.stringify(refs));
+    localStorage.setItem(scopedKey(key), JSON.stringify(refs));
+    emitLists();
   } catch {
     /* quota / private mode */
   }
@@ -81,7 +108,7 @@ export function historyKind(item: HistoryItem): MediaKind {
 export function getWatchHistory(): HistoryItem[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
+    const raw = localStorage.getItem(scopedKey(HISTORY_KEY));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -105,7 +132,8 @@ export function addWatchHistory(item: Omit<HistoryItem, "at">) {
       (row) => row.id !== item.id || row.path !== item.path,
     );
     const next = [{ ...item, at: Date.now() }, ...current].slice(0, 40);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    localStorage.setItem(scopedKey(HISTORY_KEY), JSON.stringify(next));
+    emitLists();
   } catch {
     /* quota */
   }

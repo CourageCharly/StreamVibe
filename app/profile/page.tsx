@@ -5,7 +5,13 @@ import Link from "next/link";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileSkeleton } from "@/components/skeletons/PageSkeletons";
-import { getLikes, getMyList, getWatchHistory } from "@/lib/user-lists";
+import {
+  LISTS_EVENT,
+  getLikeRefs,
+  getMyListRefs,
+  getWatchHistory,
+  setActiveListUser,
+} from "@/lib/user-lists";
 import UserAvatar from "@/components/auth/UserAvatar";
 
 export default function ProfilePage() {
@@ -23,10 +29,21 @@ function ProfileInner() {
   const [ratingCount, setRatingCount] = useState(0);
 
   useEffect(() => {
-    setListCount(getMyList().length);
-    setHistoryCount(getWatchHistory().length);
-    setRatingCount(getLikes().length);
-  }, []);
+    if (!user?.id) return;
+    setActiveListUser(user.id);
+    const sync = () => {
+      setListCount(getMyListRefs().length);
+      setHistoryCount(getWatchHistory().length);
+      setRatingCount(getLikeRefs().length);
+    };
+    sync();
+    window.addEventListener(LISTS_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(LISTS_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [user?.id]);
 
   if (!user) return null;
   const name =
@@ -62,7 +79,7 @@ function ProfileInner() {
             href="/history?from=profile"
           />
           <Stat
-            label="Ratings"
+            label="Likes"
             value={ratingCount}
             href="/list?from=profile&view=ratings"
           />
