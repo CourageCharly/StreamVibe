@@ -1,6 +1,6 @@
 import PosterCard from "@/components/PosterCard";
 import HeroMobileCollage from "@/components/HeroMobileCollage";
-import { posterUrl } from "@/lib/media";
+import { cardImageUrl } from "@/lib/media";
 import type { Movie } from "@/lib/types";
 
 type PosterGridProps = {
@@ -72,7 +72,7 @@ export default function PosterGrid({
       <HeroMobileCollage>
         {mobileGrid.map((movie, index) => {
           const title = movie.title || movie.name || "Movie";
-          const imageUrl = posterUrl(movie.poster_path, "w342");
+          const imageUrl = cardImageUrl(movie, "w342");
           return (
             <div
               key={`m-${movie.id}-${index}`}
@@ -111,7 +111,7 @@ export default function PosterGrid({
       >
         {desktopGrid.map((movie, index) => {
           const title = movie.title || movie.name || "Movie";
-          const imageUrl = posterUrl(movie.poster_path, "w342");
+          const imageUrl = cardImageUrl(movie, "w342");
 
           return (
             <div

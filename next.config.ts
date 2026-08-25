@@ -25,6 +25,16 @@ const nextConfig: NextConfig = {
         hostname: "flagcdn.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FiClock, FiEye } from "react-icons/fi";
-import { posterUrl } from "@/lib/media";
+import { cardImageUrl } from "@/lib/media";
 import type { Movie } from "@/lib/types";
 import { MEDIA_CARD_H, MEDIA_CARD_W } from "@/components/MediaRow";
 
@@ -198,7 +198,7 @@ export default function TrendingMovieCard({
   mediaKind = "movie",
 }: Props) {
   const name = movie.title || movie.name || "Untitled";
-  const src = posterUrl(movie.poster_path, "w500");
+  const src = cardImageUrl(movie, "w500");
   const date = movie.release_date || movie.first_air_date;
   const starValue = starsFromVote(
     Number(movie.vote_average) || 0,

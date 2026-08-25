@@ -1,5 +1,5 @@
 import PosterCard from "@/components/PosterCard";
-import { posterUrl } from "@/lib/media";
+import { cardImageUrl } from "@/lib/media";
 import type { Movie } from "@/lib/types";
 
 type Props = {
@@ -28,7 +28,7 @@ export default function MoviePoster({
   badge,
 }: Props) {
   const title = movie.title || movie.name || "Movie";
-  const imageUrl = posterUrl(movie.poster_path, "w500");
+  const imageUrl = cardImageUrl(movie, "w500");
 
   return (
     <PosterCard

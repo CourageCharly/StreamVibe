@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { AuthUser } from "@/lib/auth/types";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { userInitials } from "@/lib/initials";
+import UserAvatar from "@/components/auth/UserAvatar";
 
 const ITEMS = [
   { href: "/profile", label: "Profile" },
@@ -23,7 +22,6 @@ export default function UserMenu({ user }: { user: AuthUser }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, right: 0 });
-  const initials = userInitials(user.firstName, user.lastName, user.email);
 
   useEffect(() => {
     if (!open) return;
@@ -65,17 +63,7 @@ export default function UserMenu({ user }: { user: AuthUser }) {
         aria-haspopup="dialog"
         onClick={() => setOpen((v) => !v)}
       >
-        {user.imageUrl ? (
-          <Image
-            src={user.imageUrl}
-            alt=""
-            width={40}
-            height={40}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <span className="text-[13px] font-semibold text-white">{initials}</span>
-        )}
+        <UserAvatar user={user} size={40} />
       </button>
       {open ? (
         <div className="fixed inset-0 z-[400]">

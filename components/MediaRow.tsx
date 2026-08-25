@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
 import SliderControls from "@/components/SliderControls";
 import TrendingMovieCard from "@/components/TrendingMovieCard";
-import { posterUrl } from "@/lib/media";
+import { cardImageUrl, fillPosterCollage } from "@/lib/media";
 import type { Movie } from "@/lib/types";
 import { useRowSlider } from "@/lib/use-row-slider";
 
@@ -121,10 +121,7 @@ export default function MediaRow({
       >
         {top10Label
           ? top10Cards.map((item) => {
-              const collage = item.movies.slice(0, 4);
-              while (collage.length < 4 && item.movies.length > 0) {
-                collage.push(item.movies[collage.length % item.movies.length]);
-              }
+              const collage = fillPosterCollage(item.movies, 4);
               if (!collage.length) return null;
               return (
                 <Link
@@ -147,7 +144,7 @@ export default function MediaRow({
                   >
                     {collage.map((m, i) => {
                       const name = m.title || m.name || item.name;
-                      const imageUrl = posterUrl(m.poster_path, "w342");
+                      const imageUrl = cardImageUrl(m, "w342");
                       return (
                         <div
                           key={`${item.key}-${m.id}-${i}`}

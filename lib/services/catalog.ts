@@ -168,16 +168,35 @@ function diversifyGenreCollages(
       const pool = categories[cat.key] ?? [];
       while (cursors[cat.key] < pool.length) {
         const m = pool[cursors[cat.key]++];
-        if (!m?.poster_path) continue;
+        if (!m?.poster_path && !m?.backdrop_path) continue;
         if (usedIds.has(m.id)) continue;
-        if (usedPosters.has(m.poster_path)) continue;
+        const artKey = m.poster_path || m.backdrop_path || "";
+        if (artKey && usedPosters.has(artKey)) continue;
 
         picks.push(m);
         usedIds.add(m.id);
-        usedPosters.add(m.poster_path);
+        if (artKey) usedPosters.add(artKey);
         progress = true;
         break;
       }
+    }
+  }
+
+  // Fill remaining collage slots from each genre's own pool so 2×2 is never empty.
+  for (const cat of CATEGORIES) {
+    const picks = out[cat.key];
+    const pool = (categories[cat.key] ?? []).filter(
+      (m) => m.poster_path || m.backdrop_path,
+    );
+    if (!pool.length) continue;
+    let i = 0;
+    while (picks.length < limit && i < pool.length * limit) {
+      const m = pool[i % pool.length];
+      i += 1;
+      if (picks.some((p) => p.id === m.id) && picks.length < pool.length) {
+        continue;
+      }
+      picks.push(m);
     }
   }
 

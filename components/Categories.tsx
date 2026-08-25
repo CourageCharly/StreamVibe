@@ -6,7 +6,7 @@ import SectionHeading from "@/components/SectionHeading";
 import PosterCard from "@/components/PosterCard";
 import GradientOverlay from "@/components/GradientOverlay";
 import SliderControls from "@/components/SliderControls";
-import { posterUrl } from "@/lib/media";
+import { cardImageUrl, fillPosterCollage } from "@/lib/media";
 import type { Movie } from "@/lib/types";
 import { CATEGORIES } from "@/lib/constants";
 import { MEDIA_CARD_H, MEDIA_CARD_W } from "@/components/MediaRow";
@@ -68,8 +68,9 @@ export default function Categories({ categoryMovies }: Props) {
       >
         {CATEGORIES.map((cat) => {
           const movies = categoryMovies[cat.key] ?? [];
-          const collage: Movie[] = movies.length
-            ? movies.slice(0, 4)
+          const filled = fillPosterCollage(movies, 4);
+          const collage: Movie[] = filled.length
+            ? filled
             : Array.from({ length: 4 }, (_, i) => ({
                 id: (cat.genreId ?? 1) * 10 + i,
                 title: cat.name,
@@ -90,7 +91,7 @@ export default function Categories({ categoryMovies }: Props) {
               <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-1.5 overflow-hidden">
                 {collage.map((movie, i) => {
                   const title = movie.title || movie.name || cat.name;
-                  const imageUrl = posterUrl(movie.poster_path, "w342");
+                  const imageUrl = cardImageUrl(movie, "w342");
                   return (
                     <div
                       key={`${movie.id}-${i}`}

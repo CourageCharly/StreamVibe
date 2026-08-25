@@ -6,7 +6,7 @@ import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ProfileSkeleton } from "@/components/skeletons/PageSkeletons";
 import { getLikes, getMyList, getWatchHistory } from "@/lib/user-lists";
-import { userInitials } from "@/lib/initials";
+import UserAvatar from "@/components/auth/UserAvatar";
 
 export default function ProfilePage() {
   return (
@@ -44,7 +44,7 @@ function ProfileInner() {
 
         <div className="mt-8 flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[#262626] bg-[#1A1A1A] text-xl font-semibold sm:h-20 sm:w-20">
-            {userInitials(user.firstName, user.lastName, user.email)}
+            <UserAvatar user={user} size={80} />
           </div>
           <div className="min-w-0">
             <p className="truncate text-[18px] font-semibold text-white sm:text-[20px]">

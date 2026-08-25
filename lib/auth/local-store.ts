@@ -298,7 +298,7 @@ export function localUpsertGoogleUser(input: {
       googleId: input.googleId,
       firstName: users[index].firstName || input.firstName,
       lastName: users[index].lastName || input.lastName,
-      imageUrl: input.imageUrl || users[index].imageUrl,
+      imageUrl: input.imageUrl ?? users[index].imageUrl,
       verified: true,
       verificationCode: undefined,
       verificationId: undefined,

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import GradientPanel from "@/components/GradientPanel";
-import { posterUrl } from "@/lib/media";
+import { cardImageUrl } from "@/lib/media";
 import type { Movie } from "@/lib/types";
 
 type Props = {
@@ -72,7 +72,7 @@ export default function FreeTrialBanner({
           }}
         >
           {allTiles.map((movie, i) => {
-            const src = posterUrl(movie.poster_path, "w342");
+            const src = cardImageUrl(movie, "w342");
             return (
               <div
                 key={`${movie.id}-${i}`}

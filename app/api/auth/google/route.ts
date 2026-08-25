@@ -59,11 +59,15 @@ export async function POST(request: NextRequest) {
       profile.family_name?.trim() ||
       (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
 
+    const picture = profile.picture?.trim()
+      ? profile.picture.replace(/=s\d+(-c)?\b/i, "=s256$1")
+      : null;
+
     const user = localUpsertGoogleUser({
       email,
       firstName,
       lastName,
-      imageUrl: profile.picture ?? null,
+      imageUrl: picture,
       googleId,
     });
 
