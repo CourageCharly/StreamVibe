@@ -96,10 +96,6 @@ export default function VerifyForm({
 
   return (
     <form onSubmit={onSubmit} className={cn("space-y-5", className)} noValidate>
-      <p className="text-[14px] leading-relaxed text-[#999999] sm:text-[16px]">
-        Enter the 6-digit code we sent to{" "}
-        <span className="font-medium text-white">{email}</span>.
-      </p>
       <div>
         <OtpInput
           id="verify-otp"

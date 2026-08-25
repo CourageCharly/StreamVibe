@@ -185,7 +185,10 @@ export function VerifyPage() {
   }
 
   return (
-    <AuthShell title="Verify your email" subtitle="Check your inbox to continue.">
+    <AuthShell
+      title="Verify your email"
+      subtitle={`Enter the 6-digit code we sent to ${email}.`}
+    >
       <VerifyForm
         email={email}
         verificationId={params.get("vid") ?? undefined}

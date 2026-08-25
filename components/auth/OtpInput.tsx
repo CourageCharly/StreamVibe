@@ -74,7 +74,7 @@ export default function OtpInput({ value, onChange, disabled, id }: Props) {
           onKeyDown={(e) => onKeyDown(i, e)}
           onPaste={onPaste}
           className={cn(
-            "h-12 w-10 rounded-lg border border-[#262626] bg-[#141414] text-center text-[18px] font-semibold text-white outline-none focus:border-[#404040] sm:h-14 sm:w-12",
+            "h-12 w-12 rounded-lg border border-[#262626] bg-[#141414] text-center text-[18px] font-semibold text-white outline-none focus:border-[#404040] sm:h-14 sm:w-14",
           )}
         />
       ))}

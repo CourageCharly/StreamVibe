@@ -168,6 +168,9 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
             >
               Verify your email
             </h2>
+            <p className="mb-5 pr-8 text-[14px] text-[#999999] sm:text-[16px]">
+              Enter the 6-digit code we sent to {email}.
+            </p>
             <VerifyForm
               email={email}
               verificationId={verificationId}
