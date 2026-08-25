@@ -81,6 +81,7 @@ export async function POST(request: NextRequest, context: Ctx) {
       requiresVerification: result.requiresVerification,
       verificationId: result.verificationId,
       emailSent,
+      dispatchCode: result.developmentCode,
       accountProof: issueAccountProof(result.user),
     });
 

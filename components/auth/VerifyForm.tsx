@@ -7,6 +7,7 @@ import OtpInput from "@/components/auth/OtpInput";
 import { MESSAGES } from "@/lib/auth/errors";
 import { fusionAuthApplicationIdSafe } from "@/lib/auth/public";
 import { rememberAccountProof } from "@/lib/auth/account-proof";
+import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 import { cn } from "@/lib";
 
 const RESEND_SECONDS = 30;
@@ -100,15 +101,15 @@ export default function VerifyForm({
         message?: string;
         verificationId?: string;
         emailSent?: boolean;
+        dispatchCode?: string;
       };
       if (!res.ok) {
         toast.error(data.message || MESSAGES.resendFailed);
         return;
       }
       if (data.verificationId) setActiveVerificationId(data.verificationId);
-      if (data.emailSent === false) {
-        toast.error("We couldn't send the code. Please try again.");
-        return;
+      if (data.dispatchCode) {
+        await dispatchOtpEmail(email, data.dispatchCode, "verify");
       }
       setCode("");
       setResendIn(RESEND_SECONDS);

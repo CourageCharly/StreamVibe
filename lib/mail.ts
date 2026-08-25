@@ -33,23 +33,31 @@ export async function sendMail(opts: {
   const resend = new Resend(key);
   const to = Array.isArray(opts.to) ? opts.to : [opts.to];
   const from = opts.from ?? resendFrom();
-  const payload = opts.react
+  // HTML first — React templates can fail to render on the server and block send.
+  const payload = opts.html
     ? {
         from,
         to,
         subject: opts.subject,
-        react: opts.react,
+        html: opts.html,
         ...(opts.text ? { text: opts.text } : {}),
         ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
       }
-    : {
-        from,
-        to,
-        subject: opts.subject,
-        html: opts.html ?? "",
-        ...(opts.text ? { text: opts.text } : {}),
-        ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
-      };
+    : opts.react
+      ? {
+          from,
+          to,
+          subject: opts.subject,
+          react: opts.react,
+          ...(opts.text ? { text: opts.text } : {}),
+          ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+        }
+      : {
+          from,
+          to,
+          subject: opts.subject,
+          html: "<p></p>",
+        };
   const { data, error } = await resend.emails.send(payload);
 
   if (error) {

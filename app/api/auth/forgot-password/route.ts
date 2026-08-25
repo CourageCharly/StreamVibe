@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       sent: true,
       email: result.email,
+      dispatchCode: result.developmentCode,
     });
     applyOtpCookie(response, {
       email: result.email,

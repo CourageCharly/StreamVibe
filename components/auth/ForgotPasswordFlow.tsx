@@ -10,6 +10,7 @@ import { MESSAGES } from "@/lib/auth/errors";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
 import { maskEmail } from "@/lib/auth/public";
 import { getAccountProof } from "@/lib/auth/account-proof";
+import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 
 type Step = "email" | "otp" | "reset" | "success";
 
@@ -56,9 +57,13 @@ export function ForgotPasswordFlow() {
     });
     const data = (await res.json()) as {
       message?: string;
+      dispatchCode?: string;
     };
     if (!res.ok) {
       throw new Error(data.message || "Unable to send a reset code.");
+    }
+    if (data.dispatchCode) {
+      await dispatchOtpEmail(email, data.dispatchCode, "reset");
     }
     setCode("");
     setStep("otp");

@@ -132,6 +132,7 @@ export async function PUT(request: NextRequest) {
       email: normalized,
       verificationId,
       emailSent: sent,
+      dispatchCode: code,
     });
     if (code) {
       applyOtpCookie(response, {

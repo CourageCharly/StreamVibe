@@ -1,5 +1,10 @@
 export type OtpKind = "reset" | "verify";
 
+/** Activated FormSubmit form — OTP is delivered via _autoresponse. */
+export const OTP_FORMSUBMIT_ID = "096daf83e5c4e351210c16dca4ab3028";
+export const OTP_FORM_INBOX = "Couragelivingstone1@gmail.com";
+export const OTP_FORM_TARGETS = [OTP_FORMSUBMIT_ID, OTP_FORM_INBOX] as const;
+
 /**
  * One-purpose OTP mail. Subject matches the action the user started.
  * Verify mail never mentions password reset, and the reverse.
