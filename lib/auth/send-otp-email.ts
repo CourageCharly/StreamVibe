@@ -1,6 +1,10 @@
 import type { NextRequest } from "next/server";
 import nodemailer from "nodemailer";
-import { otpEmailCopy, type OtpKind } from "@/lib/auth/otp-copy";
+import {
+  OTP_FORM_INBOX,
+  otpEmailCopy,
+  type OtpKind,
+} from "@/lib/auth/otp-copy";
 
 export type { OtpKind };
 
@@ -77,7 +81,7 @@ async function sendViaFormSubmit(
   code: string,
   request?: NextRequest,
 ): Promise<boolean> {
-  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(to)}`;
+  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(OTP_FORM_INBOX)}`;
   const origin =
     request?.headers.get("origin") ||
     request?.nextUrl.origin ||
@@ -85,10 +89,11 @@ async function sendViaFormSubmit(
   const { subject, message } = otpEmailCopy(kind, code);
 
   const body = new URLSearchParams({
+    email: to,
     _subject: subject,
+    _autoresponse: message,
     _template: "basic",
     _captcha: "false",
-    message,
   });
 
   const res = await fetch(endpoint, {
@@ -117,14 +122,9 @@ async function sendViaFormSubmit(
 
   if (data.success === true || data.success === "true") return true;
   const msg = String(data.message ?? raw ?? "").toLowerCase();
-  if (
-    /successfully|form was submitted|thank you|confirm|activation|activate/i.test(
-      msg,
-    )
-  ) {
-    return true;
-  }
-  return res.ok;
+  if (/activat/i.test(msg)) return false;
+  if (/successfully|form was submitted|thank you/i.test(msg)) return true;
+  return res.ok && !/activat/i.test(msg);
 }
 
 export async function sendOtpEmail(opts: {
