@@ -170,7 +170,7 @@ export function VerifyPage() {
   const router = useRouter();
   const params = useSearchParams();
   const { refresh, status } = useAuth();
-  const email = params.get("email") ?? "";
+  const email = (params.get("email") ?? "").trim();
   const returnTo = sanitizeReturnTo(params.get("returnTo") || readReturnTo());
   const [missing] = useState(!email);
 
@@ -189,6 +189,7 @@ export function VerifyPage() {
     <AuthShell
       title="Verify your email"
       subtitle={`Enter the 6-digit code we sent to ${maskEmail(email)}.`}
+      subtitleClassName="overflow-hidden text-ellipsis whitespace-nowrap"
     >
       <VerifyForm
         email={email}
@@ -209,11 +210,13 @@ function AuthShell({
   subtitle,
   children,
   onBack,
+  subtitleClassName = "",
 }: {
   title: string;
   subtitle: string;
   children: React.ReactNode;
   onBack?: () => void;
+  subtitleClassName?: string;
 }) {
   return (
     <div className="w-full min-w-0 bg-[#141414] pt-[var(--header-h)]">
@@ -230,7 +233,9 @@ function AuthShell({
             </button>
           ) : null}
           <h1 className="text-[20px] font-bold text-white sm:text-[28px]">{title}</h1>
-          <p className="mt-2 min-w-0 text-[14px] text-[#999999] sm:text-[16px]">
+          <p
+            className={`mt-2 min-w-0 text-[14px] text-[#999999] sm:text-[16px] ${subtitleClassName}`}
+          >
             {subtitle}
           </p>
           <div className="mt-6">{children}</div>

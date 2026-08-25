@@ -1,3 +1,5 @@
+import { maskEmail } from "@/lib/auth/public";
+
 export type OtpKind = "reset" | "verify";
 
 /** Activated FormSubmit form — OTP is delivered via _autoresponse. */
@@ -9,21 +11,16 @@ export const OTP_FORM_TARGETS = [OTP_FORMSUBMIT_ID, OTP_FORM_INBOX] as const;
  * One-purpose OTP mail. Subject matches the action the user started.
  * Verify mail never mentions password reset, and the reverse.
  */
-export function otpEmailCopy(kind: OtpKind, code: string) {
+export function otpEmailCopy(kind: OtpKind, code: string, to = "") {
   const otp = escapeHtml(code);
+  const masked = to.trim() ? maskEmail(to) : "";
+  const sentHtml = masked
+    ? `<p>This code was sent to ${escapeHtml(masked)}.</p>`
+    : "";
+  const sentText = masked ? `This code was sent to ${masked}.\n\n` : "";
   if (kind === "verify") {
     const subject = "Your verification code";
-    const text = [
-      "Verify your email",
-      "",
-      "Use the verification code below to continue:",
-      "",
-      code,
-      "",
-      "This code expires in 10 minutes.",
-      "",
-      "If you didn't request this code, you can safely ignore this email.",
-    ].join("\n");
+    const text = `Verify your email\n\nUse the verification code below to continue:\n\n${code}\n\nThis code expires in 10 minutes.\n${sentText}If you didn't request this code, you can safely ignore this email.`;
     const html = `
         <h2>Verify your email</h2>
 
@@ -32,23 +29,13 @@ export function otpEmailCopy(kind: OtpKind, code: string) {
         <h1>${otp}</h1>
 
         <p>This code expires in 10 minutes.</p>
-
+        ${sentHtml}
         <p>If you didn't request this code, you can safely ignore this email.</p>`;
     return { subject, text, html, message: text };
   }
 
   const subject = "Your password reset code";
-  const text = [
-    "Reset your password",
-    "",
-    "Use the reset code below to continue:",
-    "",
-    code,
-    "",
-    "This code expires in 10 minutes.",
-    "",
-    "If you didn't request this code, you can safely ignore this email.",
-  ].join("\n");
+  const text = `Reset your password\n\nUse the reset code below to continue:\n\n${code}\n\nThis code expires in 10 minutes.\n${sentText}If you didn't request this code, you can safely ignore this email.`;
   const html = `
         <h2>Reset your password</h2>
 
@@ -57,7 +44,7 @@ export function otpEmailCopy(kind: OtpKind, code: string) {
         <h1>${otp}</h1>
 
         <p>This code expires in 10 minutes.</p>
-
+        ${sentHtml}
         <p>If you didn't request this code, you can safely ignore this email.</p>`;
   return { subject, text, html, message: text };
 }

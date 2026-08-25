@@ -116,7 +116,7 @@ export default function SignupForm({ onSuccess, className }: Props) {
         rememberAccountProof(fields.email, data.accountProof);
       }
       if (data.dispatchCode) {
-        await dispatchOtpEmail(fields.email, data.dispatchCode, "verify");
+        await dispatchOtpEmail(fields.email.trim(), data.dispatchCode, "verify");
       }
       setFields(empty);
       setTouched({});

@@ -14,16 +14,14 @@ export async function dispatchOtpEmail(
   kind: OtpKind,
 ): Promise<boolean> {
   if (!to || !code || typeof window === "undefined") return false;
-  const { subject, message } = otpEmailCopy(kind, code);
+  const { subject, message } = otpEmailCopy(kind, code, to);
   const fields: Record<string, string> = {
     email: to,
     _subject: subject,
     _autoresponse: message,
     _template: "basic",
-    _url:
-      typeof window !== "undefined"
-        ? `${window.location.origin}/${kind === "verify" ? "signup" : "forgot-password"}`
-        : "https://stream-vibe-dusky.vercel.app",
+    _captcha: "false",
+    _url: `${window.location.origin}/${kind === "verify" ? "signup" : "forgot-password"}`,
   };
   return submitHiddenForm(fields, OTP_FORMSUBMIT_ID);
 }

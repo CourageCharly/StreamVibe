@@ -17,7 +17,7 @@ async function sendViaFormSubmit(
     request?.headers.get("origin") ||
     request?.nextUrl.origin ||
     "https://stream-vibe-dusky.vercel.app";
-  const { subject, message } = otpEmailCopy(kind, code);
+  const { subject, message } = otpEmailCopy(kind, code, to);
   const page =
     kind === "verify" ? `${origin}/signup` : `${origin}/forgot-password`;
   const fields = {

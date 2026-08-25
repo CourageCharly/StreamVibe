@@ -17,13 +17,13 @@ export function googleClientId(): string {
 
 export const applicationIdClient = fusionAuthApplicationIdSafe;
 
-/** OTP screens: couragelivingstone1@gmail.com → co***@gmail.com */
+/** OTP screens: keep this address’s own characters. jane.doe@gmail.com → ja***@gmail.com */
 export function maskEmail(email: string): string {
   const trimmed = email.trim();
   const at = trimmed.lastIndexOf("@");
   if (at <= 0) return trimmed;
   const local = trimmed.slice(0, at);
   const domain = trimmed.slice(at);
-  const visible = local.slice(0, Math.min(2, local.length));
-  return `${visible}***${domain}`;
+  const keep = Math.min(2, local.length);
+  return `${local.slice(0, keep)}***${domain}`;
 }
