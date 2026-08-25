@@ -19,32 +19,67 @@ type LocalUser = {
   resetCode?: string;
 };
 
-type StoreFile = { users: LocalUser[] };
+type PendingReset = {
+  email: string;
+  resetId: string;
+  resetCode: string;
+};
+
+type StoreFile = { users: LocalUser[]; pendingResets?: PendingReset[] };
 
 const STORE_PATH = join(process.cwd(), ".data", "users.json");
 
 let memory: LocalUser[] | null = null;
+let memoryResets: PendingReset[] | null = null;
+
+function loadFile(): StoreFile {
+  try {
+    const raw = readFileSync(STORE_PATH, "utf8");
+    return JSON.parse(raw) as StoreFile;
+  } catch {
+    return { users: [], pendingResets: [] };
+  }
+}
+
+function persist() {
+  try {
+    mkdirSync(join(process.cwd(), ".data"), { recursive: true });
+    writeFileSync(
+      STORE_PATH,
+      JSON.stringify(
+        { users: memory ?? [], pendingResets: memoryResets ?? [] },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+  } catch {
+    /* read-only filesystem (serverless) — keep in-memory */
+  }
+}
 
 function load(): LocalUser[] {
   if (memory) return memory;
-  try {
-    const raw = readFileSync(STORE_PATH, "utf8");
-    const parsed = JSON.parse(raw) as StoreFile;
-    memory = Array.isArray(parsed.users) ? parsed.users : [];
-  } catch {
-    memory = [];
-  }
+  const file = loadFile();
+  memory = Array.isArray(file.users) ? file.users : [];
+  memoryResets = Array.isArray(file.pendingResets) ? file.pendingResets : [];
   return memory;
+}
+
+function loadResets(): PendingReset[] {
+  load();
+  return memoryResets ?? [];
 }
 
 function save(users: LocalUser[]) {
   memory = users;
-  try {
-    mkdirSync(join(process.cwd(), ".data"), { recursive: true });
-    writeFileSync(STORE_PATH, JSON.stringify({ users }, null, 2), "utf8");
-  } catch {
-    /* read-only filesystem (serverless) — keep in-memory */
-  }
+  persist();
+}
+
+function saveResets(resets: PendingReset[]) {
+  load();
+  memoryResets = resets;
+  persist();
 }
 
 function hashPassword(password: string): string {
@@ -237,27 +272,38 @@ export function localFindByEmail(email: string): LocalUser | undefined {
 }
 
 export function localStartPasswordReset(email: string) {
+  const normalized = email.trim().toLowerCase();
   const users = load();
-  const index = users.findIndex((u) => u.email === email.trim().toLowerCase());
-  if (index < 0) {
-    return { started: false as const };
-  }
+  const index = users.findIndex((u) => u.email === normalized);
   const resetId = randomBytes(24).toString("base64url");
   const resetCode = sixDigit();
-  users[index] = { ...users[index], resetId, resetCode };
-  save(users);
+
+  if (index >= 0) {
+    users[index] = { ...users[index], resetId, resetCode };
+    save(users);
+    saveResets(loadResets().filter((r) => r.email !== normalized));
+  } else {
+    const next = loadResets().filter((r) => r.email !== normalized);
+    next.push({ email: normalized, resetId, resetCode });
+    saveResets(next);
+  }
+
   return {
     started: true as const,
-    email: users[index].email,
+    email: index >= 0 ? users[index].email : normalized,
     resetId,
     developmentCode: resetCode,
   };
 }
 
 export function localVerifyResetOtp(email: string, code: string) {
+  const trimmed = code.trim();
   const row = localFindByEmail(email);
-  if (!row?.resetCode || row.resetCode !== code.trim()) return false;
-  return true;
+  if (row?.resetCode && row.resetCode === trimmed) return true;
+  const pending = loadResets().find(
+    (r) => r.email === email.trim().toLowerCase(),
+  );
+  return Boolean(pending?.resetCode && pending.resetCode === trimmed);
 }
 
 export function localResetPassword(
@@ -266,17 +312,22 @@ export function localResetPassword(
   password: string,
 ) {
   const users = load();
-  const index = users.findIndex((u) => u.email === email.trim().toLowerCase());
-  if (index < 0) return false;
-  if (!users[index].resetCode || users[index].resetCode !== code.trim()) {
-    return false;
+  const normalized = email.trim().toLowerCase();
+  const trimmed = code.trim();
+  const index = users.findIndex((u) => u.email === normalized);
+  if (index >= 0) {
+    if (!users[index].resetCode || users[index].resetCode !== trimmed) {
+      return false;
+    }
+    users[index] = {
+      ...users[index],
+      passwordHash: hashPassword(password),
+      resetCode: undefined,
+      resetId: undefined,
+    };
+    save(users);
+    saveResets(loadResets().filter((r) => r.email !== normalized));
+    return true;
   }
-  users[index] = {
-    ...users[index],
-    passwordHash: hashPassword(password),
-    resetCode: undefined,
-    resetId: undefined,
-  };
-  save(users);
-  return true;
+  return false;
 }

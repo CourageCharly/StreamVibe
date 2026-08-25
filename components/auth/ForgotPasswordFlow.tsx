@@ -25,7 +25,6 @@ export function ForgotPasswordFlow() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [otpHint, setOtpHint] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -39,12 +38,10 @@ export function ForgotPasswordFlow() {
     });
     const data = (await res.json()) as {
       message?: string;
-      developmentCode?: string;
     };
     if (!res.ok) {
       throw new Error(data.message || "Unable to send a reset code.");
     }
-    setOtpHint(data.developmentCode || "");
     setCode("");
     setStep("otp");
   }
@@ -159,7 +156,13 @@ export function ForgotPasswordFlow() {
           <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
             {titles[step].title}
           </h1>
-          <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
+          <p
+            className={
+              step === "otp"
+                ? "mt-2 whitespace-nowrap text-[14px] text-[#999999]"
+                : "mt-2 text-[14px] text-[#999999] sm:text-[16px]"
+            }
+          >
             {titles[step].subtitle}
           </p>
           <div className="mt-6">
@@ -190,16 +193,6 @@ export function ForgotPasswordFlow() {
 
             {step === "otp" ? (
               <form onSubmit={(e) => void confirmOtp(e)} className="space-y-5" noValidate>
-                {otpHint ? (
-                  <p className="rounded-lg bg-[#141414] px-3 py-2 text-center text-[14px] text-white">
-                    Your reset code is{" "}
-                    <span className="font-semibold tracking-[0.2em]">{otpHint}</span>
-                  </p>
-                ) : (
-                  <p className="text-[14px] text-[#999999]">
-                    Check your email for the 6-digit code.
-                  </p>
-                )}
                 <OtpInput
                   value={code}
                   onChange={(next) => {
@@ -237,7 +230,6 @@ export function ForgotPasswordFlow() {
                   className="w-full text-center text-[13px] text-[#999999] hover:text-white"
                   onClick={() => {
                     setStep("email");
-                    setOtpHint("");
                     setError("");
                   }}
                 >
