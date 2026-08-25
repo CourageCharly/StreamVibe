@@ -52,7 +52,7 @@ export default function FreeTrialBanner({
   return (
     <section
       id="free-trial"
-      className={["page-section min-w-0", className].filter(Boolean).join(" ")}
+      className={["page-section min-w-0 !pb-[calc(var(--section-y)*2)]", className].filter(Boolean).join(" ")}
     >
       {/* Card frame — taller on mobile only */}
       <div className="relative w-full min-w-0 min-h-[300px] overflow-hidden rounded-[12px] border border-[#1F1F1F] sm:min-h-[210px]">

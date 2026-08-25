@@ -172,22 +172,15 @@ video,
 }
 
 /*
- * Banner is the last page-section. Drop its bottom pad and put the full
- * FAQ→plans gap (2 × --section-y) on the footer so the space matches
- * and is not split across two background colors.
+ * Space under the free-trial card is page background (#141414), not footer.
+ * Footer padding-top is the same color as the footer and does not read as a gap.
  */
-main > .page-section:last-child,
-main > *:last-child > .page-section:last-child {
-  padding-bottom: 0;
+#free-trial.page-section {
+  padding-bottom: calc(var(--section-y) * 2) !important;
 }
 
 .site-footer {
   padding-top: var(--section-y);
-}
-
-body:has(main > .page-section:last-child) .site-footer,
-body:has(main > *:last-child > .page-section:last-child) .site-footer {
-  padding-top: calc(var(--section-y) * 2);
 }
 
 /* Images: only constrain width; do not force height:auto (breaks next/image fill) */
