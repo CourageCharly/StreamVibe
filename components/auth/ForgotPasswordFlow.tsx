@@ -166,7 +166,7 @@ export function ForgotPasswordFlow() {
   return (
     <div className="w-full min-w-0 bg-[#141414] pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
-        <div className="w-full max-w-[820px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+        <div className="mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
           <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
             {titles[step].title}
           </h1>

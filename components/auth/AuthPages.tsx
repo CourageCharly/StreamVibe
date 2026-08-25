@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
 import { toast } from "sonner";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
@@ -118,7 +119,11 @@ export function SignupPage() {
   }
 
   return (
-    <AuthShell title="Sign Up" subtitle="Create an account to start watching.">
+    <AuthShell
+      title="Sign Up"
+      subtitle="Create an account to start watching."
+      onBack={method === "email" ? () => setMethod("choose") : undefined}
+    >
       {method === "choose" ? (
         <div className="space-y-3">
           <Button
@@ -135,30 +140,21 @@ export function SignupPage() {
           />
         </div>
       ) : (
-        <div className="space-y-4">
-          <button
-            type="button"
-            className="text-[13px] font-medium text-[#999999] hover:text-white"
-            onClick={() => setMethod("choose")}
-          >
-            ← Back
-          </button>
-          <SignupForm
-            onSuccess={(result) => {
-              if (result.requiresVerification) {
-                toast.success("Verification email sent.");
-                const qs = new URLSearchParams({
-                  email: result.email,
-                  returnTo,
-                });
-                if (result.verificationId) qs.set("vid", result.verificationId);
-                router.replace(`/verify?${qs.toString()}`);
-                return;
-              }
-              void signedIn();
-            }}
-          />
-        </div>
+        <SignupForm
+          onSuccess={(result) => {
+            if (result.requiresVerification) {
+              toast.success("Verification email sent.");
+              const qs = new URLSearchParams({
+                email: result.email,
+                returnTo,
+              });
+              if (result.verificationId) qs.set("vid", result.verificationId);
+              router.replace(`/verify?${qs.toString()}`);
+              return;
+            }
+            void signedIn();
+          }}
+        />
       )}
       <SwitchLink
         prompt="Already have an account?"
@@ -208,15 +204,27 @@ function AuthShell({
   title,
   subtitle,
   children,
+  onBack,
 }: {
   title: string;
   subtitle: string;
   children: React.ReactNode;
+  onBack?: () => void;
 }) {
   return (
     <div className="w-full min-w-0 bg-[#141414] pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
-        <div className="w-full max-w-[820px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+        <div className="mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Back"
+              className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414] focus-visible:ring-2 focus-visible:ring-cta/60"
+            >
+              <FiArrowLeft className="h-5 w-5" />
+            </button>
+          ) : null}
           <h1 className="text-[20px] font-bold text-white sm:text-[28px]">{title}</h1>
           <p className="mt-2 min-w-0 text-[14px] text-[#999999] sm:text-[16px]">
             {subtitle}
