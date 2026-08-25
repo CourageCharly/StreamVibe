@@ -18,6 +18,7 @@ import {
   readReturnTo,
   sanitizeReturnTo,
 } from "@/lib/auth/return-to";
+import { maskEmail } from "@/lib/auth/public";
 
 export function AuthChoicePage() {
   const router = useRouter();
@@ -187,7 +188,7 @@ export function VerifyPage() {
   return (
     <AuthShell
       title="Verify your email"
-      subtitle={`Enter the 6-digit code we sent to ${email}.`}
+      subtitle={`Enter the 6-digit code we sent to ${maskEmail(email)}.`}
     >
       <VerifyForm
         email={email}

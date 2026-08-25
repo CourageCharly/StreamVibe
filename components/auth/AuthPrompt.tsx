@@ -7,6 +7,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import VerifyForm from "@/components/auth/VerifyForm";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { maskEmail } from "@/lib/auth/public";
 
 type Mode = "choice" | "login" | "signup" | "verify";
 
@@ -169,7 +170,7 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
               Verify your email
             </h2>
             <p className="mb-5 pr-8 text-[14px] text-[#999999] sm:text-[16px]">
-              Enter the 6-digit code we sent to {email}.
+              Enter the 6-digit code we sent to {maskEmail(email)}.
             </p>
             <VerifyForm
               email={email}

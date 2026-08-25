@@ -8,6 +8,7 @@ import OtpInput from "@/components/auth/OtpInput";
 import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
+import { maskEmail } from "@/lib/auth/public";
 import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 
 type Step = "email" | "otp" | "reset" | "success";
@@ -156,7 +157,7 @@ export function ForgotPasswordFlow() {
     },
     otp: {
       title: "Enter verification code",
-      subtitle: `We sent a 6-digit code to ${email}.`,
+      subtitle: `We sent a 6-digit code to ${maskEmail(email)}.`,
     },
     reset: {
       title: "Create a new password",
