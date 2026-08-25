@@ -84,6 +84,7 @@ export function addMovieNotice(input: {
   kind?: MovieNotice["kind"];
 }) {
   if (typeof window === "undefined") return;
+  if (storageUserId() === "anon") return;
   const kind = input.kind ?? "watchlist";
   const current = readUserNotices();
   const already = current.some(

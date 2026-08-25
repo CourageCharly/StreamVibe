@@ -6,6 +6,8 @@ import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import RequireAuth from "@/components/auth/RequireAuth";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import { NotificationsSkeleton } from "@/components/skeletons/PageSkeletons";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { setActiveListUser } from "@/lib/user-lists";
 import {
   deleteNotice,
   getAllNotices,
@@ -40,12 +42,18 @@ export default function NotificationsPage() {
 }
 
 function NotificationsInner() {
+  const { user } = useAuth();
   const [items, setItems] = useState<MovieNotice[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const [, setTick] = useState(0);
 
   useEffect(() => {
+    if (!user?.id) {
+      setItems([]);
+      return;
+    }
+    setActiveListUser(user.id);
     const refreshList = () => setItems(getAllNotices());
     refreshList();
     window.addEventListener(NOTICE_EVENT, refreshList);
@@ -54,7 +62,7 @@ function NotificationsInner() {
       window.removeEventListener(NOTICE_EVENT, refreshList);
       window.clearInterval(tick);
     };
-  }, []);
+  }, [user?.id]);
 
   function refresh() {
     setItems(getAllNotices());
@@ -88,7 +96,7 @@ function NotificationsInner() {
           <div className="mt-6">
             <EmptyCatalog
               title="No notifications"
-              message="When you save a title, like one, or post a review, it will show up here."
+              message="All notifications will appear here."
             />
           </div>
         ) : (

@@ -11,7 +11,7 @@ const SOCIAL = [
 export default function Footer() {
   return (
     <footer
-      className="w-full min-w-0 max-w-full overflow-x-hidden border-0 border-t-0 bg-navbar shadow-none ring-0 sm:border-t-0 sm:bg-background sm:shadow-none"
+      className="w-full min-w-0 max-w-full overflow-x-hidden border-0 border-t-0 bg-[#0F0F0F] shadow-none ring-0 sm:border-t-0 sm:shadow-none"
       style={{ borderTop: "none", boxShadow: "none" }}
     >
       <div className="page-container pt-[clamp(2rem,4vw,4rem)] pb-10 sm:pb-12">
