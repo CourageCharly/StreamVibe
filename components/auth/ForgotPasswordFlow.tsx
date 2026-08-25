@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import PageWrapper from "@/components/PageWrapper";
 import Button from "@/components/ui/Button";
@@ -13,8 +12,16 @@ import { sanitizeReturnTo } from "@/lib/auth/return-to";
 
 type Step = "email" | "otp" | "reset" | "success";
 
+const RESEND_SECONDS = 60;
+
 const fieldChrome =
   "w-full rounded-lg border border-[#262626] bg-[#141414] px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-[#999999] focus:border-[#404040]";
+
+function formatTimer(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 export function ForgotPasswordFlow() {
   const router = useRouter();
@@ -29,6 +36,13 @@ export function ForgotPasswordFlow() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+
+  useEffect(() => {
+    if (step !== "otp" || resendIn <= 0) return;
+    const id = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [step, resendIn]);
 
   async function requestResetCode() {
     const res = await fetch("/api/auth/forgot-password", {
@@ -44,6 +58,7 @@ export function ForgotPasswordFlow() {
     }
     setCode("");
     setStep("otp");
+    setResendIn(RESEND_SECONDS);
   }
 
   async function sendCode(e: FormEvent) {
@@ -205,36 +220,33 @@ export function ForgotPasswordFlow() {
                 <Button type="submit" disabled={submitting} className="!w-full">
                   {submitting ? "Checking…" : "Continue"}
                 </Button>
-                <button
-                  type="button"
-                  className="w-full text-center text-[13px] text-[#999999] hover:text-white"
-                  onClick={() => {
-                    if (submitting) return;
-                    setSubmitting(true);
-                    setError("");
-                    void requestResetCode()
-                      .catch((err) => {
-                        setError(
-                          err instanceof Error
-                            ? err.message
-                            : "Unable to send a reset code.",
-                        );
-                      })
-                      .finally(() => setSubmitting(false));
-                  }}
-                >
-                  Resend code
-                </button>
-                <button
-                  type="button"
-                  className="w-full text-center text-[13px] text-[#999999] hover:text-white"
-                  onClick={() => {
-                    setStep("email");
-                    setError("");
-                  }}
-                >
-                  Use a different email
-                </button>
+                {resendIn > 0 ? (
+                  <p className="w-full text-center text-[13px] tabular-nums text-[#999999]">
+                    {formatTimer(resendIn)}
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    className="w-full text-center text-[13px] text-[#999999] hover:text-white disabled:opacity-60"
+                    disabled={submitting}
+                    onClick={() => {
+                      if (submitting) return;
+                      setSubmitting(true);
+                      setError("");
+                      void requestResetCode()
+                        .catch((err) => {
+                          setError(
+                            err instanceof Error
+                              ? err.message
+                              : "Unable to send a reset code.",
+                          );
+                        })
+                        .finally(() => setSubmitting(false));
+                    }}
+                  >
+                    Resend
+                  </button>
+                )}
               </form>
             ) : null}
 
@@ -286,13 +298,6 @@ export function ForgotPasswordFlow() {
                 </Button>
               </form>
             ) : null}
-
-            <p className="mt-4 text-center text-[13px] text-[#999999]">
-              Remembered it?{" "}
-              <Link href={loginHref} className="font-medium text-white hover:text-cta">
-                Log In
-              </Link>
-            </p>
           </div>
         </div>
       </PageWrapper>

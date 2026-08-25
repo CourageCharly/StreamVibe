@@ -272,38 +272,28 @@ export function localFindByEmail(email: string): LocalUser | undefined {
 }
 
 export function localStartPasswordReset(email: string) {
-  const normalized = email.trim().toLowerCase();
   const users = load();
-  const index = users.findIndex((u) => u.email === normalized);
+  const index = users.findIndex((u) => u.email === email.trim().toLowerCase());
+  if (index < 0) {
+    return { started: false as const };
+  }
   const resetId = randomBytes(24).toString("base64url");
   const resetCode = sixDigit();
-
-  if (index >= 0) {
-    users[index] = { ...users[index], resetId, resetCode };
-    save(users);
-    saveResets(loadResets().filter((r) => r.email !== normalized));
-  } else {
-    const next = loadResets().filter((r) => r.email !== normalized);
-    next.push({ email: normalized, resetId, resetCode });
-    saveResets(next);
-  }
-
+  users[index] = { ...users[index], resetId, resetCode };
+  save(users);
+  saveResets(loadResets().filter((r) => r.email !== users[index].email));
   return {
     started: true as const,
-    email: index >= 0 ? users[index].email : normalized,
+    email: users[index].email,
     resetId,
     developmentCode: resetCode,
   };
 }
 
 export function localVerifyResetOtp(email: string, code: string) {
-  const trimmed = code.trim();
   const row = localFindByEmail(email);
-  if (row?.resetCode && row.resetCode === trimmed) return true;
-  const pending = loadResets().find(
-    (r) => r.email === email.trim().toLowerCase(),
-  );
-  return Boolean(pending?.resetCode && pending.resetCode === trimmed);
+  if (!row?.resetCode || row.resetCode !== code.trim()) return false;
+  return true;
 }
 
 export function localResetPassword(

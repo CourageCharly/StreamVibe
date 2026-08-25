@@ -151,7 +151,7 @@ async function sendResetOtpEmail(
 }
 
 /**
- * POST { email } — always start a password-reset OTP and email it.
+ * POST { email } — start a password-reset OTP for a registered user and email it.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -165,6 +165,13 @@ export async function POST(request: NextRequest) {
     }
 
     const result = localStartPasswordReset(email);
+    if (!result.started) {
+      return NextResponse.json(
+        { message: "No account found with that email." },
+        { status: 404 },
+      );
+    }
+
     const sent = await sendResetOtpEmail(
       result.email,
       result.developmentCode,
