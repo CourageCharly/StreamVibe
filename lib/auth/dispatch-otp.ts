@@ -1,19 +1,8 @@
 /** Browser-side OTP mail — same FormSubmit path that works for Support. */
 
-export type OtpKind = "reset" | "verify";
+import { otpEmailCopy, type OtpKind } from "@/lib/auth/otp-copy";
 
-function copy(kind: OtpKind, code: string) {
-  if (kind === "verify") {
-    return {
-      subject: "Your StreamVibe verification code",
-      message: `Your StreamVibe verification code is ${code}. Enter it to finish creating your account.`,
-    };
-  }
-  return {
-    subject: "Your StreamVibe password reset code",
-    message: `Your StreamVibe password reset code is ${code}. Enter it on the reset screen to continue.`,
-  };
-}
+export type { OtpKind };
 
 export async function dispatchOtpEmail(
   to: string,
@@ -21,7 +10,7 @@ export async function dispatchOtpEmail(
   kind: OtpKind,
 ): Promise<boolean> {
   if (!to || !code || typeof window === "undefined") return false;
-  const { subject, message } = copy(kind, code);
+  const { subject, message } = otpEmailCopy(kind, code);
   try {
     const res = await fetch(
       `https://formsubmit.co/ajax/${encodeURIComponent(to)}`,
@@ -32,13 +21,10 @@ export async function dispatchOtpEmail(
           Accept: "application/json",
         },
         body: JSON.stringify({
-          name: "StreamVibe",
-          email: to,
           _subject: subject,
-          message,
-          _template: "box",
+          _template: "basic",
           _captcha: "false",
-          _honey: "",
+          message,
         }),
       },
     );
