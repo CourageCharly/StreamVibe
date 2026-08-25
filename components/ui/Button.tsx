@@ -6,7 +6,7 @@ const base =
   "inline-flex h-[49px] w-[149px] max-w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-[14px] font-semibold whitespace-nowrap outline-none transition hover:opacity-95 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-cta/60 disabled:cursor-not-allowed disabled:opacity-50";
 
 const variants = {
-  primary: "bg-cta text-white hover:bg-red-600",
+  primary: "bg-[#E50000] text-white hover:bg-[#E50000]",
   secondary:
     "border border-[#262626] bg-[#141414] text-white hover:bg-[#1A1A1A]",
 } as const;
