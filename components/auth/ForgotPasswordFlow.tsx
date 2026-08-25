@@ -11,7 +11,7 @@ import { sanitizeReturnTo } from "@/lib/auth/return-to";
 
 type Step = "email" | "otp" | "reset" | "success";
 
-const RESEND_SECONDS = 60;
+const RESEND_SECONDS = 30;
 
 const fieldChrome =
   "w-full rounded-lg border border-[#262626] bg-[#141414] px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-[#999999] focus:border-[#404040]";

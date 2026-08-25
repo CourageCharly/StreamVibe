@@ -1,12 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import OtpInput from "@/components/auth/OtpInput";
 import { MESSAGES } from "@/lib/auth/errors";
 import { fusionAuthApplicationIdSafe } from "@/lib/auth/public";
 import { cn } from "@/lib";
+
+const RESEND_SECONDS = 30;
+
+function formatTimer(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 type Props = {
   email: string;
@@ -26,9 +34,16 @@ export default function VerifyForm({
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
+  const [resendIn, setResendIn] = useState(RESEND_SECONDS);
   const [activeVerificationId, setActiveVerificationId] = useState(
     verificationId ?? "",
   );
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const id = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [resendIn]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -86,7 +101,7 @@ export default function VerifyForm({
       }
       if (data.verificationId) setActiveVerificationId(data.verificationId);
       setCode("");
-      toast.success("A new code was sent.");
+      setResendIn(RESEND_SECONDS);
     } catch {
       toast.error(MESSAGES.network);
     } finally {
@@ -113,14 +128,20 @@ export default function VerifyForm({
       <Button type="submit" disabled={submitting} className="!w-full">
         {submitting ? "Verifying…" : "Verify"}
       </Button>
-      <button
-        type="button"
-        onClick={() => void resend()}
-        disabled={resending}
-        className="w-full text-center text-[13px] text-[#999999] outline-none transition hover:text-white disabled:opacity-60"
-      >
-        {resending ? "Sending…" : "Resend code"}
-      </button>
+      {resendIn > 0 ? (
+        <p className="w-full text-center text-[13px] tabular-nums text-[#999999]">
+          {formatTimer(resendIn)}
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={() => void resend()}
+          disabled={resending}
+          className="w-full text-center text-[13px] text-[#999999] outline-none transition hover:text-white disabled:opacity-60"
+        >
+          {resending ? "Sending…" : "Resend"}
+        </button>
+      )}
     </form>
   );
 }
