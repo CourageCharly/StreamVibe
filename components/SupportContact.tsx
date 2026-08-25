@@ -86,68 +86,6 @@ export default function SupportContact({ posters = [] }: Props) {
     );
   });
 
-  /**
-   * FormSubmit official method: real HTML form POST (not fetch/ajax).
-   * Ajax is blocked / flaky; form POST always reaches FormSubmit.
-   */
-  function submitViaFormSubmitForm(
-    fields: Record<string, string>,
-  ): Promise<boolean> {
-    return new Promise((resolve) => {
-      const iframeName = `fs_frame_${Date.now()}`;
-      const iframe = document.createElement("iframe");
-      iframe.name = iframeName;
-      iframe.title = "formsubmit";
-      iframe.setAttribute("aria-hidden", "true");
-      iframe.style.cssText =
-        "position:absolute;width:0;height:0;border:0;clip:rect(0,0,0,0);";
-      document.body.appendChild(iframe);
-
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action =
-        "https://formsubmit.co/Couragelivingstone1@gmail.com";
-      form.target = iframeName;
-      form.acceptCharset = "UTF-8";
-      form.style.display = "none";
-
-      for (const [name, value] of Object.entries(fields)) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-      }
-
-      document.body.appendChild(form);
-
-      let settled = false;
-      const finish = (ok: boolean) => {
-        if (settled) return;
-        settled = true;
-        window.setTimeout(() => {
-          try {
-            form.remove();
-            iframe.remove();
-          } catch {
-            /* ignore */
-          }
-        }, 500);
-        resolve(ok);
-      };
-
-      // Cross-origin iframe may or may not fire onload — treat either as delivered
-      iframe.onload = () => finish(true);
-      try {
-        form.submit();
-        // FormSubmit accepted the browser POST (activation email or inbox)
-        window.setTimeout(() => finish(true), 1800);
-      } catch {
-        finish(false);
-      }
-    });
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed || sending) return;
@@ -155,13 +93,27 @@ export default function SupportContact({ posters = [] }: Props) {
     setSending(true);
     setToast(false);
 
-    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-    const phoneLine = [country, phone.trim()].filter(Boolean).join(" ").trim();
-    const subject = `StreamVibe Support — ${fullName}`;
-    const pageUrl =
-      typeof window !== "undefined" ? window.location.href : "";
-
-    const markSuccess = () => {
+    try {
+      const res = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          countryCode: country,
+          message: message.trim(),
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setError(
+          data.error ||
+            "We could not send your message right now. Please try again in a moment.",
+        );
+        return;
+      }
       setFirstName("");
       setLastName("");
       setEmail("");
@@ -171,35 +123,8 @@ export default function SupportContact({ posters = [] }: Props) {
       setToast(true);
       if (toastTimer.current) clearTimeout(toastTimer.current);
       toastTimer.current = setTimeout(() => setToast(false), 3000);
-    };
-
-    try {
-      // Official FormSubmit HTML form POST (works from real websites)
-      const delivered = await submitViaFormSubmitForm({
-        name: fullName,
-        email: email.trim(),
-        phone: phoneLine || "—",
-        message: message.trim(),
-        _subject: subject,
-        _template: "table",
-        _captcha: "false",
-        _replyto: email.trim(),
-        _url: pageUrl,
-        _next: pageUrl || "https://formsubmit.co/thanks",
-      });
-
-      if (delivered) {
-        markSuccess();
-        return;
-      }
-
-      setError(
-        "We could not send your message right now. Please try again in a moment.",
-      );
     } catch {
-      setError(
-        "Network error. Please check your connection and try again.",
-      );
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setSending(false);
     }

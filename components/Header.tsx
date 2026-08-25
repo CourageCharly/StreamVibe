@@ -10,6 +10,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import UserMenu from "@/components/auth/UserMenu";
 import { rememberReturnTo, sanitizeReturnTo } from "@/lib/auth/return-to";
 import { getUnreadNoticeCount, NOTICE_EVENT } from "@/lib/notifications";
+import { LISTS_EVENT } from "@/lib/user-lists";
 import type { Movie } from "@/lib/types";
 
 function HeaderInner() {
@@ -29,15 +30,21 @@ function HeaderInner() {
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
+    if (status !== "authenticated" || !user?.id) {
+      setUnread(0);
+      return;
+    }
     const sync = () => setUnread(getUnreadNoticeCount());
     sync();
     window.addEventListener(NOTICE_EVENT, sync);
+    window.addEventListener(LISTS_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
       window.removeEventListener(NOTICE_EVENT, sync);
+      window.removeEventListener(LISTS_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
-  }, [pathname]);
+  }, [pathname, status, user?.id]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";

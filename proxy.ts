@@ -10,6 +10,13 @@ const PROTECTED = [
   "/notifications",
 ];
 
+function postLoginPath(pathname: string) {
+  const isAccount = PROTECTED.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+  return isAccount ? "/" : pathname;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isReviewWrite = /\/(movies|shows)\/[^/]+\/review\/?$/.test(pathname);
@@ -25,7 +32,8 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone();
   url.pathname = "/login";
-  url.searchParams.set("returnTo", pathname);
+  url.search = "";
+  url.searchParams.set("returnTo", postLoginPath(pathname));
   return NextResponse.redirect(url);
 }
 

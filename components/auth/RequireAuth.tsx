@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { rememberReturnTo } from "@/lib/auth/return-to";
+import { rememberReturnTo, sanitizeReturnTo } from "@/lib/auth/return-to";
 
 export default function RequireAuth({
   children,
@@ -18,8 +18,9 @@ export default function RequireAuth({
 
   useEffect(() => {
     if (status !== "anonymous") return;
-    rememberReturnTo(pathname);
-    router.replace(`/login?returnTo=${encodeURIComponent(pathname)}`);
+    const next = sanitizeReturnTo(pathname);
+    rememberReturnTo(next);
+    router.replace(`/login?returnTo=${encodeURIComponent(next)}`);
   }, [status, pathname, router]);
 
   if (status === "loading") {

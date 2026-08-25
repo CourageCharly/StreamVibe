@@ -13,6 +13,8 @@
   --page-pad-x: 5%;
   --header-h: 5rem;
   --content-max: 1600px;
+  /* Same Y rhythm between FAQ → plans and banner → footer */
+  --section-y: clamp(2rem, 4vw, 4rem);
 }
 
 @media (min-width: 640px) {
@@ -163,10 +165,29 @@ video,
 }
 
 .page-section {
-  padding-block: clamp(2rem, 4vw, 4rem);
+  padding-block: var(--section-y);
   /* clip children so scaled media cannot expand the page */
   overflow-x: hidden !important;
   overflow-y: visible;
+}
+
+/*
+ * Banner is the last page-section. Drop its bottom pad and put the full
+ * FAQ→plans gap (2 × --section-y) on the footer so the space matches
+ * and is not split across two background colors.
+ */
+main > .page-section:last-child,
+main > *:last-child > .page-section:last-child {
+  padding-bottom: 0;
+}
+
+.site-footer {
+  padding-top: var(--section-y);
+}
+
+body:has(main > .page-section:last-child) .site-footer,
+body:has(main > *:last-child > .page-section:last-child) .site-footer {
+  padding-top: calc(var(--section-y) * 2);
 }
 
 /* Images: only constrain width; do not force height:auto (breaks next/image fill) */

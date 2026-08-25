@@ -7,7 +7,7 @@ import RequireAuth from "@/components/auth/RequireAuth";
 import EmptyCatalog from "@/components/EmptyCatalog";
 import { NotificationsSkeleton } from "@/components/skeletons/PageSkeletons";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { setActiveListUser } from "@/lib/user-lists";
+import { LISTS_EVENT, setActiveListUser } from "@/lib/user-lists";
 import {
   deleteNotice,
   getAllNotices,
@@ -57,9 +57,11 @@ function NotificationsInner() {
     const refreshList = () => setItems(getAllNotices());
     refreshList();
     window.addEventListener(NOTICE_EVENT, refreshList);
+    window.addEventListener(LISTS_EVENT, refreshList);
     const tick = window.setInterval(() => setTick((n) => n + 1), 30000);
     return () => {
       window.removeEventListener(NOTICE_EVENT, refreshList);
+      window.removeEventListener(LISTS_EVENT, refreshList);
       window.clearInterval(tick);
     };
   }, [user?.id]);

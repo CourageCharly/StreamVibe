@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { AuthUser } from "@/lib/auth/types";
 import { rememberAccountProof } from "@/lib/auth/account-proof";
+import { NOTICE_EVENT } from "@/lib/notifications";
 import { setActiveListUser } from "@/lib/user-lists";
 
 type AuthStatus = "loading" | "authenticated" | "anonymous";
@@ -39,6 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(next);
       setStatus(next ? "authenticated" : "anonymous");
       setActiveListUser(next?.id ?? null);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event(NOTICE_EVENT));
+      }
       if (next?.email && data.accountProof) {
         rememberAccountProof(next.email, data.accountProof);
       }
@@ -47,6 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setStatus("anonymous");
       setActiveListUser(null);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event(NOTICE_EVENT));
+      }
       return null;
     }
   }, []);
@@ -58,6 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setStatus("anonymous");
       setActiveListUser(null);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event(NOTICE_EVENT));
+      }
     }
   }, []);
 
@@ -71,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(next);
         setStatus(next ? "authenticated" : "anonymous");
         setActiveListUser(next?.id ?? null);
+        window.dispatchEvent(new Event(NOTICE_EVENT));
         if (next?.email && data.accountProof) {
           rememberAccountProof(next.email, data.accountProof);
         }
@@ -80,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setStatus("anonymous");
         setActiveListUser(null);
+        window.dispatchEvent(new Event(NOTICE_EVENT));
       });
     return () => {
       cancelled = true;

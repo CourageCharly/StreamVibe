@@ -8,15 +8,33 @@ const AUTH_PREFIXES = [
   "/auth",
 ];
 
-function isAuthPath(pathname: string) {
-  return AUTH_PREFIXES.some(
+/** Account screens are not a post-login resume target — Home is the default. */
+const ACCOUNT_PREFIXES = [
+  "/notifications",
+  "/profile",
+  "/settings",
+  "/list",
+  "/history",
+];
+
+function matchesPrefix(pathname: string, prefixes: string[]) {
+  return prefixes.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 }
 
+function isAuthPath(pathname: string) {
+  return matchesPrefix(pathname, AUTH_PREFIXES);
+}
+
+function isAccountPath(pathname: string) {
+  return matchesPrefix(pathname, ACCOUNT_PREFIXES);
+}
+
 /**
  * Safe in-app path to resume after login/signup.
- * Drops auth pages and unwraps nested ?returnTo= so the query cannot stack.
+ * Drops auth/account pages (Home is the default first screen) and unwraps
+ * nested ?returnTo= so the query cannot stack. Movie/show/watch paths resume.
  */
 export function sanitizeReturnTo(value: string | null | undefined): string {
   if (!value) return "/";
@@ -28,6 +46,8 @@ export function sanitizeReturnTo(value: string | null | undefined): string {
     const q = current.indexOf("?");
     const pathname = q === -1 ? current : current.slice(0, q);
     const search = q === -1 ? "" : current.slice(q + 1);
+
+    if (isAccountPath(pathname)) return "/";
 
     if (!isAuthPath(pathname)) {
       return current.length > 2048 ? pathname : current;

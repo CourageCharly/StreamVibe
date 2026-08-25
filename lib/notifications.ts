@@ -67,6 +67,7 @@ function getDeletedIds(): string[] {
 }
 
 export function getAllNotices(): MovieNotice[] {
+  if (storageUserId() === "anon") return [];
   const read = new Set(getReadNoticeIds());
   const deleted = new Set(getDeletedIds());
   return readUserNotices()
