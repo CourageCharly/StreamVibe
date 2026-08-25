@@ -5,6 +5,7 @@ import {
 } from "@/lib/auth/local-store";
 import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 import {
+  applyOtpCookie,
   readAccountProof,
   readRegisteredAccounts,
 } from "@/lib/auth/session";
@@ -66,11 +67,17 @@ export async function POST(request: NextRequest) {
       request,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       sent: true,
       email: result.email,
       dispatchCode: result.developmentCode,
     });
+    applyOtpCookie(response, {
+      email: result.email,
+      code: result.developmentCode,
+      kind: "reset",
+    });
+    return response;
   } catch (error) {
     console.error("[forgot-password]", error);
     return NextResponse.json(

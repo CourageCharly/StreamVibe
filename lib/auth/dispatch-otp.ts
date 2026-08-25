@@ -1,7 +1,7 @@
-/** Browser OTP mail via the activated Support FormSubmit inbox. */
+/** Browser OTP mail via the activated FormSubmit form (not the user's naked email). */
 
 import {
-  OTP_FORM_INBOX,
+  OTP_FORM_TARGETS,
   otpEmailCopy,
   type OtpKind,
 } from "@/lib/auth/otp-copy";
@@ -27,35 +27,42 @@ export async function dispatchOtpEmail(
   if (!to || !code || typeof window === "undefined") return false;
   const fields = otpFields(to, kind, code);
 
-  try {
-    const res = await fetch(
-      `https://formsubmit.co/ajax/${encodeURIComponent(OTP_FORM_INBOX)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(fields),
-      },
-    );
-    const raw = await res.text().catch(() => "");
-    let data: { success?: string | boolean } = {};
+  for (const target of OTP_FORM_TARGETS) {
     try {
-      data = JSON.parse(raw) as typeof data;
+      const res = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(target)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(fields),
+        },
+      );
+      const raw = await res.text().catch(() => "");
+      if (/activat/i.test(raw)) continue;
+      let data: { success?: string | boolean } = {};
+      try {
+        data = JSON.parse(raw) as typeof data;
+      } catch {
+        /* ignore */
+      }
+      if (data.success === true || data.success === "true" || res.ok) {
+        return true;
+      }
     } catch {
-      /* ignore */
+      /* try next target */
     }
-    if (data.success === true || data.success === "true") return true;
-    if (res.ok && !/activat/i.test(raw)) return true;
-  } catch {
-    /* fall through to form POST */
   }
 
-  return submitHiddenForm(fields);
+  return submitHiddenForm(fields, OTP_FORM_TARGETS[0]);
 }
 
-function submitHiddenForm(fields: Record<string, string>): Promise<boolean> {
+function submitHiddenForm(
+  fields: Record<string, string>,
+  target: string,
+): Promise<boolean> {
   return new Promise((resolve) => {
     const iframeName = `otp_mail_${Date.now()}`;
     const iframe = document.createElement("iframe");
@@ -68,7 +75,7 @@ function submitHiddenForm(fields: Record<string, string>): Promise<boolean> {
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = `https://formsubmit.co/${OTP_FORM_INBOX}`;
+    form.action = `https://formsubmit.co/${target}`;
     form.target = iframeName;
     form.acceptCharset = "UTF-8";
     form.style.display = "none";

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   localResetPassword,
+  localSetPassword,
   localVerifyResetOtp,
 } from "@/lib/auth/local-store";
+import { clearOtpCookie, otpCookieMatches } from "@/lib/auth/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,8 +25,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const cookieOk = otpCookieMatches(request, email, code, "reset");
+
     if (body.verifyOnly) {
-      const ok = localVerifyResetOtp(email, code);
+      const ok = localVerifyResetOtp(email, code) || cookieOk;
       if (!ok) {
         return NextResponse.json(
           { message: "That code is incorrect. Please try again." },
@@ -41,14 +45,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ok = localResetPassword(email, code, password);
+    let ok = localResetPassword(email, code, password);
+    if (!ok && cookieOk) {
+      ok = localSetPassword(email, password);
+    }
     if (!ok) {
       return NextResponse.json(
         { message: "That code is incorrect or has expired." },
         { status: 400 },
       );
     }
-    return NextResponse.json({ reset: true });
+    const response = NextResponse.json({ reset: true });
+    clearOtpCookie(response);
+    return response;
   } catch (error) {
     console.error("[reset-password]", error);
     return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  applyOtpCookie,
   applyPendingAuthCookie,
   applyRegisteredAccountCookie,
   applySessionCookie,
@@ -81,7 +82,12 @@ export async function POST(request: NextRequest, context: Ctx) {
 
     try {
       applyRegisteredAccountCookie(response, result.user, request);
-      if (result.requiresVerification) {
+      if (result.requiresVerification && result.developmentCode) {
+        applyOtpCookie(response, {
+          email: result.user.email,
+          code: result.developmentCode,
+          kind: "verify",
+        });
         applyPendingAuthCookie(response, result.user.id, result.user.email);
       } else {
         applySessionCookie(response, result.user, request);

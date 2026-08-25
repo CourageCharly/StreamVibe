@@ -370,6 +370,45 @@ export function localVerifyResetOtp(email: string, code: string) {
   return true;
 }
 
+export function localMarkEmailVerified(email: string): AuthUser | null {
+  const users = load();
+  const index = users.findIndex(
+    (u) => u.email === email.trim().toLowerCase(),
+  );
+  if (index < 0) {
+    return localEnsureRegisteredUser({ email });
+  }
+  users[index] = {
+    ...users[index],
+    verified: true,
+    verificationCode: undefined,
+    verificationId: undefined,
+  };
+  save(users);
+  return toUser(users[index]);
+}
+
+export function localSetPassword(email: string, password: string): boolean {
+  const users = load();
+  const normalized = email.trim().toLowerCase();
+  let index = users.findIndex((u) => u.email === normalized);
+  if (index < 0) {
+    localEnsureRegisteredUser({ email: normalized });
+    index = load().findIndex((u) => u.email === normalized);
+  }
+  const list = load();
+  if (index < 0) return false;
+  list[index] = {
+    ...list[index],
+    passwordHash: hashPassword(password),
+    verified: true,
+    resetCode: undefined,
+    resetId: undefined,
+  };
+  save(list);
+  return true;
+}
+
 export function localResetPassword(
   email: string,
   code: string,

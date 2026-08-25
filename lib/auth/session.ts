@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ACCOUNTS_COOKIE,
   ACCOUNTS_COOKIE_MAX_AGE,
+  OTP_COOKIE,
+  OTP_COOKIE_MAX_AGE,
   authSecret,
   PENDING_AUTH_COOKIE,
   PENDING_AUTH_MAX_AGE,
@@ -12,6 +14,13 @@ import {
 import type { AuthUser, SessionPayload } from "./types";
 
 export type RegisteredAccount = { id: string; email: string };
+
+export type OtpCookiePayload = {
+  email: string;
+  code: string;
+  kind: "verify" | "reset";
+  exp: number;
+};
 
 function sign(value: string): string {
   return createHmac("sha256", authSecret()).update(value).digest("base64url");
@@ -125,6 +134,75 @@ export function applyRegisteredAccountCookie(
       maxAge: ACCOUNTS_COOKIE_MAX_AGE,
     },
   );
+  return response;
+}
+
+export function applyOtpCookie(
+  response: NextResponse,
+  payload: { email: string; code: string; kind: "verify" | "reset" },
+): NextResponse {
+  response.cookies.set(
+    OTP_COOKIE,
+    encode({
+      email: payload.email.trim().toLowerCase(),
+      code: payload.code.trim(),
+      kind: payload.kind,
+      exp: Date.now() + OTP_COOKIE_MAX_AGE * 1000,
+    }),
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: OTP_COOKIE_MAX_AGE,
+    },
+  );
+  return response;
+}
+
+export function readOtpCookie(request: NextRequest): OtpCookiePayload | null {
+  const payload = decode<OtpCookiePayload>(
+    request.cookies.get(OTP_COOKIE)?.value,
+  );
+  if (
+    !payload?.email ||
+    !payload.code ||
+    !payload.kind ||
+    payload.exp < Date.now()
+  ) {
+    return null;
+  }
+  return {
+    email: payload.email.trim().toLowerCase(),
+    code: payload.code.trim(),
+    kind: payload.kind,
+    exp: payload.exp,
+  };
+}
+
+export function otpCookieMatches(
+  request: NextRequest,
+  email: string,
+  code: string,
+  kind: "verify" | "reset",
+): boolean {
+  const payload = readOtpCookie(request);
+  if (!payload) return false;
+  return (
+    payload.kind === kind &&
+    payload.email === email.trim().toLowerCase() &&
+    payload.code === code.trim()
+  );
+}
+
+export function clearOtpCookie(response: NextResponse): NextResponse {
+  response.cookies.set(OTP_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
   return response;
 }
 

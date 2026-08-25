@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import nodemailer from "nodemailer";
 import {
-  OTP_FORM_INBOX,
+  OTP_FORM_TARGETS,
   otpEmailCopy,
   type OtpKind,
 } from "@/lib/auth/otp-copy";
@@ -81,13 +81,11 @@ async function sendViaFormSubmit(
   code: string,
   request?: NextRequest,
 ): Promise<boolean> {
-  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(OTP_FORM_INBOX)}`;
   const origin =
     request?.headers.get("origin") ||
     request?.nextUrl.origin ||
     "https://localhost";
   const { subject, message } = otpEmailCopy(kind, code);
-
   const body = new URLSearchParams({
     email: to,
     _subject: subject,
@@ -96,35 +94,39 @@ async function sendViaFormSubmit(
     _captcha: "false",
   });
 
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-      Origin: origin,
-      Referer: `${origin}/${kind === "verify" ? "signup" : "forgot-password"}`,
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    },
-    body: body.toString(),
-    cache: "no-store",
-  });
+  for (const target of OTP_FORM_TARGETS) {
+    const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(target)}`;
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+        Origin: origin,
+        Referer: `${origin}/${kind === "verify" ? "signup" : "forgot-password"}`,
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      },
+      body: body.toString(),
+      cache: "no-store",
+    });
 
-  const raw = await res.text().catch(() => "");
-  console.info("[otp-email] FormSubmit", res.status, raw.slice(0, 240));
+    const raw = await res.text().catch(() => "");
+    console.info("[otp-email] FormSubmit", target, res.status, raw.slice(0, 240));
+    if (/activat/i.test(raw)) continue;
 
-  let data: { success?: string | boolean; message?: string } = {};
-  try {
-    data = JSON.parse(raw) as typeof data;
-  } catch {
-    /* ignore */
+    let data: { success?: string | boolean; message?: string } = {};
+    try {
+      data = JSON.parse(raw) as typeof data;
+    } catch {
+      /* ignore */
+    }
+
+    if (data.success === true || data.success === "true") return true;
+    const msg = String(data.message ?? raw ?? "").toLowerCase();
+    if (/successfully|form was submitted|thank you/i.test(msg)) return true;
+    if (res.ok) return true;
   }
-
-  if (data.success === true || data.success === "true") return true;
-  const msg = String(data.message ?? raw ?? "").toLowerCase();
-  if (/activat/i.test(msg)) return false;
-  if (/successfully|form was submitted|thank you/i.test(msg)) return true;
-  return res.ok && !/activat/i.test(msg);
+  return false;
 }
 
 export async function sendOtpEmail(opts: {

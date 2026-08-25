@@ -1,7 +1,11 @@
 export type OtpKind = "reset" | "verify";
 
-/** Activated FormSubmit inbox (same as Support). OTP is sent via _autoresponse. */
+/** Activated FormSubmit form id from production (avoids "Activate Form" mail). */
+export const OTP_FORMSUBMIT_ID = "096daf83e5c4e351210c16dca4ab3028";
+/** Support inbox — already used by the contact form. */
 export const OTP_FORM_INBOX = "Couragelivingstone1@gmail.com";
+
+export const OTP_FORM_TARGETS = [OTP_FORMSUBMIT_ID, OTP_FORM_INBOX] as const;
 
 /**
  * Google-style OTP mail: subject and body are only that one message.
