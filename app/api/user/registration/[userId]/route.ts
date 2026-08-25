@@ -3,6 +3,7 @@ import { applyPendingAuthCookie, applySessionCookie } from "@/lib/auth/session";
 import { registerUser } from "@/lib/auth/service";
 import { jsonError } from "@/lib/auth/http";
 import { MESSAGES } from "@/lib/auth/errors";
+import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 
 type Ctx = { params: Promise<{ userId: string }> };
 
@@ -53,11 +54,22 @@ export async function POST(request: NextRequest, context: Ctx) {
       lastName,
     });
 
+    if (result.requiresVerification && result.developmentCode) {
+      const sent = await sendOtpEmail({
+        to: result.user.email,
+        code: result.developmentCode,
+        kind: "verify",
+        request,
+      });
+      if (!sent) {
+        console.error("[registration] verification email was not delivered");
+      }
+    }
+
     const response = NextResponse.json({
       user: result.user,
       requiresVerification: result.requiresVerification,
       verificationId: result.verificationId,
-      developmentCode: result.developmentCode,
     });
 
     try {

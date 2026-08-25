@@ -49,7 +49,11 @@ export default function OtpInput({ value, onChange, disabled, id }: Props) {
   }
 
   return (
-    <div className="flex justify-between gap-2" role="group" aria-label="One-time code">
+    <div
+      className="flex justify-center gap-1.5 sm:gap-2"
+      role="group"
+      aria-label="One-time code"
+    >
       {digits.map((digit, i) => (
         <input
           key={i}

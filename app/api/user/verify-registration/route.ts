@@ -7,6 +7,7 @@ import {
   readPendingAuth,
 } from "@/lib/auth/session";
 import { resendVerification, verifyRegistration } from "@/lib/auth/service";
+import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 
 /**
  * POST /api/user/verify-registration
@@ -50,11 +51,25 @@ export async function PUT(request: NextRequest) {
       );
     }
     const result = await resendVerification(email);
+    const code =
+      "developmentCode" in result ? result.developmentCode : undefined;
+    if (code) {
+      const sent = await sendOtpEmail({
+        to: result.email,
+        code,
+        kind: "verify",
+        request,
+      });
+      if (!sent) {
+        return NextResponse.json(
+          { message: MESSAGES.resendFailed },
+          { status: 500 },
+        );
+      }
+    }
     return NextResponse.json({
       message: "Verification email sent.",
       email: result.email,
-      developmentCode:
-        "developmentCode" in result ? result.developmentCode : undefined,
       verificationId:
         "verificationId" in result ? result.verificationId : undefined,
     });
