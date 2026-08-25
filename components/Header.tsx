@@ -8,7 +8,7 @@ import { FiX } from "react-icons/fi";
 import { NAV_LINKS } from "@/lib/constants";
 import { useAuth } from "@/components/auth/AuthProvider";
 import UserMenu from "@/components/auth/UserMenu";
-import { rememberReturnTo } from "@/lib/auth/return-to";
+import { rememberReturnTo, sanitizeReturnTo } from "@/lib/auth/return-to";
 import { getUnreadNoticeCount, NOTICE_EVENT } from "@/lib/notifications";
 import type { Movie } from "@/lib/types";
 
@@ -23,7 +23,9 @@ function HeaderInner() {
   const [suggestOpen, setSuggestOpen] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { user, status, logout } = useAuth();
-  const returnTo = pathname + (searchParams.toString() ? `?${searchParams}` : "");
+  const returnTo = sanitizeReturnTo(
+    pathname + (searchParams.toString() ? `?${searchParams}` : ""),
+  );
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
