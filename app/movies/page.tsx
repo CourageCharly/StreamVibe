@@ -180,14 +180,15 @@ export default async function MoviesPage({ searchParams }: Props) {
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
       <RememberListPath />
-      {/* Back only from home free-trial / pricing CTAs */}
-      <SectionBack
-        allowed={["free-trial", "pricing"]}
-        legacyHomeAs="free-trial"
-        wrapperClassName="page-container pt-8 sm:pt-10 md:pt-12"
-      />
+      <div className="page-container pt-8 pb-5 sm:pt-10 sm:pb-7">
+        {/* Back only from home free-trial / pricing CTAs */}
+        <SectionBack
+          allowed={["free-trial", "pricing"]}
+          legacyHomeAs="free-trial"
+          wrapperClassName="mb-6 sm:mb-8"
+        />
 
-      <div className="page-container space-y-8 pt-0 pb-5 sm:space-y-10 sm:pb-7">
+        <div className="space-y-8 sm:space-y-10">
         <MoviesHero movies={heroSlides} trailers={heroTrailers} />
 
         {/* Web only: more space between hero and Movies section */}
@@ -285,6 +286,7 @@ export default async function MoviesPage({ searchParams }: Props) {
             </SectionFrame>
           }
         />
+        </div>
         </div>
       </div>
 

@@ -14,8 +14,7 @@ export default function Footer() {
       className="w-full min-w-0 max-w-full overflow-x-hidden border-0 border-t-0 bg-navbar shadow-none ring-0 sm:border-t-0 sm:bg-background sm:shadow-none"
       style={{ borderTop: "none", boxShadow: "none" }}
     >
-      {/* Extra top pad for space below free-trial on all breakpoints */}
-      <div className="page-container pt-14 pb-10 sm:pt-16 sm:pb-12 lg:pt-20">
+      <div className="page-container pt-[clamp(2rem,4vw,4rem)] pb-10 sm:pb-12">
         <div className="grid w-full min-w-0 grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-6">
           {Object.entries(FOOTER_LINKS).map(([title, links]) => (
             <div key={title} className="min-w-0">

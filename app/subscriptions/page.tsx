@@ -19,14 +19,12 @@ export default async function SubscriptionsPage() {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden bg-[#141414] pt-[var(--header-h)]">
-      <div className="page-container bg-[#141414] py-8 sm:py-10 md:py-12">
-        <SectionBack
-          allowed={["pricing"]}
-          legacyHomeAs="pricing"
-          wrapperClassName="mb-6 sm:mb-8"
-        />
-        <SubscriptionPlans />
-      </div>
+      <SectionBack
+        allowed={["pricing"]}
+        legacyHomeAs="pricing"
+        wrapperClassName="page-container pt-8 sm:pt-10"
+      />
+      <SubscriptionPlans />
 
       <FreeTrialBanner posters={popular.slice(0, 12)} />
     </div>

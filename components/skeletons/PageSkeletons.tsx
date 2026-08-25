@@ -1,7 +1,7 @@
 export function CatalogSkeleton() {
   return (
     <div className="w-full pt-[var(--header-h)]">
-      <div className="page-container space-y-6 py-6 sm:py-8">
+      <div className="page-container space-y-6 pt-8 pb-5 sm:pt-10 sm:pb-7">
         <div className="cinema-frame animate-pulse bg-[#1A1A1A]" />
         <div className="h-7 w-40 animate-pulse rounded bg-[#1A1A1A]" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
