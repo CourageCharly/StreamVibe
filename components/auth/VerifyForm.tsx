@@ -139,7 +139,7 @@ export default function VerifyForm({
           disabled={resending}
           className="w-full text-center text-[13px] text-[#999999] outline-none transition hover:text-white disabled:opacity-60"
         >
-          {resending ? "Sending…" : "Resend"}
+          {resending ? "Sending…" : "Resend code"}
         </button>
       )}
     </form>

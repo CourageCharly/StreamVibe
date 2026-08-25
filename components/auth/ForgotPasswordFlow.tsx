@@ -243,7 +243,7 @@ export function ForgotPasswordFlow() {
                         .finally(() => setSubmitting(false));
                     }}
                   >
-                    Resend
+                    Resend code
                   </button>
                 )}
               </form>

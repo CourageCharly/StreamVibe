@@ -39,7 +39,7 @@ export function AuthChoicePage() {
       <div className="flex flex-col gap-3">
         <Link
           href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}
-          className="inline-flex h-[49px] w-full items-center justify-center rounded-lg bg-cta text-[14px] font-semibold text-white"
+          className="inline-flex h-[49px] w-full items-center justify-center rounded-lg bg-[#E50000] text-[14px] font-semibold text-white"
         >
           Sign Up
         </Link>
@@ -128,7 +128,7 @@ export function SignupPage() {
         <div className="space-y-3">
           <Button
             type="button"
-            className="!w-full border border-[#E50000] !bg-transparent hover:!bg-transparent"
+            className="!w-full border border-[#999999] !bg-transparent !text-[#999999] hover:!bg-transparent"
             onClick={() => setMethod("email")}
           >
             Sign up with email
