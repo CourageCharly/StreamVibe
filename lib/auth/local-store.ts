@@ -1,4 +1,10 @@
-import { randomBytes, randomInt, scryptSync, timingSafeEqual } from "crypto";
+import {
+  randomBytes,
+  randomInt,
+  randomUUID,
+  scryptSync,
+  timingSafeEqual,
+} from "crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { fusionAuthApplicationId } from "./config";
@@ -17,6 +23,7 @@ type LocalUser = {
   verificationCode?: string;
   resetId?: string;
   resetCode?: string;
+  googleId?: string;
 };
 
 type PendingReset = {
@@ -269,6 +276,50 @@ export function localGetUser(userId: string): AuthUser | null {
 
 export function localFindByEmail(email: string): LocalUser | undefined {
   return load().find((u) => u.email === email.trim().toLowerCase());
+}
+
+export function localUpsertGoogleUser(input: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  imageUrl?: string | null;
+  googleId: string;
+}): AuthUser {
+  const users = load();
+  const email = input.email.trim().toLowerCase();
+  const index = users.findIndex(
+    (u) => u.email === email || (input.googleId && u.googleId === input.googleId),
+  );
+
+  if (index >= 0) {
+    users[index] = {
+      ...users[index],
+      email,
+      googleId: input.googleId,
+      firstName: users[index].firstName || input.firstName,
+      lastName: users[index].lastName || input.lastName,
+      imageUrl: input.imageUrl || users[index].imageUrl,
+      verified: true,
+      verificationCode: undefined,
+      verificationId: undefined,
+    };
+    save(users);
+    return toUser(users[index]);
+  }
+
+  const row: LocalUser = {
+    id: randomUUID(),
+    email,
+    passwordHash: hashPassword(randomBytes(32).toString("hex")),
+    firstName: input.firstName.trim() || "Google",
+    lastName: input.lastName.trim(),
+    imageUrl: input.imageUrl ?? null,
+    verified: true,
+    applicationId: fusionAuthApplicationId(),
+    googleId: input.googleId,
+  };
+  save([...users, row]);
+  return toUser(row);
 }
 
 export function localStartPasswordReset(email: string) {

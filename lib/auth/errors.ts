@@ -74,6 +74,7 @@ export const MESSAGES = {
   registerFailed:
     "Unable to create your account. Please check your information and try again.",
   loginFailed: "Incorrect email or password. Please try again.",
+  googleFailed: "Google Sign-In did not complete. Please try again.",
   verifyFailed: "We could not verify your account. Please check the code and try again.",
   resendFailed: "Unable to resend the verification email. Please try again.",
   network: "Unable to connect. Check your connection and try again.",

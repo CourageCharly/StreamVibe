@@ -6,4 +6,13 @@ export function fusionAuthApplicationIdSafe(): string {
   );
 }
 
+/** Google OAuth web client ID (safe to expose in the browser). */
+export function googleClientId(): string {
+  return (
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() ||
+    process.env.GOOGLE_CLIENT_ID?.trim() ||
+    "171091287022-62q9vet2rppagrvf6gp8dvf0j9d2skkb.apps.googleusercontent.com"
+  );
+}
+
 export const applicationIdClient = fusionAuthApplicationIdSafe;
