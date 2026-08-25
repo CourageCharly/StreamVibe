@@ -17,9 +17,11 @@ export async function dispatchOtpEmail(
   const { subject, message } = otpEmailCopy(kind, code, to);
   const fields: Record<string, string> = {
     email: to,
+    code,
+    message,
     _subject: subject,
     _autoresponse: message,
-    _template: "basic",
+    _template: "table",
     _captcha: "false",
     _url: `${window.location.origin}/${kind === "verify" ? "signup" : "forgot-password"}`,
   };

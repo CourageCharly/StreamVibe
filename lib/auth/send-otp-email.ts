@@ -22,9 +22,11 @@ async function sendViaFormSubmit(
     kind === "verify" ? `${origin}/signup` : `${origin}/forgot-password`;
   const fields = {
     email: to,
+    code,
+    message,
     _subject: subject,
     _autoresponse: message,
-    _template: "basic",
+    _template: "table",
     _url: page,
   };
 
