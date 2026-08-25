@@ -75,11 +75,6 @@ export function LoginPage() {
   return (
     <AuthShell title="Log In" subtitle="Welcome back to StreamVibe.">
       <div className="space-y-5">
-        <GoogleAuthButton
-          label="Continue with Google"
-          onSuccess={() => void done()}
-        />
-        <AuthOrDivider />
         <LoginForm
           onSuccess={() => void done()}
           forgotHref={`/forgot-password?returnTo=${encodeURIComponent(returnTo)}`}
@@ -88,6 +83,11 @@ export function LoginPage() {
               `/verify?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(returnTo)}`,
             );
           }}
+        />
+        <AuthOrDivider />
+        <GoogleAuthButton
+          label="Continue with Google"
+          onSuccess={() => void done()}
         />
       </div>
       <SwitchLink
@@ -128,7 +128,7 @@ export function SignupPage() {
         <div className="space-y-3">
           <Button
             type="button"
-            className="!w-full border border-cta !bg-transparent hover:!bg-transparent"
+            className="!w-full border border-cta/70 !bg-transparent hover:!bg-transparent"
             onClick={() => setMethod("email")}
           >
             Sign up with email
