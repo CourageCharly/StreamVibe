@@ -15,15 +15,19 @@ import {
 } from "@/lib/notifications";
 
 function formatRelativeTime(ts: number) {
+  if (!Number.isFinite(ts) || ts <= 0) return "Just now";
   const diff = Math.max(0, Date.now() - ts);
   const sec = Math.floor(diff / 1000);
-  if (sec < 60) return "Just now";
+  if (sec < 45) return "Just now";
   const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
+  if (min < 60) return min === 1 ? "1 min" : `${min} mins`;
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const d = new Date(ts);
-  return d.toLocaleDateString();
+  if (hr < 24) return hr === 1 ? "1 hour" : `${hr} hours`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return day === 1 ? "1 day" : `${day} days`;
+  const week = Math.floor(day / 7);
+  if (week < 5) return week === 1 ? "1 week" : `${week} weeks`;
+  return new Date(ts).toLocaleDateString();
 }
 
 export default function NotificationsPage() {
@@ -38,11 +42,17 @@ function NotificationsInner() {
   const [items, setItems] = useState<MovieNotice[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const [, setTick] = useState(0);
+
   useEffect(() => {
     const refreshList = () => setItems(getAllNotices());
     refreshList();
     window.addEventListener(NOTICE_EVENT, refreshList);
-    return () => window.removeEventListener(NOTICE_EVENT, refreshList);
+    const tick = window.setInterval(() => setTick((n) => n + 1), 30000);
+    return () => {
+      window.removeEventListener(NOTICE_EVENT, refreshList);
+      window.clearInterval(tick);
+    };
   }, []);
 
   function refresh() {

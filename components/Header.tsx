@@ -429,7 +429,7 @@ function HeaderInner() {
             {status === "authenticated" && user ? (
               <button
                 type="button"
-                className="mt-6 flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
+                className="mt-6 flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-[#E50000]"
                 onClick={() => {
                   void logout();
                   setOpen(false);
