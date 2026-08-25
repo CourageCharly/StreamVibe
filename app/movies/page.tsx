@@ -184,14 +184,14 @@ export default async function MoviesPage({ searchParams }: Props) {
       <SectionBack
         allowed={["free-trial", "pricing"]}
         legacyHomeAs="free-trial"
-        wrapperClassName="page-container pt-6 sm:pt-8"
+        wrapperClassName="page-container pt-8 sm:pt-10 md:pt-12"
       />
 
       <div className="page-container space-y-8 pt-0 pb-5 sm:space-y-10 sm:pb-7">
         <MoviesHero movies={heroSlides} trailers={heroTrailers} />
 
         {/* Web only: more space between hero and Movies section */}
-        <div className="mt-0 sm:mt-[100px] lg:mt-[100px]">
+        <div className="mt-0 sm:mt-12 lg:mt-16">
         {/* Mobile: Movies / Shows tabs right under hero · Desktop: both sections */}
         <MoviesShowsTabs
           movies={
@@ -288,7 +288,7 @@ export default async function MoviesPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <FreeTrialBanner posters={popular.slice(0, 12)} className="!pt-[120px]" />
+      <FreeTrialBanner posters={popular.slice(0, 12)} />
     </div>
   );
 }

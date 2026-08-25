@@ -19,12 +19,12 @@ export default async function SubscriptionsPage() {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden bg-[#141414] pt-[var(--header-h)]">
-      <SectionBack
-        allowed={["pricing"]}
-        legacyHomeAs="pricing"
-        wrapperClassName="page-container pt-6 sm:pt-8"
-      />
-      <div className="page-container bg-[#141414] pt-0 pb-5 sm:pb-7">
+      <div className="page-container bg-[#141414] py-8 sm:py-10 md:py-12">
+        <SectionBack
+          allowed={["pricing"]}
+          legacyHomeAs="pricing"
+          wrapperClassName="mb-6 sm:mb-8"
+        />
         <SubscriptionPlans />
       </div>
 

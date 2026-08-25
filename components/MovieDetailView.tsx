@@ -344,7 +344,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container space-y-5 pt-6 pb-5 sm:space-y-8 sm:pt-8 sm:pb-7">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
         {/* Breadcrumb — back + Movies & Shows only */}
         <nav
           aria-label="Breadcrumb"

@@ -21,12 +21,12 @@ export default async function SupportPage() {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden bg-[#141414] pt-[var(--header-h)]">
-      <SectionBack
-        allowed={["faq"]}
-        legacyHomeAs="faq"
-        wrapperClassName="page-container pt-6 sm:pt-8"
-      />
-      <div className="page-container bg-[#141414] pt-0 pb-5 sm:pb-7">
+      <div className="page-container bg-[#141414] py-8 sm:py-10 md:py-12">
+        <SectionBack
+          allowed={["faq"]}
+          legacyHomeAs="faq"
+          wrapperClassName="mb-6 sm:mb-8"
+        />
         <SupportContact posters={posters} />
       </div>
 

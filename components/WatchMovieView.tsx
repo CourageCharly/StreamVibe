@@ -798,7 +798,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container space-y-5 pt-6 pb-5 sm:space-y-8 sm:pt-8 sm:pb-7">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
         <nav
           aria-label="Breadcrumb"
           className="flex min-w-0 items-center gap-2 text-[12px] font-medium sm:text-[13px]"
@@ -841,7 +841,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "h-[100svh] h-[100dvh] max-h-[100dvh]",
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
-              : "cinema-frame watch-fill",
+              : "cinema-frame",
           ].join(" ")}
         >
           {playing && active?.videoKey ? (
@@ -1068,10 +1068,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
             </>
           )}
         </section>
-      </div>
 
-      <div className="page-container pt-0 pb-5 sm:pb-7">
-        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6 sm:mt-[100px]">
+        <div className="grid min-w-0 grid-cols-1 gap-4 bg-[#141414] sm:gap-5 lg:grid-cols-3 lg:gap-6">
           <div className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2">
             {/* Seasonal titles only — real TMDB seasons/episodes */}
             {isSeasonal && movie.seasons ? (
@@ -1202,7 +1200,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         </div>
       </div>
 
-      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} className="!pt-[120px]" />
+      <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
         open={!isMobile && authOpen && status === "anonymous"}
