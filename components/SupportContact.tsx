@@ -451,7 +451,14 @@ export default function SupportContact({ posters = [] }: Props) {
               </span>
               {/* Entire terms line stays #999999 */}
               <span className="font-normal text-[#999999]">
-                I agree with Terms of Use and Privacy Policy
+                I agree with{" "}
+                <a href="/terms" className="underline-offset-2 hover:text-white hover:underline">
+                  Terms of Use
+                </a>{" "}
+                and{" "}
+                <a href="/privacy" className="underline-offset-2 hover:text-white hover:underline">
+                  Privacy Policy
+                </a>
               </span>
             </label>
 

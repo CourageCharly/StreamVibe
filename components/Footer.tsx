@@ -66,21 +66,30 @@ export default function Footer() {
         <div className="mt-10 flex flex-col items-start justify-between gap-4 pt-6 text-[14px] font-medium text-[#999999] sm:mt-12 sm:flex-row sm:items-center">
           <p className="shrink-0">@2026 streamvib, All Rights Reserved</p>
           <div className="flex flex-wrap gap-x-4 gap-y-2 sm:gap-x-6">
-            <span className="cursor-default text-[14px] font-medium text-[#999999]">
+            <Link
+              href="/terms"
+              className="text-[14px] font-medium text-[#999999] transition-colors hover:text-white"
+            >
               Terms of Use
-            </span>
+            </Link>
             <span className="hidden text-border sm:inline" aria-hidden>
               |
             </span>
-            <span className="cursor-default text-[14px] font-medium text-[#999999]">
+            <Link
+              href="/privacy"
+              className="text-[14px] font-medium text-[#999999] transition-colors hover:text-white"
+            >
               Privacy Policy
-            </span>
+            </Link>
             <span className="hidden text-border sm:inline" aria-hidden>
               |
             </span>
-            <span className="cursor-default text-[14px] font-medium text-[#999999]">
+            <Link
+              href="/cookies"
+              className="text-[14px] font-medium text-[#999999] transition-colors hover:text-white"
+            >
               Cookie Policy
-            </span>
+            </Link>
           </div>
         </div>
       </div>
