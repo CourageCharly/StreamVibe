@@ -6,6 +6,7 @@ import {
 import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 import {
   applyOtpCookie,
+  hydrateUsersFromRequest,
   readAccountProof,
   readRegisteredAccounts,
 } from "@/lib/auth/session";
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    hydrateUsersFromRequest(request);
     const fromCookie = readRegisteredAccounts(request).find(
       (row) => row.email === email,
     );
@@ -70,7 +72,6 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       sent: true,
       email: result.email,
-      dispatchCode: result.developmentCode,
     });
     applyOtpCookie(response, {
       email: result.email,

@@ -1,4 +1,6 @@
 import type { NextRequest } from "next/server";
+import { ResetPasswordEmail } from "@/emails/ResetPasswordEmail";
+import { VerifyEmail } from "@/emails/VerifyEmail";
 import { otpEmailCopy, type OtpKind } from "@/lib/auth/otp-copy";
 import { resendFrom, sendMail } from "@/lib/mail";
 
@@ -71,6 +73,8 @@ export async function sendOtpEmail(opts: {
 }): Promise<boolean> {
   const { to, code, kind, request } = opts;
   const { subject, text, html } = otpEmailCopy(kind, code);
+  const react =
+    kind === "verify" ? VerifyEmail({ otp: code }) : ResetPasswordEmail({ otp: code });
 
   try {
     if (
@@ -79,6 +83,7 @@ export async function sendOtpEmail(opts: {
         subject,
         text,
         html,
+        react,
         from: resendFrom("otp"),
       })
     ) {

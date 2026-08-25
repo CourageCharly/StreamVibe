@@ -1,6 +1,5 @@
 import {
   randomBytes,
-  randomInt,
   randomUUID,
   scryptSync,
   timingSafeEqual,
@@ -8,6 +7,7 @@ import {
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { fusionAuthApplicationId } from "./config";
+import { generateOtp, otpExpiresAt, otpIsExpired } from "./otp";
 import type { AuthUser, RegistrationInput } from "./types";
 
 type LocalUser = {
@@ -21,8 +21,10 @@ type LocalUser = {
   applicationId: string;
   verificationId?: string;
   verificationCode?: string;
+  verificationExpiresAt?: number;
   resetId?: string;
   resetCode?: string;
+  resetExpiresAt?: number;
   googleId?: string;
 };
 
@@ -114,8 +116,67 @@ function toUser(row: LocalUser): AuthUser {
   };
 }
 
-function sixDigit(): string {
-  return String(randomInt(0, 1_000_000)).padStart(6, "0");
+export type AccountSnapshot = {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  passwordHash?: string;
+  verified?: boolean;
+};
+
+/** Restore accounts from the durable cookie when the file store is empty (Vercel). */
+export function localHydrateAccounts(accounts: AccountSnapshot[]) {
+  if (!accounts.length) return;
+  const users = load();
+  let changed = false;
+  for (const account of accounts) {
+    const email = account.email?.trim().toLowerCase();
+    if (!email || !account.id) continue;
+    const index = users.findIndex(
+      (u) => u.email === email || u.id === account.id,
+    );
+    if (index >= 0) {
+      if (account.passwordHash && users[index].passwordHash.length < 20) {
+        users[index] = { ...users[index], passwordHash: account.passwordHash };
+        changed = true;
+      }
+      if (account.firstName && !users[index].firstName) {
+        users[index] = { ...users[index], firstName: account.firstName };
+        changed = true;
+      }
+      if (account.lastName && !users[index].lastName) {
+        users[index] = { ...users[index], lastName: account.lastName };
+        changed = true;
+      }
+      continue;
+    }
+    users.push({
+      id: account.id,
+      email,
+      passwordHash:
+        account.passwordHash || hashPassword(randomBytes(32).toString("hex")),
+      firstName: account.firstName?.trim() || "Member",
+      lastName: account.lastName?.trim() || "",
+      verified: Boolean(account.verified),
+      applicationId: fusionAuthApplicationId(),
+    });
+    changed = true;
+  }
+  if (changed) save(users);
+}
+
+export function localAccountSnapshot(email: string): AccountSnapshot | null {
+  const row = localFindByEmail(email);
+  if (!row) return null;
+  return {
+    id: row.id,
+    email: row.email,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    passwordHash: row.passwordHash,
+    verified: row.verified,
+  };
 }
 
 export function localCreateRegistration(
@@ -134,7 +195,7 @@ export function localCreateRegistration(
   const verificationId = skipVerification
     ? undefined
     : randomBytes(24).toString("base64url");
-  const verificationCode = skipVerification ? undefined : sixDigit();
+  const verificationCode = skipVerification ? undefined : generateOtp();
   const row: LocalUser = {
     id: existing?.id ?? userId,
     email,
@@ -145,6 +206,7 @@ export function localCreateRegistration(
     applicationId: fusionAuthApplicationId(),
     verificationId,
     verificationCode,
+    verificationExpiresAt: skipVerification ? undefined : otpExpiresAt(),
   };
 
   const next = existing
@@ -211,16 +273,23 @@ export function localVerify(opts: {
   const users = load();
   const index = users.findIndex((u) => {
     if (opts.verificationId && u.verificationId === opts.verificationId) {
+      if (otpIsExpired(u.verificationExpiresAt)) return false;
       if (opts.oneTimeCode) return u.verificationCode === opts.oneTimeCode;
-      return true;
+      return false;
     }
     if (opts.oneTimeCode && opts.email) {
       return (
         u.email === opts.email.toLowerCase() &&
-        u.verificationCode === opts.oneTimeCode
+        u.verificationCode === opts.oneTimeCode &&
+        !otpIsExpired(u.verificationExpiresAt)
       );
     }
-    if (opts.oneTimeCode) return u.verificationCode === opts.oneTimeCode;
+    if (opts.oneTimeCode) {
+      return (
+        u.verificationCode === opts.oneTimeCode &&
+        !otpIsExpired(u.verificationExpiresAt)
+      );
+    }
     return false;
   });
   if (index < 0) return null;
@@ -229,6 +298,7 @@ export function localVerify(opts: {
     verified: true,
     verificationCode: undefined,
     verificationId: undefined,
+    verificationExpiresAt: undefined,
   };
   save(users);
   return toUser(users[index]);
@@ -239,11 +309,12 @@ export function localResendVerification(email: string) {
   const index = users.findIndex((u) => u.email === email.toLowerCase());
   if (index < 0) return null;
   const verificationId = randomBytes(24).toString("base64url");
-  const verificationCode = sixDigit();
+  const verificationCode = generateOtp();
   users[index] = {
     ...users[index],
     verificationId,
     verificationCode,
+    verificationExpiresAt: otpExpiresAt(),
     verified: false,
   };
   save(users);
@@ -352,8 +423,13 @@ export function localStartPasswordReset(email: string) {
     return { started: false as const };
   }
   const resetId = randomBytes(24).toString("base64url");
-  const resetCode = sixDigit();
-  users[index] = { ...users[index], resetId, resetCode };
+  const resetCode = generateOtp();
+  users[index] = {
+    ...users[index],
+    resetId,
+    resetCode,
+    resetExpiresAt: otpExpiresAt(),
+  };
   save(users);
   saveResets(loadResets().filter((r) => r.email !== users[index].email));
   return {
@@ -367,7 +443,50 @@ export function localStartPasswordReset(email: string) {
 export function localVerifyResetOtp(email: string, code: string) {
   const row = localFindByEmail(email);
   if (!row?.resetCode || row.resetCode !== code.trim()) return false;
+  if (otpIsExpired(row.resetExpiresAt)) return false;
   return true;
+}
+
+/** Persist the signed-up profile and mark the email verified (OTP passed). */
+export function localCommitVerifiedUser(input: {
+  id?: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  passwordHash?: string;
+}): AuthUser {
+  const email = input.email.trim().toLowerCase();
+  const users = load();
+  const index = users.findIndex((u) => u.email === email || u.id === input.id);
+  const base: LocalUser =
+    index >= 0
+      ? users[index]
+      : {
+          id: input.id || randomUUID(),
+          email,
+          passwordHash:
+            input.passwordHash || hashPassword(randomBytes(32).toString("hex")),
+          firstName: input.firstName?.trim() || "Member",
+          lastName: input.lastName?.trim() || "",
+          verified: true,
+          applicationId: fusionAuthApplicationId(),
+        };
+  const row: LocalUser = {
+    ...base,
+    id: input.id || base.id,
+    email,
+    firstName: input.firstName?.trim() || base.firstName,
+    lastName: input.lastName?.trim() || base.lastName,
+    passwordHash: input.passwordHash || base.passwordHash,
+    verified: true,
+    verificationCode: undefined,
+    verificationId: undefined,
+    verificationExpiresAt: undefined,
+  };
+  if (index >= 0) users[index] = row;
+  else users.push(row);
+  save(users);
+  return toUser(row);
 }
 
 export function localMarkEmailVerified(email: string): AuthUser | null {
@@ -383,6 +502,7 @@ export function localMarkEmailVerified(email: string): AuthUser | null {
     verified: true,
     verificationCode: undefined,
     verificationId: undefined,
+    verificationExpiresAt: undefined,
   };
   save(users);
   return toUser(users[index]);
@@ -419,7 +539,11 @@ export function localResetPassword(
   const trimmed = code.trim();
   const index = users.findIndex((u) => u.email === normalized);
   if (index >= 0) {
-    if (!users[index].resetCode || users[index].resetCode !== trimmed) {
+    if (
+      !users[index].resetCode ||
+      users[index].resetCode !== trimmed ||
+      otpIsExpired(users[index].resetExpiresAt)
+    ) {
       return false;
     }
     users[index] = {
@@ -427,6 +551,7 @@ export function localResetPassword(
       passwordHash: hashPassword(password),
       resetCode: undefined,
       resetId: undefined,
+      resetExpiresAt: undefined,
     };
     save(users);
     saveResets(loadResets().filter((r) => r.email !== normalized));

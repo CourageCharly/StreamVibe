@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { Resend } from "resend";
 
 const DEFAULT_FROM = "StreamVibe <onboarding@resend.dev>";
@@ -17,8 +18,9 @@ export function resendFrom(kind: "otp" | "support" = "otp") {
 export async function sendMail(opts: {
   to: string | string[];
   subject: string;
-  html: string;
+  html?: string;
   text?: string;
+  react?: ReactElement;
   replyTo?: string;
   from?: string;
 }): Promise<boolean> {
@@ -29,14 +31,26 @@ export async function sendMail(opts: {
   }
 
   const resend = new Resend(key);
-  const { data, error } = await resend.emails.send({
-    from: opts.from ?? resendFrom(),
-    to: Array.isArray(opts.to) ? opts.to : [opts.to],
-    subject: opts.subject,
-    html: opts.html,
-    ...(opts.text ? { text: opts.text } : {}),
-    ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
-  });
+  const to = Array.isArray(opts.to) ? opts.to : [opts.to];
+  const from = opts.from ?? resendFrom();
+  const payload = opts.react
+    ? {
+        from,
+        to,
+        subject: opts.subject,
+        react: opts.react,
+        ...(opts.text ? { text: opts.text } : {}),
+        ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+      }
+    : {
+        from,
+        to,
+        subject: opts.subject,
+        html: opts.html ?? "",
+        ...(opts.text ? { text: opts.text } : {}),
+        ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+      };
+  const { data, error } = await resend.emails.send(payload);
 
   if (error) {
     console.error("[mail] Resend", error.message ?? error);

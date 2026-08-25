@@ -6,7 +6,6 @@ import Button from "@/components/ui/Button";
 import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
 import { rememberAccountProof } from "@/lib/auth/account-proof";
-import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 import { cn } from "@/lib";
 
 type Result = {
@@ -103,7 +102,7 @@ export default function SignupForm({ onSuccess, className }: Props) {
         fieldErrors?: Partial<Fields>;
         requiresVerification?: boolean;
         verificationId?: string;
-        dispatchCode?: string;
+        emailSent?: boolean;
         accountProof?: string;
       };
       if (!res.ok) {
@@ -114,8 +113,8 @@ export default function SignupForm({ onSuccess, className }: Props) {
       if (data.accountProof) {
         rememberAccountProof(fields.email, data.accountProof);
       }
-      if (data.dispatchCode) {
-        await dispatchOtpEmail(fields.email, data.dispatchCode, "verify");
+      if (data.requiresVerification && data.emailSent === false) {
+        toast.error("We couldn't send the code. Use Resend code on the next screen.");
       }
       setFields(empty);
       setTouched({});

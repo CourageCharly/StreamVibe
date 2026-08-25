@@ -4,21 +4,35 @@ import {
   ACCOUNTS_COOKIE,
   ACCOUNTS_COOKIE_MAX_AGE,
   OTP_COOKIE,
-  OTP_COOKIE_MAX_AGE,
   authSecret,
   PENDING_AUTH_COOKIE,
   PENDING_AUTH_MAX_AGE,
   SESSION_COOKIE,
   SESSION_MAX_AGE,
 } from "./config";
+import { OTP_TTL_SECONDS } from "./otp";
 import type { AuthUser, SessionPayload } from "./types";
+import {
+  localAccountSnapshot,
+  localHydrateAccounts,
+  type AccountSnapshot,
+} from "./local-store";
 
-export type RegisteredAccount = { id: string; email: string };
+export type RegisteredAccount = AccountSnapshot;
 
 export type OtpCookiePayload = {
   email: string;
   code: string;
   kind: "verify" | "reset";
+  exp: number;
+};
+
+export type PendingAuth = {
+  userId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  passwordHash?: string;
   exp: number;
 };
 
@@ -121,11 +135,19 @@ export function applyRegisteredAccountCookie(
   request?: NextRequest,
 ): NextResponse {
   const email = user.email.trim().toLowerCase();
+  const stored = localAccountSnapshot(email);
   const next = readRegisteredAccounts(request).filter((row) => row.email !== email);
-  next.push({ id: user.id, email });
+  next.push({
+    id: user.id,
+    email,
+    firstName: stored?.firstName || user.firstName,
+    lastName: stored?.lastName || user.lastName,
+    passwordHash: stored?.passwordHash,
+    verified: stored?.verified ?? user.verified,
+  });
   response.cookies.set(
     ACCOUNTS_COOKIE,
-    encode({ accounts: next.slice(-80) }),
+    encode({ accounts: next.slice(-12) }),
     {
       httpOnly: true,
       sameSite: "lax",
@@ -135,6 +157,10 @@ export function applyRegisteredAccountCookie(
     },
   );
   return response;
+}
+
+export function hydrateUsersFromRequest(request: NextRequest) {
+  localHydrateAccounts(readRegisteredAccounts(request));
 }
 
 export function applyOtpCookie(
@@ -147,14 +173,14 @@ export function applyOtpCookie(
       email: payload.email.trim().toLowerCase(),
       code: payload.code.trim(),
       kind: payload.kind,
-      exp: Date.now() + OTP_COOKIE_MAX_AGE * 1000,
+      exp: Date.now() + OTP_TTL_SECONDS * 1000,
     }),
     {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: OTP_COOKIE_MAX_AGE,
+      maxAge: OTP_TTL_SECONDS,
     },
   );
   return response;
@@ -249,12 +275,24 @@ export function clearSessionCookie(response: NextResponse): NextResponse {
 
 export function applyPendingAuthCookie(
   response: NextResponse,
-  userId: string,
-  email: string,
+  pending: {
+    userId: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    passwordHash?: string;
+  },
 ): NextResponse {
   response.cookies.set(
     PENDING_AUTH_COOKIE,
-    encode({ userId, email, exp: Date.now() + PENDING_AUTH_MAX_AGE * 1000 }),
+    encode({
+      userId: pending.userId,
+      email: pending.email.trim().toLowerCase(),
+      firstName: pending.firstName ?? "",
+      lastName: pending.lastName ?? "",
+      passwordHash: pending.passwordHash ?? "",
+      exp: Date.now() + PENDING_AUTH_MAX_AGE * 1000,
+    }),
     {
       httpOnly: true,
       sameSite: "lax",
@@ -268,12 +306,17 @@ export function applyPendingAuthCookie(
 
 export function readPendingAuth(
   token: string | undefined | null,
-): { userId: string; email: string } | null {
-  const payload = decode<{ userId: string; email: string; exp: number }>(
-    token,
-  );
+): PendingAuth | null {
+  const payload = decode<PendingAuth>(token);
   if (!payload?.userId || !payload.email || payload.exp < Date.now()) {
     return null;
   }
-  return { userId: payload.userId, email: payload.email };
+  return {
+    userId: payload.userId,
+    email: payload.email.trim().toLowerCase(),
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    passwordHash: payload.passwordHash,
+    exp: payload.exp,
+  };
 }

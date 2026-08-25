@@ -4,7 +4,11 @@ import {
   localSetPassword,
   localVerifyResetOtp,
 } from "@/lib/auth/local-store";
-import { clearOtpCookie, otpCookieMatches } from "@/lib/auth/session";
+import {
+  clearOtpCookie,
+  hydrateUsersFromRequest,
+  otpCookieMatches,
+} from "@/lib/auth/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    hydrateUsersFromRequest(request);
     const cookieOk = otpCookieMatches(request, email, code, "reset");
 
     if (body.verifyOnly) {

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MESSAGES } from "@/lib/auth/errors";
 import { jsonError } from "@/lib/auth/http";
-import { applySessionCookie, issueAccountProof } from "@/lib/auth/session";
+import {
+  applySessionCookie,
+  hydrateUsersFromRequest,
+  issueAccountProof,
+} from "@/lib/auth/session";
 import { loginUser } from "@/lib/auth/service";
 
 /**
@@ -23,6 +27,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+    hydrateUsersFromRequest(request);
     const user = await loginUser(email, password);
     const response = NextResponse.json({
       user,

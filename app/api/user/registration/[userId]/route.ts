@@ -4,8 +4,10 @@ import {
   applyPendingAuthCookie,
   applyRegisteredAccountCookie,
   applySessionCookie,
+  hydrateUsersFromRequest,
   issueAccountProof,
 } from "@/lib/auth/session";
+import { localAccountSnapshot } from "@/lib/auth/local-store";
 import { registerUser } from "@/lib/auth/service";
 import { jsonError } from "@/lib/auth/http";
 import { MESSAGES } from "@/lib/auth/errors";
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest, context: Ctx) {
       );
     }
 
+    hydrateUsersFromRequest(request);
     const result = await registerUser(userId, {
       email,
       password,
@@ -60,14 +63,15 @@ export async function POST(request: NextRequest, context: Ctx) {
       lastName,
     });
 
+    let emailSent = true;
     if (result.requiresVerification && result.developmentCode) {
-      const sent = await sendOtpEmail({
+      emailSent = await sendOtpEmail({
         to: result.user.email,
         code: result.developmentCode,
         kind: "verify",
         request,
       });
-      if (!sent) {
+      if (!emailSent) {
         console.error("[registration] verification email was not delivered");
       }
     }
@@ -76,7 +80,7 @@ export async function POST(request: NextRequest, context: Ctx) {
       user: result.user,
       requiresVerification: result.requiresVerification,
       verificationId: result.verificationId,
-      dispatchCode: result.developmentCode,
+      emailSent,
       accountProof: issueAccountProof(result.user),
     });
 
@@ -88,7 +92,14 @@ export async function POST(request: NextRequest, context: Ctx) {
           code: result.developmentCode,
           kind: "verify",
         });
-        applyPendingAuthCookie(response, result.user.id, result.user.email);
+        const snapshot = localAccountSnapshot(result.user.email);
+        applyPendingAuthCookie(response, {
+          userId: result.user.id,
+          email: result.user.email,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          passwordHash: snapshot?.passwordHash,
+        });
       } else {
         applySessionCookie(response, result.user, request);
       }

@@ -6,11 +6,16 @@ import {
   applyOtpCookie,
   applySessionCookie,
   clearOtpCookie,
+  hydrateUsersFromRequest,
   issueAccountProof,
   otpCookieMatches,
   readPendingAuth,
 } from "@/lib/auth/session";
-import { localMarkEmailVerified } from "@/lib/auth/local-store";
+import {
+  localCommitVerifiedUser,
+  localMarkEmailVerified,
+} from "@/lib/auth/local-store";
+import { generateOtp } from "@/lib/auth/otp";
 import { resendVerification, verifyRegistration } from "@/lib/auth/service";
 import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 
@@ -25,6 +30,7 @@ export async function POST(request: NextRequest) {
       oneTimeCode?: string;
       email?: string;
     };
+    hydrateUsersFromRequest(request);
     const pending = readPendingAuth(
       request.cookies.get(PENDING_AUTH_COOKIE)?.value,
     );
@@ -43,10 +49,27 @@ export async function POST(request: NextRequest) {
         code &&
         otpCookieMatches(request, email, code, "verify")
       ) {
-        user = localMarkEmailVerified(email);
+        user = localCommitVerifiedUser({
+          id: pending?.userId,
+          email,
+          firstName: pending?.firstName,
+          lastName: pending?.lastName,
+          passwordHash: pending?.passwordHash,
+        });
       } else {
         throw error;
       }
+    }
+    if (user && pending && pending.email === email) {
+      user = localCommitVerifiedUser({
+        id: pending.userId || user.id,
+        email,
+        firstName: pending.firstName || user.firstName,
+        lastName: pending.lastName || user.lastName,
+        passwordHash: pending.passwordHash,
+      });
+    } else if (user) {
+      user = localMarkEmailVerified(email) ?? user;
     }
     if (!user) {
       return NextResponse.json(
@@ -79,6 +102,7 @@ export async function PUT(request: NextRequest) {
         { status: 400 },
       );
     }
+    hydrateUsersFromRequest(request);
     const normalized = email.trim().toLowerCase();
     let code: string | undefined;
     let verificationId: string | undefined;
@@ -89,22 +113,25 @@ export async function PUT(request: NextRequest) {
       verificationId =
         "verificationId" in result ? result.verificationId : undefined;
     } catch {
-      const { randomInt } = await import("crypto");
-      code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+      code = generateOtp();
     }
-    if (code) {
-      await sendOtpEmail({
-        to: normalized,
-        code,
-        kind: "verify",
-        request,
-      });
+    if (!code) {
+      return NextResponse.json(
+        { message: MESSAGES.resendFailed },
+        { status: 500 },
+      );
     }
+    const sent = await sendOtpEmail({
+      to: normalized,
+      code,
+      kind: "verify",
+      request,
+    });
     const response = NextResponse.json({
       message: "Verification email sent.",
       email: normalized,
       verificationId,
-      dispatchCode: code,
+      emailSent: sent,
     });
     if (code) {
       applyOtpCookie(response, {
