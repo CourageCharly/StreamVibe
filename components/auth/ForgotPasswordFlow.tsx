@@ -201,7 +201,7 @@ export function ForgotPasswordFlow() {
                 </div>
                 {error ? <p className="text-[12px] text-cta">{error}</p> : null}
                 <Button type="submit" disabled={submitting} className="!w-full">
-                  {submitting ? "Sending…" : "Send code"}
+                  {submitting ? "Continuing…" : "Continue"}
                 </Button>
               </form>
             ) : null}
