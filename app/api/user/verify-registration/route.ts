@@ -54,24 +54,19 @@ export async function PUT(request: NextRequest) {
     const code =
       "developmentCode" in result ? result.developmentCode : undefined;
     if (code) {
-      const sent = await sendOtpEmail({
+      await sendOtpEmail({
         to: result.email,
         code,
         kind: "verify",
         request,
       });
-      if (!sent) {
-        return NextResponse.json(
-          { message: MESSAGES.resendFailed },
-          { status: 500 },
-        );
-      }
     }
     return NextResponse.json({
       message: "Verification email sent.",
       email: result.email,
       verificationId:
         "verificationId" in result ? result.verificationId : undefined,
+      dispatchCode: code,
     });
   } catch (error) {
     return jsonError(error, MESSAGES.resendFailed);

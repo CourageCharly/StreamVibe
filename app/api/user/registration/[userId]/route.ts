@@ -70,6 +70,7 @@ export async function POST(request: NextRequest, context: Ctx) {
       user: result.user,
       requiresVerification: result.requiresVerification,
       verificationId: result.verificationId,
+      dispatchCode: result.developmentCode,
     });
 
     try {

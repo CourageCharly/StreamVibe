@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
+import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 import { cn } from "@/lib";
 
 type Result = {
@@ -101,12 +102,15 @@ export default function SignupForm({ onSuccess, className }: Props) {
         fieldErrors?: Partial<Fields>;
         requiresVerification?: boolean;
         verificationId?: string;
-        developmentCode?: string;
+        dispatchCode?: string;
       };
       if (!res.ok) {
         if (data.fieldErrors) setErrors(data.fieldErrors);
         toast.error(data.message || MESSAGES.registerFailed);
         return;
+      }
+      if (data.dispatchCode) {
+        await dispatchOtpEmail(fields.email, data.dispatchCode, "verify");
       }
       setFields(empty);
       setTouched({});
@@ -115,7 +119,6 @@ export default function SignupForm({ onSuccess, className }: Props) {
         email: fields.email,
         requiresVerification: Boolean(data.requiresVerification),
         verificationId: data.verificationId,
-        developmentCode: data.developmentCode,
       });
     } catch {
       toast.error(MESSAGES.network);

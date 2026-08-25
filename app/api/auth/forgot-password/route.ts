@@ -24,22 +24,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sent = await sendOtpEmail({
+    await sendOtpEmail({
       to: result.email,
       code: result.developmentCode,
       kind: "reset",
       request,
     });
-    if (!sent) {
-      return NextResponse.json(
-        { message: "Unable to send a reset code. Please try again." },
-        { status: 500 },
-      );
-    }
 
     return NextResponse.json({
       sent: true,
       email: result.email,
+      dispatchCode: result.developmentCode,
     });
   } catch (error) {
     console.error("[forgot-password]", error);
