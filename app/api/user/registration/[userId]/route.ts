@@ -11,7 +11,6 @@ import { localAccountSnapshot } from "@/lib/auth/local-store";
 import { registerUser } from "@/lib/auth/service";
 import { jsonError } from "@/lib/auth/http";
 import { MESSAGES } from "@/lib/auth/errors";
-import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 
 type Ctx = { params: Promise<{ userId: string }> };
 
@@ -63,24 +62,10 @@ export async function POST(request: NextRequest, context: Ctx) {
       lastName,
     });
 
-    let emailSent = true;
-    if (result.requiresVerification && result.developmentCode) {
-      emailSent = await sendOtpEmail({
-        to: result.user.email,
-        code: result.developmentCode,
-        kind: "verify",
-        request,
-      });
-      if (!emailSent) {
-        console.error("[registration] verification email was not delivered");
-      }
-    }
-
     const response = NextResponse.json({
       user: result.user,
       requiresVerification: result.requiresVerification,
       verificationId: result.verificationId,
-      emailSent,
       dispatchCode: result.developmentCode,
       accountProof: issueAccountProof(result.user),
     });

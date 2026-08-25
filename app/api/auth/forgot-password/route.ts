@@ -3,7 +3,7 @@ import {
   localEnsureRegisteredUser,
   localStartPasswordReset,
 } from "@/lib/auth/local-store";
-import { sendOtpEmail } from "@/lib/auth/send-otp-email";
+
 import {
   applyOtpCookie,
   hydrateUsersFromRequest,
@@ -61,13 +61,6 @@ export async function POST(request: NextRequest) {
         { status: 404 },
       );
     }
-
-    await sendOtpEmail({
-      to: result.email,
-      code: result.developmentCode,
-      kind: "reset",
-      request,
-    });
 
     const response = NextResponse.json({
       sent: true,

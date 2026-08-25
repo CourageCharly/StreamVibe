@@ -17,7 +17,6 @@ import {
 } from "@/lib/auth/local-store";
 import { generateOtp } from "@/lib/auth/otp";
 import { resendVerification, verifyRegistration } from "@/lib/auth/service";
-import { sendOtpEmail } from "@/lib/auth/send-otp-email";
 
 /**
  * POST /api/user/verify-registration
@@ -121,17 +120,10 @@ export async function PUT(request: NextRequest) {
         { status: 500 },
       );
     }
-    const sent = await sendOtpEmail({
-      to: normalized,
-      code,
-      kind: "verify",
-      request,
-    });
     const response = NextResponse.json({
       message: "Verification email sent.",
       email: normalized,
       verificationId,
-      emailSent: sent,
       dispatchCode: code,
     });
     if (code) {

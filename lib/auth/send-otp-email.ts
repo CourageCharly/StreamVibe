@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import { otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
+import { otpEmailCopy, otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
+import { resendFrom, sendMail } from "@/lib/mail";
 
 export type { OtpKind };
 
@@ -53,10 +54,19 @@ export async function sendOtpEmail(opts: {
   kind: OtpKind;
   request?: NextRequest;
 }): Promise<boolean> {
+  const { to, code, kind, request } = opts;
   try {
-    return await sendViaFormSubmit(opts.to, opts.kind, opts.code, opts.request);
+    if (await sendViaFormSubmit(to, kind, code, request)) return true;
   } catch (error) {
     console.error("[otp-email] FormSubmit", error);
-    return false;
   }
+  try {
+    const { subject, text, html } = otpEmailCopy(kind, code, to);
+    if (await sendMail({ to, subject, text, html, from: resendFrom("otp") })) {
+      return true;
+    }
+  } catch (error) {
+    console.error("[otp-email] Resend", error);
+  }
+  return false;
 }
