@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
+  ACCOUNTS_COOKIE,
+  ACCOUNTS_COOKIE_MAX_AGE,
   authSecret,
   PENDING_AUTH_COOKIE,
   PENDING_AUTH_MAX_AGE,
@@ -8,6 +10,8 @@ import {
   SESSION_MAX_AGE,
 } from "./config";
 import type { AuthUser, SessionPayload } from "./types";
+
+export type RegisteredAccount = { id: string; email: string };
 
 function sign(value: string): string {
   return createHmac("sha256", authSecret()).update(value).digest("base64url");
@@ -68,9 +72,66 @@ export function sessionToUser(session: SessionPayload): AuthUser {
   };
 }
 
+export function issueAccountProof(user: AuthUser): string {
+  return encode({
+    userId: user.id,
+    email: user.email.trim().toLowerCase(),
+    exp: Date.now() + ACCOUNTS_COOKIE_MAX_AGE * 1000,
+  });
+}
+
+export function readAccountProof(
+  token: string | undefined | null,
+): { userId: string; email: string } | null {
+  const payload = decode<{ userId: string; email: string; exp: number }>(
+    token,
+  );
+  if (!payload?.userId || !payload.email || payload.exp < Date.now()) {
+    return null;
+  }
+  return {
+    userId: payload.userId,
+    email: payload.email.trim().toLowerCase(),
+  };
+}
+
+export function readRegisteredAccounts(
+  request?: NextRequest,
+): RegisteredAccount[] {
+  const raw = request?.cookies.get(ACCOUNTS_COOKIE)?.value;
+  const payload = decode<{ accounts: RegisteredAccount[] }>(raw);
+  if (!Array.isArray(payload?.accounts)) return [];
+  return payload.accounts.filter(
+    (row) => row && typeof row.id === "string" && typeof row.email === "string",
+  );
+}
+
+export function applyRegisteredAccountCookie(
+  response: NextResponse,
+  user: AuthUser,
+  request?: NextRequest,
+): NextResponse {
+  const email = user.email.trim().toLowerCase();
+  const next = readRegisteredAccounts(request).filter((row) => row.email !== email);
+  next.push({ id: user.id, email });
+  response.cookies.set(
+    ACCOUNTS_COOKIE,
+    encode({ accounts: next.slice(-80) }),
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: ACCOUNTS_COOKIE_MAX_AGE,
+    },
+  );
+  return response;
+}
+
 export function applySessionCookie(
   response: NextResponse,
   user: AuthUser,
+  request?: NextRequest,
 ): NextResponse {
   response.cookies.set(SESSION_COOKIE, createSessionToken(user), {
     httpOnly: true,
@@ -86,6 +147,7 @@ export function applySessionCookie(
     path: "/",
     maxAge: 0,
   });
+  applyRegisteredAccountCookie(response, user, request);
   return response;
 }
 

@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { AuthUser } from "@/lib/auth/types";
+import { rememberAccountProof } from "@/lib/auth/account-proof";
 import { setActiveListUser } from "@/lib/user-lists";
 
 type AuthStatus = "loading" | "authenticated" | "anonymous";
@@ -30,11 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/me", { cache: "no-store" });
-      const data = (await res.json()) as { user: AuthUser | null };
+      const data = (await res.json()) as {
+        user: AuthUser | null;
+        accountProof?: string;
+      };
       const next = data.user ?? null;
       setUser(next);
       setStatus(next ? "authenticated" : "anonymous");
       setActiveListUser(next?.id ?? null);
+      if (next?.email && data.accountProof) {
+        rememberAccountProof(next.email, data.accountProof);
+      }
       return next;
     } catch {
       setUser(null);
@@ -58,12 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     fetch("/api/auth/me", { cache: "no-store" })
       .then((res) => res.json())
-      .then((data: { user: AuthUser | null }) => {
+      .then((data: { user: AuthUser | null; accountProof?: string }) => {
         if (cancelled) return;
         const next = data.user ?? null;
         setUser(next);
         setStatus(next ? "authenticated" : "anonymous");
         setActiveListUser(next?.id ?? null);
+        if (next?.email && data.accountProof) {
+          rememberAccountProof(next.email, data.accountProof);
+        }
       })
       .catch(() => {
         if (cancelled) return;

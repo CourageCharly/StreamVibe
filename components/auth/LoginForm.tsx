@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import PasswordField from "@/components/auth/PasswordField";
+import { rememberAccountProof } from "@/lib/auth/account-proof";
 import { MESSAGES } from "@/lib/auth/errors";
 import { cn } from "@/lib";
 
@@ -60,6 +61,7 @@ export default function LoginForm({
         message?: string;
         requiresVerification?: boolean;
         email?: string;
+        accountProof?: string;
       };
       if (!res.ok) {
         if (data.requiresVerification) {
@@ -69,6 +71,9 @@ export default function LoginForm({
         }
         toast.error(data.message || MESSAGES.loginFailed);
         return;
+      }
+      if (data.accountProof) {
+        rememberAccountProof(email, data.accountProof);
       }
       onSuccess?.();
     } catch {

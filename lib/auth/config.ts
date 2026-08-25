@@ -28,5 +28,7 @@ export function authSecret(): string {
 
 export const SESSION_COOKIE = "sv_session";
 export const PENDING_AUTH_COOKIE = "sv_pending_auth";
+export const ACCOUNTS_COOKIE = "sv_accounts";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 export const PENDING_AUTH_MAX_AGE = 60 * 30;
+export const ACCOUNTS_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;

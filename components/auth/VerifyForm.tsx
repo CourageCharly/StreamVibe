@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import OtpInput from "@/components/auth/OtpInput";
 import { MESSAGES } from "@/lib/auth/errors";
 import { fusionAuthApplicationIdSafe } from "@/lib/auth/public";
+import { rememberAccountProof } from "@/lib/auth/account-proof";
 import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 import { cn } from "@/lib";
 
@@ -66,12 +67,16 @@ export default function VerifyForm({
           verificationId: activeVerificationId || undefined,
         }),
       });
-      const data = (await res.json()) as { message?: string };
+      const data = (await res.json()) as {
+        message?: string;
+        accountProof?: string;
+      };
       if (!res.ok) {
         setError(data.message || MESSAGES.verifyFailed);
         toast.error(data.message || MESSAGES.verifyFailed);
         return;
       }
+      if (data.accountProof) rememberAccountProof(email, data.accountProof);
       toast.success("Your email is verified.");
       onSuccess?.();
     } catch {

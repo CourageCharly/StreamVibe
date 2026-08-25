@@ -278,6 +278,29 @@ export function localFindByEmail(email: string): LocalUser | undefined {
   return load().find((u) => u.email === email.trim().toLowerCase());
 }
 
+/** Make sure a signed-in email exists in the user store so password reset works. */
+export function localEnsureRegisteredUser(input: {
+  id?: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}): AuthUser {
+  const email = input.email.trim().toLowerCase();
+  const existing = localFindByEmail(email);
+  if (existing) return toUser(existing);
+  const row: LocalUser = {
+    id: input.id || randomUUID(),
+    email,
+    passwordHash: hashPassword(randomBytes(32).toString("hex")),
+    firstName: input.firstName?.trim() || "Member",
+    lastName: input.lastName?.trim() || "",
+    verified: true,
+    applicationId: fusionAuthApplicationId(),
+  };
+  save([...load(), row]);
+  return toUser(row);
+}
+
 export function localUpsertGoogleUser(input: {
   email: string;
   firstName: string;

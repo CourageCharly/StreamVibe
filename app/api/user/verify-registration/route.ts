@@ -4,6 +4,7 @@ import { MESSAGES } from "@/lib/auth/errors";
 import { jsonError } from "@/lib/auth/http";
 import {
   applySessionCookie,
+  issueAccountProof,
   readPendingAuth,
 } from "@/lib/auth/session";
 import { resendVerification, verifyRegistration } from "@/lib/auth/service";
@@ -28,11 +29,17 @@ export async function POST(request: NextRequest) {
       oneTimeCode: body.oneTimeCode,
       email: body.email ?? pending?.email,
     });
+    const verifiedUser = { ...user, verified: true };
     const response = NextResponse.json({
-      user,
+      user: verifiedUser,
       verified: true,
+      accountProof: issueAccountProof(verifiedUser),
     });
-    return applySessionCookie(response, { ...user, verified: true });
+    return applySessionCookie(
+      response,
+      { ...user, verified: true },
+      request,
+    );
   } catch (error) {
     return jsonError(error, MESSAGES.verifyFailed);
   }

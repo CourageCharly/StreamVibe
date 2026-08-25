@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { localStartPasswordReset } from "@/lib/auth/local-store";
+import {
+  localEnsureRegisteredUser,
+  localStartPasswordReset,
+} from "@/lib/auth/local-store";
 import { sendOtpEmail } from "@/lib/auth/send-otp-email";
+import {
+  readAccountProof,
+  readRegisteredAccounts,
+} from "@/lib/auth/session";
 
 /**
- * POST { email } — start a password-reset OTP for a registered user and email it.
+ * POST { email, accountProof? } — start a reset OTP for a registered email.
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { email?: string };
+    const body = (await request.json()) as {
+      email?: string;
+      accountProof?: string;
+    };
     const email = body.email?.trim().toLowerCase() ?? "";
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
@@ -16,7 +26,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = localStartPasswordReset(email);
+    const fromCookie = readRegisteredAccounts(request).find(
+      (row) => row.email === email,
+    );
+    const fromProof = readAccountProof(body.accountProof ?? null);
+    const registered =
+      fromCookie ||
+      (fromProof && fromProof.email === email
+        ? { id: fromProof.userId, email: fromProof.email }
+        : null);
+
+    if (registered) {
+      localEnsureRegisteredUser({
+        id: registered.id,
+        email: registered.email,
+      });
+    }
+
+    let result = localStartPasswordReset(email);
+    if (!result.started && registered) {
+      localEnsureRegisteredUser({
+        id: registered.id,
+        email,
+      });
+      result = localStartPasswordReset(email);
+    }
+
     if (!result.started) {
       return NextResponse.json(
         { message: "No account found with that email." },

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { MESSAGES } from "@/lib/auth/errors";
 import { jsonError } from "@/lib/auth/http";
 import { localUpsertGoogleUser } from "@/lib/auth/local-store";
-import { applySessionCookie } from "@/lib/auth/session";
+import { applySessionCookie, issueAccountProof } from "@/lib/auth/session";
 
 type GoogleProfile = {
   sub?: string;
@@ -71,8 +71,11 @@ export async function POST(request: NextRequest) {
       googleId,
     });
 
-    const response = NextResponse.json({ user });
-    return applySessionCookie(response, user);
+    const response = NextResponse.json({
+      user,
+      accountProof: issueAccountProof(user),
+    });
+    return applySessionCookie(response, user, request);
   } catch (error) {
     return jsonError(error, MESSAGES.googleFailed, 401);
   }

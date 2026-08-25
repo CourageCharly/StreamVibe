@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MESSAGES } from "@/lib/auth/errors";
 import { jsonError } from "@/lib/auth/http";
-import { applySessionCookie } from "@/lib/auth/session";
+import { applySessionCookie, issueAccountProof } from "@/lib/auth/session";
 import { loginUser } from "@/lib/auth/service";
 
 /**
@@ -24,8 +24,11 @@ export async function POST(request: NextRequest) {
       );
     }
     const user = await loginUser(email, password);
-    const response = NextResponse.json({ user });
-    return applySessionCookie(response, user);
+    const response = NextResponse.json({
+      user,
+      accountProof: issueAccountProof(user),
+    });
+    return applySessionCookie(response, user, request);
   } catch (error) {
     return jsonError(error, MESSAGES.loginFailed, 401);
   }

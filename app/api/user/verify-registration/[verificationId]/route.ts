@@ -14,7 +14,11 @@ export async function POST(_request: NextRequest, context: Ctx) {
   try {
     const user = await verifyRegistration({ verificationId });
     const response = NextResponse.json({ user, verified: true });
-    return applySessionCookie(response, { ...user, verified: true });
+    return applySessionCookie(
+      response,
+      { ...user, verified: true },
+      _request,
+    );
   } catch (error) {
     return jsonError(error, MESSAGES.verifyFailed);
   }

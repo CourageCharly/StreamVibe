@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { applyPendingAuthCookie, applySessionCookie } from "@/lib/auth/session";
+import {
+  applyPendingAuthCookie,
+  applyRegisteredAccountCookie,
+  applySessionCookie,
+  issueAccountProof,
+} from "@/lib/auth/session";
 import { registerUser } from "@/lib/auth/service";
 import { jsonError } from "@/lib/auth/http";
 import { MESSAGES } from "@/lib/auth/errors";
@@ -71,13 +76,15 @@ export async function POST(request: NextRequest, context: Ctx) {
       requiresVerification: result.requiresVerification,
       verificationId: result.verificationId,
       dispatchCode: result.developmentCode,
+      accountProof: issueAccountProof(result.user),
     });
 
     try {
+      applyRegisteredAccountCookie(response, result.user, request);
       if (result.requiresVerification) {
         applyPendingAuthCookie(response, result.user.id, result.user.email);
       } else {
-        applySessionCookie(response, result.user);
+        applySessionCookie(response, result.user, request);
       }
     } catch (cookieError) {
       console.error("[registration] session cookie", cookieError);

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
+import { rememberAccountProof } from "@/lib/auth/account-proof";
 import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 import { cn } from "@/lib";
 
@@ -103,11 +104,15 @@ export default function SignupForm({ onSuccess, className }: Props) {
         requiresVerification?: boolean;
         verificationId?: string;
         dispatchCode?: string;
+        accountProof?: string;
       };
       if (!res.ok) {
         if (data.fieldErrors) setErrors(data.fieldErrors);
         toast.error(data.message || MESSAGES.registerFailed);
         return;
+      }
+      if (data.accountProof) {
+        rememberAccountProof(fields.email, data.accountProof);
       }
       if (data.dispatchCode) {
         await dispatchOtpEmail(fields.email, data.dispatchCode, "verify");

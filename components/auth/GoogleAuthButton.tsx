@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { MESSAGES } from "@/lib/auth/errors";
+import { rememberAccountProof } from "@/lib/auth/account-proof";
 import { googleClientId } from "@/lib/auth/public";
 
 type Props = {
@@ -151,10 +152,17 @@ export default function GoogleAuthButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken }),
       });
-      const data = (await res.json()) as { message?: string };
+      const data = (await res.json()) as {
+        message?: string;
+        accountProof?: string;
+        user?: { email?: string };
+      };
       if (!res.ok) {
         toast.error(data.message || MESSAGES.googleFailed);
         return;
+      }
+      if (data.accountProof && data.user?.email) {
+        rememberAccountProof(data.user.email, data.accountProof);
       }
       onSuccess?.();
     } catch (error) {

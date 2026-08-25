@@ -9,6 +9,7 @@ import PasswordField from "@/components/auth/PasswordField";
 import { MESSAGES } from "@/lib/auth/errors";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
 import { maskEmail } from "@/lib/auth/public";
+import { getAccountProof } from "@/lib/auth/account-proof";
 import { dispatchOtpEmail } from "@/lib/auth/dispatch-otp";
 
 type Step = "email" | "otp" | "reset" | "success";
@@ -49,7 +50,10 @@ export function ForgotPasswordFlow() {
     const res = await fetch("/api/auth/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({
+        email,
+        accountProof: getAccountProof(email) ?? undefined,
+      }),
     });
     const data = (await res.json()) as {
       message?: string;
