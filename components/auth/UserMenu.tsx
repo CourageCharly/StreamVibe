@@ -46,10 +46,10 @@ export default function UserMenu({ user }: { user: AuthUser }) {
   }, [open]);
 
   async function onLogout() {
-    await logout();
     setOpen(false);
-    toast.success("You have been logged out.");
     router.replace("/");
+    await logout();
+    toast.success("You have been logged out.");
   }
 
   return (

@@ -3,7 +3,11 @@
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { rememberReturnTo, sanitizeReturnTo } from "@/lib/auth/return-to";
+import {
+  consumeLoggedOutHome,
+  rememberReturnTo,
+  sanitizeReturnTo,
+} from "@/lib/auth/return-to";
 
 export default function RequireAuth({
   children,
@@ -18,6 +22,10 @@ export default function RequireAuth({
 
   useEffect(() => {
     if (status !== "anonymous") return;
+    if (consumeLoggedOutHome()) {
+      router.replace("/");
+      return;
+    }
     const next = sanitizeReturnTo(pathname);
     rememberReturnTo(next);
     router.replace(`/login?returnTo=${encodeURIComponent(next)}`);

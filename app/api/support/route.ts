@@ -101,6 +101,38 @@ export async function POST(request: NextRequest) {
     if (sent) {
       return NextResponse.json({ ok: true, via: "resend" });
     }
+
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      "https://stream-vibe-dusky.vercel.app";
+    const form = await fetch(
+      `https://formsubmit.co/ajax/${encodeURIComponent(SUPPORT_INBOX)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+          Origin: origin,
+          Referer: `${origin}/support`,
+        },
+        body: new URLSearchParams({
+          name: fullName,
+          email,
+          phone: phoneLine,
+          message,
+          _subject: subject,
+          _template: "table",
+          _captcha: "false",
+          _replyto: email,
+        }).toString(),
+        cache: "no-store",
+      },
+    );
+    if (form.ok) {
+      return NextResponse.json({ ok: true, via: "formsubmit" });
+    }
+
     return NextResponse.json(
       {
         error:

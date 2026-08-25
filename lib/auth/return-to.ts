@@ -87,3 +87,29 @@ export function clearReturnTo() {
     /* ignore */
   }
 }
+
+const LOGOUT_HOME_KEY = "sv:logout-home";
+
+/** After logout, protected pages must send the user Home — not Login. */
+export function markLoggedOutHome() {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(LOGOUT_HOME_KEY, String(Date.now()));
+    sessionStorage.removeItem(KEY);
+  } catch {
+    /* private mode */
+  }
+}
+
+export function consumeLoggedOutHome() {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = sessionStorage.getItem(LOGOUT_HOME_KEY);
+    if (!raw) return false;
+    sessionStorage.removeItem(LOGOUT_HOME_KEY);
+    const at = Number(raw);
+    return Number.isFinite(at) && Date.now() - at < 4000;
+  } catch {
+    return false;
+  }
+}

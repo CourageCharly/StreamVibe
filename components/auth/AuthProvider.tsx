@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { AuthUser } from "@/lib/auth/types";
 import { rememberAccountProof } from "@/lib/auth/account-proof";
+import { markLoggedOutHome } from "@/lib/auth/return-to";
 import { NOTICE_EVENT } from "@/lib/notifications";
 import { setActiveListUser } from "@/lib/user-lists";
 
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
+      markLoggedOutHome();
       setUser(null);
       setStatus("anonymous");
       setActiveListUser(null);
