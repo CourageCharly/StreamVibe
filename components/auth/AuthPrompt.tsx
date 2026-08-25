@@ -56,7 +56,7 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-[#262626] bg-[#1A1A1A] p-6 shadow-2xl sm:p-8 lg:p-10">
+      <div className="relative z-10 w-full max-w-[820px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
         <button
           type="button"
           onClick={onClose}

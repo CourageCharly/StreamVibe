@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import PageWrapper from "@/components/PageWrapper";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import VerifyForm from "@/components/auth/VerifyForm";
@@ -122,11 +121,6 @@ export function SignupPage() {
     <AuthShell title="Sign Up" subtitle="Create an account to start watching.">
       {method === "choose" ? (
         <div className="space-y-3">
-          <GoogleAuthButton
-            label="Sign up with Google"
-            onSuccess={() => void signedIn()}
-          />
-          <AuthOrDivider />
           <Button
             type="button"
             className="!w-full"
@@ -134,6 +128,11 @@ export function SignupPage() {
           >
             Sign up with email
           </Button>
+          <AuthOrDivider />
+          <GoogleAuthButton
+            label="Sign up with Google"
+            onSuccess={() => void signedIn()}
+          />
         </div>
       ) : (
         <div className="space-y-4">
@@ -216,15 +215,15 @@ function AuthShell({
 }) {
   return (
     <div className="w-full min-w-0 bg-[#141414] pt-[var(--header-h)]">
-      <PageWrapper className="flex min-h-[70vh] items-center py-10 sm:py-14">
-        <div className="mx-auto w-full max-w-lg rounded-2xl border border-[#262626] bg-[#1A1A1A] p-6 sm:p-8 lg:p-10">
+      <div className="page-container py-8 sm:py-10">
+        <div className="w-full max-w-[820px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
           <h1 className="text-[20px] font-bold text-white sm:text-[28px]">{title}</h1>
-          <p className="mt-2 min-w-0 text-[14px] text-[#999999] sm:min-w-[min(100%,400px)] sm:text-[16px]">
+          <p className="mt-2 min-w-0 text-[14px] text-[#999999] sm:text-[16px]">
             {subtitle}
           </p>
           <div className="mt-6">{children}</div>
         </div>
-      </PageWrapper>
+      </div>
     </div>
   );
 }
