@@ -19,9 +19,15 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onAuthenticated: () => void;
+  mediaKind?: "movie" | "show";
 };
 
-export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
+export default function AuthPrompt({
+  open,
+  onClose,
+  onAuthenticated,
+  mediaKind = "movie",
+}: Props) {
   const { refresh } = useAuth();
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
@@ -52,20 +58,18 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
 
   if (!open) return null;
 
+  const kindLabel = mediaKind === "show" ? "show" : "movie";
+  const browseLabel = mediaKind === "show" ? "shows" : "movies";
+
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-end justify-center bg-black/70 p-[5%] sm:items-center sm:p-6"
+      className="fixed inset-0 z-[90] overflow-y-auto overflow-x-hidden bg-[#141414]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-prompt-title"
     >
-      <button
-        type="button"
-        className="absolute inset-0 cursor-default"
-        aria-label="Close"
-        onClick={onClose}
-      />
-      <div className="relative z-10 w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
+      <div className="page-container min-h-full py-8 sm:py-10 pt-[calc(var(--header-h)+2rem)] sm:pt-[calc(var(--header-h)+2.5rem)]">
+      <div className="relative z-10 mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
         <button
           type="button"
           onClick={onClose}
@@ -84,8 +88,8 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
               Create an account to continue watching
             </h2>
             <p className="text-[14px] leading-relaxed text-[#999999] sm:text-[16px]">
-              An account is required to play this title. You can still browse
-              movies and view details without signing in.
+              An account is required to play this {kindLabel}. You can still
+              browse {browseLabel} and view details without signing in.
             </p>
             <div className="flex flex-col gap-3 pt-1">
               <Button className="!w-full" onClick={() => setMode("signup-choose")}>
@@ -265,6 +269,7 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
             />
           </div>
         ) : null}
+      </div>
       </div>
     </div>
   );

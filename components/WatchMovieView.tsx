@@ -1188,6 +1188,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
         open={authOpen && status === "anonymous"}
+        mediaKind={isShow ? "show" : "movie"}
         onClose={() => setAuthOpen(false)}
         onAuthenticated={() => {
           setAuthOpen(false);
