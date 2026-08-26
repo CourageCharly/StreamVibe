@@ -19,6 +19,7 @@ import {
   sanitizeReturnTo,
 } from "@/lib/auth/return-to";
 import { maskEmail } from "@/lib/auth/public";
+import { HomeSkeleton } from "@/components/skeletons/PageSkeletons";
 
 export function AuthChoicePage() {
   const router = useRouter();
@@ -63,14 +64,14 @@ export function LoginPage() {
 
   if (status === "authenticated") {
     clearReturnTo();
-    router.replace(returnTo);
-    return null;
+    router.replace("/");
+    return <HomeSkeleton />;
   }
 
   async function done() {
     await refresh();
     clearReturnTo();
-    router.replace(returnTo);
+    router.replace("/");
   }
 
   return (
@@ -110,7 +111,7 @@ export function SignupPage() {
   if (status === "authenticated") {
     clearReturnTo();
     router.replace("/");
-    return null;
+    return <HomeSkeleton />;
   }
 
   async function signedIn() {
@@ -176,7 +177,7 @@ export function VerifyPage() {
   if (status === "authenticated") {
     clearReturnTo();
     router.replace("/");
-    return null;
+    return <HomeSkeleton />;
   }
 
   if (missing) {

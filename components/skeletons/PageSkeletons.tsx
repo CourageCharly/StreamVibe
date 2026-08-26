@@ -1,3 +1,22 @@
+export function HomeSkeleton() {
+  return (
+    <div className="relative w-full min-w-0 max-w-full overflow-x-hidden">
+      <div className="h-[min(88vw,460px)] w-full animate-pulse bg-[#1A1A1A] sm:h-[480px] lg:h-[560px]" />
+      <div className="page-section space-y-8">
+        <div className="h-7 w-48 animate-pulse rounded bg-[#1A1A1A] sm:h-8" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[2/3] animate-pulse rounded-xl bg-[#1A1A1A]"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CatalogSkeleton() {
   return (
     <div className="w-full pt-[var(--header-h)]">
