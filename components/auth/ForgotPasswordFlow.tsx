@@ -63,7 +63,11 @@ export function ForgotPasswordFlow() {
       throw new Error(data.message || "Unable to send a reset code.");
     }
     if (data.dispatchCode) {
-      await dispatchOtpEmail(email, data.dispatchCode, "reset");
+      await dispatchOtpEmail(
+        email.trim().toLowerCase(),
+        data.dispatchCode,
+        "reset",
+      );
     }
     setCode("");
     setStep("otp");

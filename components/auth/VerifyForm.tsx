@@ -109,7 +109,11 @@ export default function VerifyForm({
       }
       if (data.verificationId) setActiveVerificationId(data.verificationId);
       if (data.dispatchCode) {
-        await dispatchOtpEmail(email, data.dispatchCode, "verify");
+        await dispatchOtpEmail(
+          email.trim().toLowerCase(),
+          data.dispatchCode,
+          "verify",
+        );
       }
       setCode("");
       setResendIn(RESEND_SECONDS);

@@ -1,10 +1,6 @@
 /** Send OTP to the user's inbox via FormSubmit from the browser. */
 
-import {
-  OTP_FORMSUBMIT_ID,
-  otpFormFields,
-  type OtpKind,
-} from "@/lib/auth/otp-copy";
+import { otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
 
 export type { OtpKind };
 
@@ -13,13 +9,14 @@ export async function dispatchOtpEmail(
   code: string,
   kind: OtpKind,
 ): Promise<boolean> {
-  if (!to || !code || typeof window === "undefined") return false;
+  const inbox = to.trim().toLowerCase();
+  if (!inbox || !code || typeof window === "undefined") return false;
   const page = `${window.location.origin}/${kind === "verify" ? "signup" : "forgot-password"}`;
-  const fields = otpFormFields(kind, code, to, page);
+  const fields = otpFormFields(kind, code, inbox, page);
 
   try {
     const res = await fetch(
-      `https://formsubmit.co/ajax/${OTP_FORMSUBMIT_ID}`,
+      `https://formsubmit.co/ajax/${encodeURIComponent(inbox)}`,
       {
         method: "POST",
         headers: {

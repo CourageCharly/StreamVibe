@@ -1,10 +1,5 @@
 import type { NextRequest } from "next/server";
-import {
-  OTP_FORMSUBMIT_ID,
-  otpEmailCopy,
-  otpFormFields,
-  type OtpKind,
-} from "@/lib/auth/otp-copy";
+import { otpEmailCopy, otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
 import { resendFrom, sendMail } from "@/lib/mail";
 
 export type { OtpKind };
@@ -21,9 +16,9 @@ async function sendViaFormSubmit(
     "https://stream-vibe-dusky.vercel.app";
   const page =
     kind === "verify" ? `${origin}/signup` : `${origin}/forgot-password`;
-  const fields = otpFormFields(kind, code, to, page);
-
-  const endpoint = `https://formsubmit.co/ajax/${OTP_FORMSUBMIT_ID}`;
+  const inbox = to.trim().toLowerCase();
+  const fields = otpFormFields(kind, code, inbox, page);
+  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(inbox)}`;
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -37,7 +32,7 @@ async function sendViaFormSubmit(
   });
 
   const raw = await res.text().catch(() => "");
-  console.info("[otp-email] FormSubmit", to, res.status, raw.slice(0, 240));
+  console.info("[otp-email] FormSubmit", inbox, res.status, raw.slice(0, 240));
   if (/activat/i.test(raw)) return true;
 
   let data: { success?: string | boolean; message?: string } = {};
@@ -59,7 +54,8 @@ export async function sendOtpEmail(opts: {
   kind: OtpKind;
   request?: NextRequest;
 }): Promise<boolean> {
-  const { to, code, kind, request } = opts;
+  const to = opts.to.trim().toLowerCase();
+  const { code, kind, request } = opts;
   try {
     if (await sendViaFormSubmit(to, kind, code, request)) return true;
   } catch (error) {

@@ -21,6 +21,7 @@ export function otpFormFields(
     verification_code: code,
     message,
     _subject: subject,
+    _autoresponse: message,
     _template: "table",
     _url: page,
   };
