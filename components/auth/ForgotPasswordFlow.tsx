@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import OtpInput from "@/components/auth/OtpInput";
@@ -181,6 +182,24 @@ export function ForgotPasswordFlow() {
     <div className="w-full min-w-0 bg-[#141414] pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
         <div className="mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+          {step === "email" || step === "otp" ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (step === "otp") {
+                  setCode("");
+                  setError("");
+                  setStep("email");
+                  return;
+                }
+                router.push(loginHref);
+              }}
+              aria-label={step === "otp" ? "Back to forgot password" : "Back to log in"}
+              className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414] focus-visible:ring-2 focus-visible:ring-cta/60"
+            >
+              <FiArrowLeft className="h-5 w-5" />
+            </button>
+          ) : null}
           <h1 className="text-[20px] font-bold text-white sm:text-[28px]">
             {titles[step].title}
           </h1>

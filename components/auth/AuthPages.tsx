@@ -82,7 +82,7 @@ export function LoginPage() {
           forgotHref={`/forgot-password?returnTo=${encodeURIComponent(returnTo)}`}
           onNeedVerify={(email) => {
             router.replace(
-              `/verify?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(returnTo)}`,
+              `/verify?email=${encodeURIComponent(email)}&from=login&returnTo=${encodeURIComponent(returnTo)}`,
             );
           }}
         />
@@ -148,6 +148,7 @@ export function SignupPage() {
               toast.success("Verification email sent.");
               const qs = new URLSearchParams({
                 email: result.email,
+                from: "signup",
                 returnTo,
               });
               if (result.verificationId) qs.set("vid", result.verificationId);
@@ -172,6 +173,7 @@ export function VerifyPage() {
   const params = useSearchParams();
   const { refresh, status } = useAuth();
   const email = (params.get("email") ?? "").trim();
+  const from = params.get("from") === "login" ? "login" : "signup";
   const [missing] = useState(!email);
 
   if (status === "authenticated") {
@@ -190,6 +192,9 @@ export function VerifyPage() {
       title="Verify your email"
       subtitle={`Enter the 6-digit code we sent to ${maskEmail(email)}.`}
       subtitleClassName="overflow-hidden text-ellipsis whitespace-nowrap"
+      onBack={() =>
+        router.push(from === "login" ? "/login" : "/signup")
+      }
     >
       <VerifyForm
         email={email}
