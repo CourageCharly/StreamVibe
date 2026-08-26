@@ -63,13 +63,19 @@ export default function AuthPrompt({
 
   return (
     <div
-      className="fixed inset-0 z-[90] overflow-y-auto overflow-x-hidden bg-[#141414] pt-[var(--header-h)]"
+      className="fixed inset-0 z-[300] overflow-y-auto overflow-x-hidden bg-black/70"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-prompt-title"
     >
-      <div className="page-container min-h-full py-8 sm:py-10">
-      <div className="relative mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+      <button
+        type="button"
+        className="absolute inset-0 cursor-default"
+        aria-label="Close"
+        onClick={onClose}
+      />
+      <div className="relative flex min-h-full items-start justify-center px-[5%] py-8 pt-[calc(var(--header-h)+2rem)] sm:items-center sm:px-6 sm:py-10">
+      <div className="relative w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
         <button
           type="button"
           onClick={onClose}
