@@ -18,12 +18,10 @@ export function otpFormFields(
   return {
     email: to,
     name: "StreamVibe",
-    code,
+    verification_code: code,
     message,
     _subject: subject,
-    _autoresponse: message,
     _template: "table",
-    _captcha: "false",
     _url: page,
   };
 }
@@ -40,7 +38,7 @@ export function otpEmailCopy(kind: OtpKind, code: string, to = "") {
     : "";
   const sentText = masked ? `This code was sent to ${masked}.\n\n` : "";
   if (kind === "verify") {
-    const subject = "Your verification code";
+    const subject = `Your verification code: ${code}`;
     const text = `Verify your email\n\nUse the verification code below to continue:\n\n${code}\n\nThis code expires in 10 minutes.\n${sentText}If you didn't request this code, you can safely ignore this email.`;
     const html = `
         <h2>Verify your email</h2>
@@ -55,7 +53,7 @@ export function otpEmailCopy(kind: OtpKind, code: string, to = "") {
     return { subject, text, html, message: text };
   }
 
-  const subject = "Your password reset code";
+  const subject = `Your password reset code: ${code}`;
   const text = `Reset your password\n\nUse the reset code below to continue:\n\n${code}\n\nThis code expires in 10 minutes.\n${sentText}If you didn't request this code, you can safely ignore this email.`;
   const html = `
         <h2>Reset your password</h2>

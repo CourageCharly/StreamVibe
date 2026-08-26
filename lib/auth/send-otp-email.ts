@@ -1,5 +1,10 @@
 import type { NextRequest } from "next/server";
-import { otpEmailCopy, otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
+import {
+  OTP_FORMSUBMIT_ID,
+  otpEmailCopy,
+  otpFormFields,
+  type OtpKind,
+} from "@/lib/auth/otp-copy";
 import { resendFrom, sendMail } from "@/lib/mail";
 
 export type { OtpKind };
@@ -18,7 +23,7 @@ async function sendViaFormSubmit(
     kind === "verify" ? `${origin}/signup` : `${origin}/forgot-password`;
   const fields = otpFormFields(kind, code, to, page);
 
-  const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(to)}`;
+  const endpoint = `https://formsubmit.co/ajax/${OTP_FORMSUBMIT_ID}`;
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {

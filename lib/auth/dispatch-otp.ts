@@ -1,6 +1,10 @@
 /** Send OTP to the user's inbox via FormSubmit from the browser. */
 
-import { otpFormFields, type OtpKind } from "@/lib/auth/otp-copy";
+import {
+  OTP_FORMSUBMIT_ID,
+  otpFormFields,
+  type OtpKind,
+} from "@/lib/auth/otp-copy";
 
 export type { OtpKind };
 
@@ -15,7 +19,7 @@ export async function dispatchOtpEmail(
 
   try {
     const res = await fetch(
-      `https://formsubmit.co/ajax/${encodeURIComponent(to)}`,
+      `https://formsubmit.co/ajax/${OTP_FORMSUBMIT_ID}`,
       {
         method: "POST",
         headers: {
