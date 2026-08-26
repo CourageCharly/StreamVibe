@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/components/auth/RequireAuth";
+import { ReviewSkeleton } from "@/components/skeletons/PageSkeletons";
 import BackLink from "@/components/BackLink";
 import ReviewComposer from "@/components/ReviewComposer";
 import { markReviewSuccess } from "@/lib/reviews";
@@ -20,7 +21,7 @@ export default function ReviewWriteView({
   backHref,
 }: Props) {
   return (
-    <RequireAuth>
+    <RequireAuth fallback={<ReviewSkeleton />}>
       <ReviewWriteInner
         mediaId={mediaId}
         mediaType={mediaType}

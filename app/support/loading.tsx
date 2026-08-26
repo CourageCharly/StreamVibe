@@ -1,5 +1,5 @@
-import { SimplePageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { SupportSkeleton } from "@/components/skeletons/PageSkeletons";
 
 export default function Loading() {
-  return <SimplePageSkeleton />;
+  return <SupportSkeleton />;
 }

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ForgotPasswordFlow } from "@/components/auth/ForgotPasswordFlow";
+import { AuthCardSkeleton } from "@/components/skeletons/PageSkeletons";
 
 export const metadata: Metadata = {
   title: "Forgot password",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="min-h-[70vh] pt-[var(--header-h)]" />}>
+    <Suspense fallback={<AuthCardSkeleton />}>
       <ForgotPasswordFlow />
     </Suspense>
   );

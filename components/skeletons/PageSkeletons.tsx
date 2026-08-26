@@ -180,3 +180,121 @@ export function NotificationsSkeleton() {
     </div>
   );
 }
+
+export function AuthCardSkeleton() {
+  return (
+    <div className="w-full min-w-0 bg-[#141414] pt-[var(--header-h)]">
+      <div className="page-container py-8 sm:py-10">
+        <div className="mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+          <Pulse className="h-7 w-36 sm:h-8 sm:w-44" />
+          <Pulse className="mt-2 h-4 w-full max-w-sm" />
+          <div className="mt-6 space-y-4">
+            <Pulse className="h-12 w-full rounded-lg" />
+            <Pulse className="h-12 w-full rounded-lg" />
+            <Pulse className="h-[49px] w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function WatchSkeleton() {
+  return (
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
+      <div className="page-container space-y-5 py-4 sm:space-y-8 sm:py-6 md:space-y-10 md:py-8">
+        <Pulse className="h-4 w-28" />
+        <div className="cinema-frame watch-fill animate-pulse bg-[#1A1A1A]" />
+        <Pulse className="h-7 w-2/3 max-w-lg sm:h-8" />
+        <Pulse className="h-4 w-full max-w-2xl" />
+        <div className="flex gap-3">
+          <Pulse className="h-10 w-28 rounded-lg" />
+          <Pulse className="h-10 w-28 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ReviewSkeleton() {
+  return (
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
+      <div className="page-container py-8 sm:py-10">
+        <Pulse className="h-4 w-40" />
+        <Pulse className="mt-4 h-7 w-48 sm:h-8" />
+        <Pulse className="mt-2 h-4 w-64" />
+        <div className="mt-6 space-y-4 rounded-2xl border border-[#262626] bg-[#1A1A1A] p-4 sm:p-6">
+          <Pulse onCard className="h-5 w-32" />
+          <Pulse onCard className="h-32 w-full rounded-lg" />
+          <Pulse onCard className="h-[49px] w-36 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SubscriptionsSkeleton() {
+  return (
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden bg-[#141414] pt-[var(--header-h)]">
+      <div className="page-section space-y-8">
+        <div>
+          <Pulse className="h-7 w-64 sm:h-8 sm:w-80" />
+          <Pulse className="mt-2 h-4 w-full max-w-xl" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-64 animate-pulse rounded-xl border border-[#262626] bg-[#1A1A1A]"
+            />
+          ))}
+        </div>
+      </div>
+      <div className="page-section">
+        <Pulse className="h-64 w-full rounded-xl" />
+      </div>
+      <div className="page-section">
+        <div className="h-[210px] animate-pulse rounded-[12px] bg-[#1A1A1A] sm:min-h-[210px]" />
+      </div>
+    </div>
+  );
+}
+
+export function SupportSkeleton() {
+  return (
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden bg-[#141414] pt-[var(--header-h)]">
+      <div className="page-container bg-[#141414] py-8 sm:py-10 md:py-12">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Pulse className="h-72 w-full rounded-xl" />
+          <Pulse className="h-72 w-full rounded-xl" />
+        </div>
+      </div>
+      <div className="page-section space-y-6">
+        <Pulse className="h-7 w-64 sm:h-8" />
+        <Pulse className="h-40 w-full rounded-xl" />
+      </div>
+      <div className="page-section">
+        <div className="h-[210px] animate-pulse rounded-[12px] bg-[#1A1A1A]" />
+      </div>
+    </div>
+  );
+}
+
+export function LegalSkeleton() {
+  return (
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden bg-[#141414] pt-[var(--header-h)]">
+      <div className="page-container py-8 sm:py-10">
+        <Pulse className="h-4 w-64" />
+        <Pulse className="mt-6 h-8 w-56 sm:h-9" />
+        <Pulse className="mt-2 h-4 w-full max-w-xl" />
+        <div className="mt-8 space-y-3">
+          <Pulse className="h-4 w-full" />
+          <Pulse className="h-4 w-full" />
+          <Pulse className="h-4 w-5/6" />
+          <Pulse className="h-4 w-full" />
+          <Pulse className="h-4 w-2/3" />
+        </div>
+      </div>
+    </div>
+  );
+}

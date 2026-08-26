@@ -1,5 +1,5 @@
-import { SimplePageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { ReviewSkeleton } from "@/components/skeletons/PageSkeletons";
 
 export default function Loading() {
-  return <SimplePageSkeleton />;
+  return <ReviewSkeleton />;
 }
