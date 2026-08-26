@@ -14,7 +14,7 @@ export default function Footer() {
       className="site-footer w-full min-w-0 max-w-full overflow-x-hidden border-0 border-t-0 bg-[#0F0F0F] shadow-none ring-0 sm:border-t-0 sm:shadow-none"
       style={{ borderTop: "none", boxShadow: "none" }}
     >
-      <div className="page-container pb-10 sm:pb-12">
+      <div className="page-container pb-6 sm:pb-8">
         <div className="grid w-full min-w-0 grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-6">
           {Object.entries(FOOTER_LINKS).map(([title, links]) => (
             <div key={title} className="min-w-0">
