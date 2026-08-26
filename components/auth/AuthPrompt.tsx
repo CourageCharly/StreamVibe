@@ -63,13 +63,13 @@ export default function AuthPrompt({
 
   return (
     <div
-      className="fixed inset-0 z-[90] overflow-y-auto overflow-x-hidden bg-[#141414]"
+      className="fixed inset-0 z-[90] overflow-y-auto overflow-x-hidden bg-[#141414] pt-[var(--header-h)]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-prompt-title"
     >
-      <div className="page-container min-h-full py-8 sm:py-10 pt-[calc(var(--header-h)+2rem)] sm:pt-[calc(var(--header-h)+2.5rem)]">
-      <div className="relative z-10 mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
+      <div className="page-container min-h-full py-8 sm:py-10">
+      <div className="relative mx-auto w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 sm:p-6 md:p-8">
         <button
           type="button"
           onClick={onClose}
@@ -107,48 +107,44 @@ export default function AuthPrompt({
         ) : null}
 
         {mode === "login" ? (
-          <div className="space-y-5">
-            <button
-              type="button"
-              onClick={() => setMode("choice")}
-              aria-label="Back"
-              className="mb-1 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414]"
-            >
-              <FiArrowLeft className="h-5 w-5" />
-            </button>
-            <h2
+          <div>
+            <h1
               id="auth-prompt-title"
               className="pr-8 text-[20px] font-bold text-white sm:text-[28px]"
             >
               Log In
-            </h2>
-            <p className="text-[14px] text-[#999999] sm:text-[16px]">
+            </h1>
+            <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
               Welcome back to StreamVibe.
             </p>
-            <LoginForm
-              onSuccess={() => void finish()}
-              forgotHref="/forgot-password"
-              onNeedVerify={(nextEmail) => {
-                setEmail(nextEmail);
-                setVerifyFrom("login");
-                setMode("verify");
-              }}
-            />
-            <AuthOrDivider />
-            <GoogleAuthButton
-              label="Continue with Google"
-              onSuccess={() => void finish()}
-            />
-            <p className="text-center text-[13px] text-[#999999]">
-              New to StreamVibe?{" "}
-              <button
-                type="button"
-                className="font-medium text-white outline-none hover:text-cta"
-                onClick={() => setMode("signup-choose")}
-              >
-                Sign Up
-              </button>
-            </p>
+            <div className="mt-6">
+              <div className="space-y-5">
+                <LoginForm
+                  onSuccess={() => void finish()}
+                  forgotHref="/forgot-password"
+                  onNeedVerify={(nextEmail) => {
+                    setEmail(nextEmail);
+                    setVerifyFrom("login");
+                    setMode("verify");
+                  }}
+                />
+                <AuthOrDivider />
+                <GoogleAuthButton
+                  label="Continue with Google"
+                  onSuccess={() => void finish()}
+                />
+              </div>
+              <p className="mt-4 text-center text-[13px] text-[#999999]">
+                New to StreamVibe?{" "}
+                <button
+                  type="button"
+                  className="font-medium text-white outline-none hover:text-cta"
+                  onClick={() => setMode("signup-choose")}
+                >
+                  Sign Up
+                </button>
+              </p>
+            </div>
           </div>
         ) : null}
 
