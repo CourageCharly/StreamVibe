@@ -109,14 +109,14 @@ export function SignupPage() {
 
   if (status === "authenticated") {
     clearReturnTo();
-    router.replace(returnTo);
+    router.replace("/");
     return null;
   }
 
   async function signedIn() {
     await refresh();
     clearReturnTo();
-    router.replace(returnTo);
+    router.replace("/");
   }
 
   return (
@@ -171,12 +171,11 @@ export function VerifyPage() {
   const params = useSearchParams();
   const { refresh, status } = useAuth();
   const email = (params.get("email") ?? "").trim();
-  const returnTo = sanitizeReturnTo(params.get("returnTo") || readReturnTo());
   const [missing] = useState(!email);
 
   if (status === "authenticated") {
     clearReturnTo();
-    router.replace(returnTo);
+    router.replace("/");
     return null;
   }
 
@@ -197,7 +196,7 @@ export function VerifyPage() {
         onSuccess={() => {
           void refresh().then(() => {
             clearReturnTo();
-            router.replace(returnTo);
+            router.replace("/");
           });
         }}
       />
