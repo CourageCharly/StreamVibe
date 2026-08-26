@@ -456,10 +456,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     if (!canPlay) {
       setPlaying(false);
       rememberReturnTo(watchPath);
-      if (isMobile) {
-        router.replace(`/auth?returnTo=${encodeURIComponent(watchPath)}`);
-        return;
-      }
       setAuthOpen(true);
       return;
     }
@@ -486,8 +482,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     movie.mediaType,
     canPlay,
     status,
-    isMobile,
-    router,
     active?.videoKey,
   ]);
 
@@ -729,10 +723,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     if (!canPlay) {
       const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
       rememberReturnTo(watchPath);
-      if (isMobile) {
-        router.push(`/auth?returnTo=${encodeURIComponent(watchPath)}`);
-        return;
-      }
       setAuthOpen(true);
       return;
     }
@@ -758,8 +748,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     movie.id,
     movie.mediaType,
     canPlay,
-    isMobile,
-    router,
   ]);
 
   const playEpisode = useCallback(
@@ -767,10 +755,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       if (!canPlay) {
         const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
         rememberReturnTo(watchPath);
-        if (isMobile) {
-          router.push(`/auth?returnTo=${encodeURIComponent(watchPath)}`);
-          return;
-        }
         setAuthOpen(true);
         return;
       }
@@ -793,7 +777,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
-    [playKey, movie.videos, canPlay, isMobile, router, movie.mediaType, movie.id],
+    [playKey, movie.videos, canPlay, movie.mediaType, movie.id],
   );
 
   return (
@@ -1203,7 +1187,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
       <AuthPrompt
         key={authOpen ? "auth-open" : "auth-closed"}
-        open={!isMobile && authOpen && status === "anonymous"}
+        open={authOpen && status === "anonymous"}
         onClose={() => setAuthOpen(false)}
         onAuthenticated={() => {
           setAuthOpen(false);

@@ -227,7 +227,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
 
           <div className="mt-6 flex w-full max-w-2xl flex-wrap items-center justify-center gap-3 sm:w-auto sm:max-w-none">
             <Button
-              href={movieId != null ? `/movies/${movieId}` : "/movies"}
+              href={movieId != null ? `/movies/${movieId}/watch` : "/movies"}
               className="!w-full max-w-2xl gap-2 px-8 sm:!w-auto sm:min-w-[140px] sm:max-w-none sm:px-6"
             >
               <FaPlay className="h-3 w-3" />

@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FiX } from "react-icons/fi";
+import { FiArrowLeft, FiX } from "react-icons/fi";
+import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import VerifyForm from "@/components/auth/VerifyForm";
+import GoogleAuthButton, {
+  AuthOrDivider,
+} from "@/components/auth/GoogleAuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { maskEmail } from "@/lib/auth/public";
 
-type Mode = "choice" | "login" | "signup" | "verify";
+type Mode = "choice" | "login" | "signup-choose" | "signup-email" | "verify";
 
 type Props = {
   open: boolean;
@@ -22,9 +26,13 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
   const [verificationId, setVerificationId] = useState("");
+  const [verifyFrom, setVerifyFrom] = useState<"login" | "signup">("signup");
 
   useEffect(() => {
     if (!open) return;
+    setMode("choice");
+    setEmail("");
+    setVerificationId("");
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -71,16 +79,16 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
           <div className="space-y-4">
             <h2
               id="auth-prompt-title"
-              className="pr-8 text-[20px] font-semibold text-white"
+              className="pr-8 text-[20px] font-bold text-white sm:text-[28px]"
             >
               Create an account to continue watching
             </h2>
-            <p className="min-w-0 text-[14px] leading-relaxed text-[#999999] sm:min-w-[min(100%,400px)] sm:text-[16px]">
+            <p className="text-[14px] leading-relaxed text-[#999999] sm:text-[16px]">
               An account is required to play this title. You can still browse
               movies and view details without signing in.
             </p>
-            <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-              <Button className="!w-full" onClick={() => setMode("signup")}>
+            <div className="flex flex-col gap-3 pt-1">
+              <Button className="!w-full" onClick={() => setMode("signup-choose")}>
                 Sign Up
               </Button>
               <Button
@@ -95,29 +103,44 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
         ) : null}
 
         {mode === "login" ? (
-          <div>
+          <div className="space-y-5">
+            <button
+              type="button"
+              onClick={() => setMode("choice")}
+              aria-label="Back"
+              className="mb-1 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414]"
+            >
+              <FiArrowLeft className="h-5 w-5" />
+            </button>
             <h2
               id="auth-prompt-title"
-              className="mb-1 pr-8 text-[20px] font-semibold text-white"
+              className="pr-8 text-[20px] font-bold text-white sm:text-[28px]"
             >
               Log In
             </h2>
-            <p className="mb-4 text-[14px] text-[#999999] sm:text-[16px]">
-              Welcome back. Sign in to start watching.
+            <p className="text-[14px] text-[#999999] sm:text-[16px]">
+              Welcome back to StreamVibe.
             </p>
             <LoginForm
               onSuccess={() => void finish()}
+              forgotHref="/forgot-password"
               onNeedVerify={(nextEmail) => {
                 setEmail(nextEmail);
+                setVerifyFrom("login");
                 setMode("verify");
               }}
             />
-            <p className="mt-4 text-center text-[13px] text-[#999999]">
+            <AuthOrDivider />
+            <GoogleAuthButton
+              label="Continue with Google"
+              onSuccess={() => void finish()}
+            />
+            <p className="text-center text-[13px] text-[#999999]">
               New to StreamVibe?{" "}
               <button
                 type="button"
                 className="font-medium text-white outline-none hover:text-cta"
-                onClick={() => setMode("signup")}
+                onClick={() => setMode("signup-choose")}
               >
                 Sign Up
               </button>
@@ -125,23 +148,76 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
           </div>
         ) : null}
 
-        {mode === "signup" ? (
-          <div>
+        {mode === "signup-choose" ? (
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setMode("choice")}
+              aria-label="Back"
+              className="mb-1 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414]"
+            >
+              <FiArrowLeft className="h-5 w-5" />
+            </button>
             <h2
               id="auth-prompt-title"
-              className="mb-1 pr-8 text-[20px] font-semibold text-white"
+              className="pr-8 text-[20px] font-bold text-white sm:text-[28px]"
+            >
+              Sign Up
+            </h2>
+            <p className="mb-2 text-[14px] text-[#999999] sm:text-[16px]">
+              Create an account to start watching.
+            </p>
+            <Button
+              type="button"
+              className="!w-full border border-[#999999] !bg-transparent !text-white hover:!bg-transparent"
+              onClick={() => setMode("signup-email")}
+            >
+              Sign up with email
+            </Button>
+            <AuthOrDivider />
+            <GoogleAuthButton
+              label="Sign up with Google"
+              onSuccess={() => void finish()}
+            />
+            <p className="pt-1 text-center text-[13px] text-[#999999]">
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="font-medium text-white outline-none hover:text-cta"
+                onClick={() => setMode("login")}
+              >
+                Log In
+              </button>
+            </p>
+          </div>
+        ) : null}
+
+        {mode === "signup-email" ? (
+          <div>
+            <button
+              type="button"
+              onClick={() => setMode("signup-choose")}
+              aria-label="Back"
+              className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414]"
+            >
+              <FiArrowLeft className="h-5 w-5" />
+            </button>
+            <h2
+              id="auth-prompt-title"
+              className="mb-1 pr-8 text-[20px] font-bold text-white sm:text-[28px]"
             >
               Sign Up
             </h2>
             <p className="mb-4 text-[14px] text-[#999999] sm:text-[16px]">
-              Create your account to start watching.
+              Create an account to start watching.
             </p>
             <SignupForm
               onSuccess={(result) => {
                 setEmail(result.email);
                 setVerificationId(result.verificationId ?? "");
                 if (result.requiresVerification) {
-                  toastVerifySent();
+                  toast.success("Verification email sent.");
+                  setVerifyFrom("signup");
                   setMode("verify");
                   return;
                 }
@@ -163,13 +239,23 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
 
         {mode === "verify" ? (
           <div>
+            <button
+              type="button"
+              onClick={() =>
+                setMode(verifyFrom === "login" ? "login" : "signup-email")
+              }
+              aria-label="Back"
+              className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg text-white outline-none transition hover:bg-[#141414]"
+            >
+              <FiArrowLeft className="h-5 w-5" />
+            </button>
             <h2
               id="auth-prompt-title"
-              className="mb-1 pr-8 text-[20px] font-semibold text-white"
+              className="mb-1 pr-8 text-[20px] font-bold text-white sm:text-[28px]"
             >
               Verify your email
             </h2>
-            <p className="mb-5 pr-8 text-[14px] text-[#999999] sm:text-[16px]">
+            <p className="mb-5 overflow-hidden text-ellipsis whitespace-nowrap pr-8 text-[14px] text-[#999999] sm:text-[16px]">
               Enter the 6-digit code we sent to {maskEmail(email)}.
             </p>
             <VerifyForm
@@ -182,10 +268,4 @@ export default function AuthPrompt({ open, onClose, onAuthenticated }: Props) {
       </div>
     </div>
   );
-}
-
-function toastVerifySent() {
-  void import("sonner").then(({ toast }) => {
-    toast.success("Verification email sent.");
-  });
 }

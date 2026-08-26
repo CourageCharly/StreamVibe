@@ -13,10 +13,7 @@ import Button from "@/components/ui/Button";
 import FreeTrialBanner from "@/components/FreeTrialBanner";
 import BackLink from "@/components/BackLink";
 import ReviewsSection from "@/components/ReviewsSection";
-import AuthPrompt from "@/components/auth/AuthPrompt";
-import { useAuth } from "@/components/auth/AuthProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
-import { useIsMobile } from "@/lib/use-mobile";
 import type { Movie } from "@/lib/types";
 import {
   getLikes,
@@ -256,10 +253,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
   const [hydrated, setHydrated] = useState(false);
   /** Page/section the user opened this title from (genre, row, home, …) */
   const [returnHref, setReturnHref] = useState("/movies");
-  const [authOpen, setAuthOpen] = useState(false);
   const router = useRouter();
-  const { status } = useAuth();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     setHydrated(true);
@@ -395,18 +389,8 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
               <Button
                 className="!h-[49px] !w-full max-w-2xl gap-2 px-8 text-[14px] sm:!h-[49px] sm:!w-auto sm:min-w-[140px] sm:max-w-none sm:px-6"
                 onClick={() => {
-                  if (status === "authenticated") {
-                    router.push(watchHref);
-                    return;
-                  }
                   rememberReturnTo(watchHref);
-                  if (isMobile) {
-                    router.push(
-                      `/auth?returnTo=${encodeURIComponent(watchHref)}`,
-                    );
-                    return;
-                  }
-                  setAuthOpen(true);
+                  router.push(watchHref);
                 }}
               >
                 <FaPlay className="h-3 w-3" />
@@ -590,15 +574,6 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
       </div>
 
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
-      <AuthPrompt
-        key={authOpen ? "auth-open" : "auth-closed"}
-        open={!isMobile && authOpen}
-        onClose={() => setAuthOpen(false)}
-        onAuthenticated={() => {
-          setAuthOpen(false);
-          router.replace(watchHref);
-        }}
-      />
     </div>
   );
 }
