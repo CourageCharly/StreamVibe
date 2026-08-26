@@ -89,6 +89,29 @@ section {
   overflow-x: hidden !important;
 }
 
+/* iOS: overflow-x:hidden on html+body can lock vertical scroll. Keep Y on the document. */
+@media (max-width: 639px) {
+  html {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    height: auto !important;
+    min-height: 100dvh;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  main {
+    overflow-y: visible !important;
+  }
+}
+
 /* Web: no top stroke / hairline on footer */
 @media (min-width: 640px) {
   footer {
