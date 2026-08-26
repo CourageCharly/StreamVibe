@@ -33,12 +33,12 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${manrope.variable} min-h-dvh overflow-x-hidden antialiased`}
+      className={`${manrope.variable} h-full overflow-x-hidden antialiased`}
       style={{ overflowX: "hidden", maxWidth: "100%" }}
       suppressHydrationWarning
     >
       <body
-        className="flex min-h-dvh w-full max-w-full flex-col overflow-x-hidden bg-background font-sans text-foreground"
+        className="flex min-h-full min-h-dvh w-full max-w-full flex-col overflow-x-hidden bg-background font-sans text-foreground"
         style={{ overflowX: "hidden", maxWidth: "100%" }}
         suppressHydrationWarning
       >
