@@ -13,8 +13,8 @@ import { useRowSlider } from "@/lib/use-row-slider";
 export const MEDIA_CARD_W = 285;
 export const MEDIA_CARD_H = 317;
 /** Popular Top 10 — taller top-to-bottom than Our Genres */
-const TOP10_CARD_H = 372;
-const TOP10_TITLE_H = 68;
+const TOP10_CARD_H = 380;
+const TOP10_TITLE_H = 76;
 
 const COLLAGE_GAP = 6;
 const CARD_PAD = 16;
@@ -179,7 +179,7 @@ export default function MediaRow({
                     })}
                   </div>
                   <div className="mt-2 flex shrink-0 flex-col gap-3">
-                    <span className="w-fit rounded bg-cta px-2 py-0.5 text-[16px] font-semibold leading-none text-white">
+                    <span className="inline-flex w-fit items-center rounded bg-cta px-2.5 py-2 text-[16px] font-semibold leading-none text-white">
                       Top 10 In
                     </span>
                     <div className="flex items-center justify-between gap-2">
