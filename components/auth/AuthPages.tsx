@@ -46,7 +46,7 @@ export function AuthChoicePage() {
           Sign Up
         </Link>
         <Link
-          href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+          href={`/login?returnTo=${encodeURIComponent(returnTo)}&from=auth`}
           className="inline-flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-white"
         >
           Log In
@@ -61,6 +61,7 @@ export function LoginPage() {
   const params = useSearchParams();
   const { refresh, status } = useAuth();
   const returnTo = sanitizeReturnTo(params.get("returnTo") || readReturnTo());
+  const fromAuth = params.get("from") === "auth";
 
   if (status === "authenticated") {
     clearReturnTo();
@@ -75,7 +76,18 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Log In" subtitle="Welcome back to StreamVibe.">
+    <AuthShell
+      title="Log In"
+      subtitle="Welcome back to StreamVibe."
+      onBack={
+        fromAuth
+          ? () =>
+              router.push(
+                `/auth?returnTo=${encodeURIComponent(returnTo)}`,
+              )
+          : undefined
+      }
+    >
       <div className="space-y-5">
         <LoginForm
           onSuccess={() => void done()}
