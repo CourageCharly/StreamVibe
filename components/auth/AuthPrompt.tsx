@@ -12,6 +12,7 @@ import GoogleAuthButton, {
 } from "@/components/auth/GoogleAuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { maskEmail } from "@/lib/auth/public";
+import { useLockBodyScroll } from "@/lib/use-lock-body";
 
 type Mode = "choice" | "login" | "signup-choose" | "signup-email" | "verify";
 
@@ -34,6 +35,8 @@ export default function AuthPrompt({
   const [verificationId, setVerificationId] = useState("");
   const [verifyFrom, setVerifyFrom] = useState<"login" | "signup">("signup");
 
+  useLockBodyScroll(open);
+
   useEffect(() => {
     if (!open) return;
     setMode("choice");
@@ -43,11 +46,8 @@ export default function AuthPrompt({
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
     };
   }, [open, onClose]);
 
@@ -63,7 +63,7 @@ export default function AuthPrompt({
 
   return (
     <div
-      className="fixed inset-0 z-[300] overflow-y-auto overflow-x-hidden bg-black/70"
+      className="fixed inset-0 z-[300] overflow-hidden overscroll-none bg-black/70"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-prompt-title"
@@ -74,8 +74,8 @@ export default function AuthPrompt({
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative flex min-h-full items-start justify-center px-[5%] py-8 pt-[calc(var(--header-h)+2rem)] sm:items-center sm:px-6 sm:py-10">
-      <div className="relative w-full max-w-[640px] rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
+      <div className="relative flex h-full max-h-full items-center justify-center overflow-hidden px-[5%] py-6 pt-[calc(var(--header-h)+1.25rem)] sm:px-6 sm:py-10">
+      <div className="relative max-h-[min(100%,calc(100dvh-var(--header-h)-2rem))] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
         <button
           type="button"
           onClick={onClose}
