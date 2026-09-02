@@ -112,6 +112,13 @@ section {
   }
 }
 
+/* Mobile full-screen watch — hide logo, search, notifications, menu */
+@media (max-width: 1023px) {
+  html.watch-full header {
+    display: none !important;
+  }
+}
+
 /* Web: no top stroke / hairline on footer */
 @media (min-width: 640px) {
   footer {

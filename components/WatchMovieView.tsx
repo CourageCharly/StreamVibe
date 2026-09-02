@@ -554,8 +554,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     if (!fullView) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.classList.add("watch-full");
     return () => {
       document.body.style.overflow = prev;
+      document.documentElement.classList.remove("watch-full");
     };
   }, [fullView]);
 
