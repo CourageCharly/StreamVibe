@@ -143,16 +143,15 @@ section {
 }
 
 /**
- * Cinema / hero / player frame — 16:9 so the full movie (including the top)
- * fills the card. Fixed heights were shorter than 16:9 on web and cropped it.
+ * Cinema / hero / player frame.
+ * Mobile: taller so the picture is watchable. sm+: 16:9.
  */
 .cinema-frame,
 .cinema-frame.watch-fill {
   position: relative;
   width: 100%;
   min-width: 0;
-  height: auto;
-  aspect-ratio: 16 / 9;
+  height: min(88vw, 460px);
   overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
@@ -161,6 +160,8 @@ section {
 @media (min-width: 640px) {
   .cinema-frame,
   .cinema-frame.watch-fill {
+    height: auto;
+    aspect-ratio: 16 / 9;
     border-radius: 1rem;
   }
 }
