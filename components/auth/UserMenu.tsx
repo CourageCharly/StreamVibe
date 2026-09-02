@@ -25,22 +25,29 @@ export default function UserMenu({ user }: { user: AuthUser }) {
 
   useEffect(() => {
     if (!open) return;
-    const el = buttonRef.current;
-    if (el) {
+    const place = () => {
+      const el = buttonRef.current;
+      if (!el) return;
       const rect = el.getBoundingClientRect();
       setPos({
         top: rect.bottom + 8,
-        right: Math.max(8, window.innerWidth - rect.right),
+        // Flush with the avatar's right edge (clientWidth ignores the scrollbar).
+        right: document.documentElement.clientWidth - rect.right,
       });
-    }
+    };
+    place();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKey);
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
       document.body.style.overflow = prev;
     };
   }, [open]);

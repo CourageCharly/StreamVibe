@@ -400,7 +400,17 @@ function HeaderInner() {
 
           <div className="page-container flex flex-1 flex-col pb-10">
             <nav className="flex flex-col" aria-label="Mobile">
-              {NAV_LINKS.map((link) => {
+              {[
+                ...NAV_LINKS,
+                ...(status === "authenticated" && user
+                  ? ([
+                      { href: "/profile", label: "Profile" },
+                      { href: "/list", label: "My List / Favorites" },
+                      { href: "/history", label: "Watch History" },
+                      { href: "/settings", label: "Settings" },
+                    ] as const)
+                  : []),
+              ].map((link) => {
                 const active = isActive(link.href);
                 return (
                   <Link
@@ -415,28 +425,11 @@ function HeaderInner() {
                   </Link>
                 );
               })}
-              {status === "authenticated" && user
-                ? [
-                    { href: "/profile", label: "Profile" },
-                    { href: "/list", label: "My List / Favorites" },
-                    { href: "/history", label: "Watch History" },
-                    { href: "/settings", label: "Settings" },
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="border-b border-[#262626] py-4 text-[18px] font-medium text-white"
-                    >
-                      {item.label}
-                    </Link>
-                  ))
-                : null}
             </nav>
             {status === "authenticated" && user ? (
               <button
                 type="button"
-                className="mt-6 flex h-[49px] w-full items-center justify-center rounded-lg border border-[#262626] bg-[#141414] text-[14px] font-semibold text-[#E50000]"
+                className="mt-6 flex h-[49px] w-full items-center justify-center rounded-lg bg-[#E50000] text-[14px] font-semibold text-white"
                 onClick={() => {
                   setOpen(false);
                   router.replace("/");
