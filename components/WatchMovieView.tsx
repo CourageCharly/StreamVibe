@@ -29,7 +29,6 @@ import WatchPlayer, { CaptionTrack } from "@/components/WatchPlayer";
 import AuthPrompt from "@/components/auth/AuthPrompt";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
-import { useIsMobile } from "@/lib/use-mobile";
 import { useRouter } from "next/navigation";
 import {
   addWatchHistory,
@@ -307,7 +306,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   const { status } = useAuth();
   const canPlay = status === "authenticated";
   const [authOpen, setAuthOpen] = useState(false);
-  const isMobile = useIsMobile();
   const router = useRouter();
   // Watch route is the play screen — start on the player, not the static hero
   const [playing, setPlaying] = useState(() => Boolean(playKey));
@@ -510,19 +508,9 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     }
   }, [languages, subtitleLang]);
 
-  // Mobile: open full-screen once when playback starts; user can still exit.
-  const autoFullViewRef = useRef(false);
   useEffect(() => {
-    if (!playing) {
-      autoFullViewRef.current = false;
-      setFullView(false);
-      return;
-    }
-    if (isMobile && active?.videoKey && !autoFullViewRef.current) {
-      autoFullViewRef.current = true;
-      setFullView(true);
-    }
-  }, [isMobile, playing, active?.videoKey]);
+    if (!playing) setFullView(false);
+  }, [playing]);
 
   // Close language menu on outside click / Escape
   useEffect(() => {
