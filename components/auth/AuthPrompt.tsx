@@ -63,7 +63,7 @@ export default function AuthPrompt({
 
   return (
     <div
-      className="fixed inset-0 z-[300] overflow-hidden overscroll-none bg-black/70"
+      className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden overscroll-none bg-black/70 px-[5%] sm:px-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-prompt-title"
@@ -74,8 +74,7 @@ export default function AuthPrompt({
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative flex h-full max-h-full items-center justify-center overflow-hidden px-[5%] py-6 pt-[calc(var(--header-h)+1.25rem)] sm:px-6 sm:py-10">
-      <div className="relative max-h-[min(100%,calc(100dvh-var(--header-h)-2rem))] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
+      <div className="no-scrollbar relative z-10 max-h-[min(90dvh,calc(100dvh-2rem))] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
         <button
           type="button"
           onClick={onClose}
@@ -279,7 +278,6 @@ export default function AuthPrompt({
             />
           </div>
         ) : null}
-      </div>
       </div>
     </div>
   );

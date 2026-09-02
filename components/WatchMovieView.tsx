@@ -455,8 +455,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
     if (!canPlay) {
       setPlaying(false);
-      rememberReturnTo(watchPath);
-      setAuthOpen(true);
       return;
     }
     setPlaying(true);
@@ -996,7 +994,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   <Button
                     className="!h-[49px] !w-full max-w-2xl gap-2 px-8 text-[14px] sm:!h-[49px] sm:!w-auto sm:min-w-[140px] sm:max-w-none sm:px-6"
                     onClick={playNow}
-                    disabled={!playKey}
+                    disabled={!playKey && !firstEpisodePlayable}
                   >
                     <FaPlay className="h-3 w-3" />
                     Play Now
