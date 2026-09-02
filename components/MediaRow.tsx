@@ -15,8 +15,10 @@ export const MEDIA_CARD_H = 317;
 
 const COLLAGE_GAP = 6;
 const CARD_PAD = 16;
-/** Genre name row — 18px semibold; same on Our Genres and Popular */
+/** Genre name row — 18px semibold */
 const GENRE_TITLE_H = 40;
+/** Top 10 In (16px) above genre name */
+const TOP10_TITLE_H = 60;
 
 const TILE_OVERLAY =
   "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.35) 42%, rgba(26,26,26,0.88) 78%, #1A1A1A 100%)";
@@ -88,8 +90,9 @@ export default function MediaRow({
 
   if (!movies.length && !top10Cards.length) return null;
 
-  // Same collage + title metrics as Our Genres (equal top/bottom padding)
-  const { cellW, cellH, collageW, collageH } = collageMetrics(GENRE_TITLE_H);
+  const { cellW, cellH, collageW, collageH } = collageMetrics(
+    top10Label ? TOP10_TITLE_H : GENRE_TITLE_H,
+  );
 
   return (
     <div className="min-w-0">
@@ -173,16 +176,16 @@ export default function MediaRow({
                       );
                     })}
                   </div>
-                  <div className="mt-auto flex h-10 shrink-0 items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="shrink-0 rounded bg-cta px-2 py-0.5 text-[10px] font-semibold text-white">
-                        Top 10 In
-                      </span>
+                  <div className="mt-2 flex shrink-0 flex-col gap-1">
+                    <span className="w-fit rounded bg-cta px-2 py-0.5 text-[16px] font-semibold leading-none text-white">
+                      Top 10 In
+                    </span>
+                    <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-[18px] font-semibold leading-none text-white">
                         {item.name}
                       </span>
+                      <FiArrowRight className="h-5 w-5 shrink-0 text-white group-hover:text-cta" />
                     </div>
-                    <FiArrowRight className="h-5 w-5 shrink-0 text-white group-hover:text-cta" />
                   </div>
                 </Link>
               );

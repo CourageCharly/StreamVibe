@@ -839,18 +839,9 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 layout={fullView ? "fullscreen" : "frame"}
                 onCaptionTracks={handleCaptionTracks}
                 className="!absolute !inset-0 !h-full !w-full"
-              />
-
-              {/* Always-visible chrome — safe-area aware in mobile full view */}
-              <div
-                className={[
-                  "pointer-events-none absolute inset-x-0 top-0 z-30 px-2.5 pt-2.5 sm:px-5 sm:pt-4",
-                  fullView
-                    ? "pt-[max(0.625rem,env(safe-area-inset-top))] px-[max(0.625rem,env(safe-area-inset-right))]"
-                    : "",
-                ].join(" ")}
-              >
-                <div className="pointer-events-auto flex flex-nowrap items-center justify-end gap-1.5 sm:flex-wrap sm:gap-2">
+                keepChrome={langMenuOpen}
+                chrome={
+                <div className="flex flex-nowrap items-center justify-end gap-1.5 sm:flex-wrap sm:gap-2">
                   <button
                     type="button"
                     className={[
@@ -963,7 +954,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                     )}
                   </button>
                 </div>
-              </div>
+                }
+              />
             </div>
           ) : (
             <>

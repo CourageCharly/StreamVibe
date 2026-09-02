@@ -144,14 +144,14 @@ section {
 
 /**
  * Cinema / hero / player frame.
- * Mobile: taller so the picture is watchable. sm+: 16:9.
+ * Mobile: tall enough to watch. sm+: 16:9.
  */
 .cinema-frame,
 .cinema-frame.watch-fill {
   position: relative;
   width: 100%;
   min-width: 0;
-  height: min(88vw, 460px);
+  height: min(92vw, 500px);
   overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
@@ -403,58 +403,58 @@ body.scroll-locked::-webkit-scrollbar {
   min-height: 0;
 }
 
-/* Standard captions — centered, no box, inset from the player edges */
+/* Netflix-style captions — large white type, black edge, lower-center */
 .player-subtitles {
   position: absolute;
   left: 50%;
-  bottom: max(20%, 4.5rem);
+  bottom: 10%;
   z-index: 25;
-  width: calc(100% - 2rem);
-  max-width: 36rem;
+  width: min(90%, 44rem);
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.12em;
-  padding-inline: 0.5rem;
+  gap: 0.06em;
+  padding-inline: 0.75rem;
   box-sizing: border-box;
   text-align: center;
-  font-size: clamp(13px, 2.6cqh, 18px);
-  font-weight: 500;
-  line-height: 1.35;
+  font-size: clamp(18px, 4.4vw, 28px);
+  font-weight: 700;
+  line-height: 1.2;
   letter-spacing: 0.01em;
-  color: #fff;
+  color: #ffffff;
   text-shadow:
-    -1px -1px 0 rgba(0, 0, 0, 0.9),
-    1px -1px 0 rgba(0, 0, 0, 0.9),
-    -1px 1px 0 rgba(0, 0, 0, 0.9),
-    1px 1px 0 rgba(0, 0, 0, 0.9),
-    0 2px 6px rgba(0, 0, 0, 0.65);
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 8px rgba(0, 0, 0, 0.85);
   pointer-events: none;
 }
 
 @media (min-width: 640px) {
   .player-subtitles {
-    bottom: 16%;
-    width: min(calc(100% - 3rem), 38rem);
-    font-size: clamp(14px, 2.4cqh, 20px);
+    bottom: 12%;
+    width: min(calc(100% - 4rem), 48rem);
+    font-size: clamp(22px, 2.8vw, 36px);
   }
 }
 
 .player-subtitles--raised {
-  bottom: max(6.75rem, 28%);
+  bottom: max(5.25rem, 18%);
 }
 
 @media (min-width: 640px) {
   .player-subtitles--raised {
-    bottom: max(5.75rem, 20%);
+    bottom: max(5.5rem, 16%);
   }
 }
 
 .player-subtitles__line {
-  display: block;
-  width: 100%;
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
   text-align: center;
   margin-inline: auto;
 }

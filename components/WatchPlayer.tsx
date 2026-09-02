@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { FaPause, FaPlay } from "react-icons/fa";
 import { FiRotateCcw, FiRotateCw } from "react-icons/fi";
 import { cueTextAt, type CaptionCue } from "@/lib/caption-cues";
@@ -36,6 +43,10 @@ type Props = {
   layout?: "frame" | "fullscreen";
   onEnded?: () => void;
   onCaptionTracks?: (tracks: CaptionTrack[]) => void;
+  /** CC / language / mute / expand — hides with the progress bar */
+  chrome?: ReactNode;
+  /** Keep chrome visible (e.g. language menu open) */
+  keepChrome?: boolean;
 };
 
 function formatTime(sec: number): string {
@@ -65,6 +76,8 @@ export default function WatchPlayer({
   layout = "frame",
   onEnded,
   onCaptionTracks,
+  chrome,
+  keepChrome = false,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const coverBoxRef = useRef<HTMLDivElement>(null);
@@ -90,6 +103,8 @@ export default function WatchPlayer({
   const [coverSize, setCoverSize] = useState<{ w: number; h: number } | null>(
     null,
   );
+  const keepChromeRef = useRef(keepChrome);
+  const draggingRef = useRef(dragging);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -106,6 +121,12 @@ export default function WatchPlayer({
   useEffect(() => {
     subtitleLangRef.current = subtitleLang;
   }, [subtitleLang]);
+  useEffect(() => {
+    keepChromeRef.current = keepChrome;
+  }, [keepChrome]);
+  useEffect(() => {
+    draggingRef.current = dragging;
+  }, [dragging]);
 
   useEffect(() => {
     setMounted(true);
@@ -156,14 +177,18 @@ export default function WatchPlayer({
     setShowControls(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
-      // Keep controls visible while paused (standard streaming UX)
-      setShowControls((prev) => {
+      setShowControls(() => {
+        if (keepChromeRef.current || draggingRef.current) return true;
         const state = playerRef.current?.getPlayerState?.();
         if (state === YT_PAUSED || state === 0) return true;
         return false;
       });
     }, HIDE_MS);
   }, []);
+
+  useEffect(() => {
+    if (keepChrome) bumpControls();
+  }, [keepChrome, bumpControls]);
 
   // Progress / duration tick
   useEffect(() => {
@@ -546,9 +571,21 @@ export default function WatchPlayer({
           "absolute inset-0 z-20 transition-opacity duration-300",
           showControls
             ? "pointer-events-none opacity-100"
-            : "pointer-events-none opacity-0",
+            : "pointer-events-none opacity-0 [&>*]:!pointer-events-none",
         ].join(" ")}
       >
+        {chrome ? (
+          <div
+            className={[
+              "pointer-events-auto absolute inset-x-0 top-0 z-30 px-2.5 pt-2.5 sm:px-5 sm:pt-4",
+              layout === "fullscreen"
+                ? "pt-[max(0.625rem,env(safe-area-inset-top))] px-[max(0.625rem,env(safe-area-inset-right))]"
+                : "",
+            ].join(" ")}
+          >
+            {chrome}
+          </div>
+        ) : null}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-4 sm:gap-8">
           <button
             type="button"
@@ -605,10 +642,6 @@ export default function WatchPlayer({
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-            <div
-              className="mx-auto mb-2 min-h-[2.25rem] w-[min(80%,36rem)] text-center sm:mb-3 sm:min-h-[2.75rem]"
-              aria-hidden
-            />
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium tabular-nums text-white/90 sm:text-[12px]">
               <span>{formatTime(currentTime)}</span>
               <span className="rounded bg-black/50 px-1.5 py-0.5 text-white/95">
