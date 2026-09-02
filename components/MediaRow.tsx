@@ -19,14 +19,12 @@ const COLLAGE_GAP = 6;
 const CARD_PAD = 16;
 /** Genre name row — 18px semibold */
 const GENRE_TITLE_H = 40;
-/** Top 10 In (16px) above genre name */
-const TOP10_TITLE_H = 60;
 
 const TILE_OVERLAY =
   "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.35) 42%, rgba(26,26,26,0.88) 78%, #1A1A1A 100%)";
 
-function collageMetrics(titleBlock: number, cardH = MEDIA_CARD_H) {
-  const collageH = cardH - CARD_PAD * 2 - titleBlock;
+function collageMetrics(titleBlock: number) {
+  const collageH = MEDIA_CARD_H - CARD_PAD * 2 - titleBlock;
   const cellH = Math.floor((collageH - COLLAGE_GAP) / 2);
   const cellW = Math.floor((MEDIA_CARD_W - CARD_PAD * 2 - COLLAGE_GAP) / 2);
   return {
@@ -92,10 +90,7 @@ export default function MediaRow({
 
   if (!movies.length && !top10Cards.length) return null;
 
-  const { cellW, cellH, collageW, collageH } = collageMetrics(
-    top10Label ? TOP10_TITLE_H : GENRE_TITLE_H,
-    top10Label ? TOP10_CARD_H : MEDIA_CARD_H,
-  );
+  const { cellW, cellH, collageW, collageH } = collageMetrics(GENRE_TITLE_H);
 
   return (
     <div className="min-w-0">
@@ -179,7 +174,7 @@ export default function MediaRow({
                       );
                     })}
                   </div>
-                  <div className="mt-2 flex shrink-0 flex-col gap-1">
+                  <div className="mt-2 flex shrink-0 flex-col gap-3">
                     <span className="w-fit rounded bg-cta px-2 py-0.5 text-[16px] font-semibold leading-none text-white">
                       Top 10 In
                     </span>
