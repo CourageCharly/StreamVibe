@@ -12,6 +12,8 @@ import { useRowSlider } from "@/lib/use-row-slider";
 /** Design card size: 285 × 317, 4 visible in a row */
 export const MEDIA_CARD_W = 285;
 export const MEDIA_CARD_H = 317;
+/** Popular Top 10 — slightly taller for stacked Top 10 In + genre name */
+const TOP10_CARD_H = 348;
 
 const COLLAGE_GAP = 6;
 const CARD_PAD = 16;
@@ -23,8 +25,8 @@ const TOP10_TITLE_H = 60;
 const TILE_OVERLAY =
   "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.35) 42%, rgba(26,26,26,0.88) 78%, #1A1A1A 100%)";
 
-function collageMetrics(titleBlock: number) {
-  const collageH = MEDIA_CARD_H - CARD_PAD * 2 - titleBlock;
+function collageMetrics(titleBlock: number, cardH = MEDIA_CARD_H) {
+  const collageH = cardH - CARD_PAD * 2 - titleBlock;
   const cellH = Math.floor((collageH - COLLAGE_GAP) / 2);
   const cellW = Math.floor((MEDIA_CARD_W - CARD_PAD * 2 - COLLAGE_GAP) / 2);
   return {
@@ -92,6 +94,7 @@ export default function MediaRow({
 
   const { cellW, cellH, collageW, collageH } = collageMetrics(
     top10Label ? TOP10_TITLE_H : GENRE_TITLE_H,
+    top10Label ? TOP10_CARD_H : MEDIA_CARD_H,
   );
 
   return (
@@ -127,7 +130,7 @@ export default function MediaRow({
                   key={`top10-${item.key}`}
                   href={`${basePath}?category=${item.key}`}
                   className="group flex shrink-0 flex-col overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0F0F0F] p-4"
-                  style={{ width: MEDIA_CARD_W, height: MEDIA_CARD_H }}
+                  style={{ width: MEDIA_CARD_W, height: TOP10_CARD_H }}
                 >
                   {/* Fixed integer 2×2 — full overlay cover on mobile + web */}
                   <div
