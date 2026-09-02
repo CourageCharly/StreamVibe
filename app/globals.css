@@ -143,36 +143,26 @@ section {
 }
 
 /**
- * Cinema / hero / player frame — original heights, not reduced on mobile.
+ * Cinema / hero / player frame — 16:9 so the full movie (including the top)
+ * fills the card. Fixed heights were shorter than 16:9 on web and cropped it.
  */
-.cinema-frame {
+.cinema-frame,
+.cinema-frame.watch-fill {
   position: relative;
   width: 100%;
   min-width: 0;
-  height: min(88vw, 460px);
+  height: auto;
+  aspect-ratio: 16 / 9;
   overflow: hidden !important;
   background: #000;
   border-radius: 0.75rem;
 }
 
 @media (min-width: 640px) {
-  .cinema-frame {
-    height: 480px;
+  .cinema-frame,
+  .cinema-frame.watch-fill {
     border-radius: 1rem;
   }
-}
-
-@media (min-width: 1024px) {
-  .cinema-frame {
-    height: 560px;
-  }
-}
-
-/* Watch player — full content width, 16:9 so the picture fills the frame */
-.cinema-frame.watch-fill {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
 }
 
 

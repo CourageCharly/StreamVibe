@@ -89,9 +89,7 @@ export default function FastTrailerPlayer({
         h = height;
         w = height * videoRatio;
       }
-      // Overscan so fill is complete (no letterbox / edge gaps)
-      const pad = 1.12;
-      setCoverSize({ w: w * pad, h: h * pad });
+      setCoverSize({ w, h });
     };
 
     apply();
@@ -163,8 +161,7 @@ export default function FastTrailerPlayer({
                     h = height;
                     w = height * videoRatio;
                   }
-                  const pad = 1.12;
-                  setCoverSize({ w: w * pad, h: h * pad });
+                  setCoverSize({ w, h });
                 }
               }
             } catch {
