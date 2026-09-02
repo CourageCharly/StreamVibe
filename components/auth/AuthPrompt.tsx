@@ -63,7 +63,7 @@ export default function AuthPrompt({
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden overscroll-none bg-black/70 px-[5%] sm:px-6"
+      className="no-scrollbar fixed inset-0 z-[300] flex items-center justify-center overflow-hidden overscroll-none bg-black/70 px-[5%] sm:px-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-prompt-title"
@@ -74,15 +74,20 @@ export default function AuthPrompt({
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="no-scrollbar relative z-10 max-h-[min(90dvh,calc(100dvh-2rem))] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-2xl border border-[#262626] bg-[#0F0F0F] p-5 shadow-2xl sm:p-6 md:p-8">
+      {/* Outer clips any residual scrollbar; inner still scrolls. */}
+      <div className="relative z-10 max-h-[min(90dvh,calc(100dvh-2rem))] w-full max-w-[640px] overflow-hidden rounded-2xl border border-[#262626] bg-[#0F0F0F] shadow-2xl">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-[#999999] outline-none transition hover:bg-[#141414] hover:text-white"
+          className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-lg text-[#999999] outline-none transition hover:bg-[#141414] hover:text-white"
           aria-label="Close"
         >
           <FiX className="h-5 w-5" />
         </button>
+        <div
+          className="no-scrollbar max-h-[min(90dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain p-5 sm:p-6 md:p-8 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
 
         {mode === "choice" ? (
           <div className="space-y-4">
@@ -278,6 +283,7 @@ export default function AuthPrompt({
             />
           </div>
         ) : null}
+        </div>
       </div>
     </div>
   );

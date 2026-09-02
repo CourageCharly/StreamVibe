@@ -312,6 +312,39 @@ a:disabled,
   display: none;
 }
 
+/* Hide scrollbars while keeping overflow scroll (Windows + WebKit + Firefox). */
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+.no-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar-thumb,
+.no-scrollbar::-webkit-scrollbar-track,
+.no-scrollbar::-webkit-scrollbar-corner {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Body lock must beat mobile html { overflow-y: auto !important } */
+html.scroll-locked,
+html.scroll-locked body,
+body.scroll-locked {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html.scroll-locked::-webkit-scrollbar,
+html.scroll-locked body::-webkit-scrollbar,
+body.scroll-locked::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
 @media (max-width: 1023px) {
   .categories-row {
     display: flex;
