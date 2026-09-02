@@ -827,8 +827,8 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           ].join(" ")}
         >
           {playing && active?.videoKey ? (
-            <div className="absolute inset-0 z-0 h-full w-full min-h-full min-w-full overflow-hidden bg-black">
-              {/* Video fills the container — no dim overlays on playing screen */}
+            <div className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-black">
+              {/* Same cinema fill as Movies & Shows / detail heroes */}
               <WatchPlayer
                 key={active.videoKey + active.id}
                 videoKey={active.videoKey}

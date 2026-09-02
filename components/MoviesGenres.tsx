@@ -137,8 +137,8 @@ export default function MoviesGenres({
                 })}
               </div>
 
-              <div className="mt-auto flex shrink-0 items-center justify-between gap-2 pt-3">
-                <span className="truncate text-[18px] font-semibold text-white sm:text-[20px]">
+              <div className="mt-auto flex h-10 shrink-0 items-center justify-between gap-2">
+                <span className="truncate text-[18px] font-semibold leading-none text-white">
                   {cat.name}
                 </span>
                 <FiArrowRight className="h-5 w-5 shrink-0 text-white group-hover:text-cta" />

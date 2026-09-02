@@ -111,7 +111,7 @@ export default function WatchPlayer({
     setMounted(true);
   }, []);
 
-  // Fill the player box: 16:9 frame uses the full width; fullscreen covers the viewport.
+  // Same cover fill as Movies & Shows / detail cinema players.
   useEffect(() => {
     if (!mounted) return;
     const el = coverBoxRef.current;
@@ -121,10 +121,6 @@ export default function WatchPlayer({
       const width = el.clientWidth;
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
-      if (layout === "frame") {
-        setCoverSize({ w: width, h: height });
-        return;
-      }
       const videoRatio = 16 / 9;
       const boxRatio = width / height;
       let w: number;
@@ -306,13 +302,23 @@ export default function WatchPlayer({
               else e.target.unMute();
               e.target.playVideo();
               setIsPlaying(true);
-              // Remeasure cover after iframe mounts (esp. mobile)
               if (coverBoxRef.current) {
                 const box = coverBoxRef.current;
                 const width = box.clientWidth;
                 const height = box.clientHeight;
                 if (width > 0 && height > 0) {
-                  setCoverSize({ w: width, h: height });
+                  const videoRatio = 16 / 9;
+                  const boxRatio = width / height;
+                  let w: number;
+                  let h: number;
+                  if (boxRatio > videoRatio) {
+                    w = width;
+                    h = width / videoRatio;
+                  } else {
+                    h = height;
+                    w = height * videoRatio;
+                  }
+                  setCoverSize({ w, h });
                 }
               }
               // Retry captions — tracks often appear after a short delay
@@ -485,27 +491,20 @@ export default function WatchPlayer({
     >
       <div
         className={[
-          layout === "frame"
-            ? "pointer-events-none absolute inset-0 h-full w-full"
-            : "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+          "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
           "[&_iframe]:!h-full [&_iframe]:!w-full",
-          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none",
-          layout === "frame"
-            ? "[&_iframe]:!min-h-0 [&_iframe]:!min-w-0"
-            : "[&_iframe]:!min-h-full [&_iframe]:!min-w-full",
+          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none [&_iframe]:!min-h-full [&_iframe]:!min-w-full",
           "[&_iframe]:!border-0",
           "[&_iframe]:!pointer-events-none",
         ].join(" ")}
         style={
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
-            : layout === "frame"
-              ? { width: "100%", height: "100%" }
-              : {
-                  width: "max(100cqw, 177.78cqh)",
-                  height: "max(100cqh, 56.25cqw)",
-                }
+            : {
+                width: "max(100cqw, 177.78cqh)",
+                height: "max(100cqh, 56.25cqw)",
+              }
         }
       >
         <div
