@@ -490,7 +490,10 @@ export default function WatchPlayer({
             : "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
           "[&_iframe]:!h-full [&_iframe]:!w-full",
-          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none [&_iframe]:!min-h-full [&_iframe]:!min-w-full",
+          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none",
+          layout === "frame"
+            ? "[&_iframe]:!min-h-0 [&_iframe]:!min-w-0"
+            : "[&_iframe]:!min-h-full [&_iframe]:!min-w-full",
           "[&_iframe]:!border-0",
           "[&_iframe]:!pointer-events-none",
         ].join(" ")}

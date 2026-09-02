@@ -61,8 +61,8 @@ function SettingsInner() {
             Settings
           </h1>
           <p className="mt-2 text-[14px] text-[#999999] sm:text-[16px]">
-            Manage your StreamVibe account the way you would on IMDb — by
-            category.
+            Manage your account, preferences, and StreamVibe experience in one
+            place.
           </p>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-[#262626] bg-[#1A1A1A]">

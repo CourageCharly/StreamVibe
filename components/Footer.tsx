@@ -64,7 +64,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col-reverse items-start justify-between gap-4 pt-6 text-[14px] font-medium text-[#999999] sm:mt-12 sm:flex-row sm:items-center">
-          <p className="shrink-0">@2026 streamvib, All Rights Reserved</p>
+          <p className="shrink-0">@2026 streamvibe, All Rights Reserved.</p>
           <div className="flex flex-wrap gap-x-4 gap-y-2 sm:gap-x-6">
             <Link
               href="/terms"

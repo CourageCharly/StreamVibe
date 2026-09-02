@@ -823,7 +823,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                   "h-[100svh] h-[100dvh] max-h-[100dvh]",
                   "w-[100vw] max-w-[100vw] min-h-0 min-w-0",
                 ].join(" ")
-              : "cinema-frame",
+              : "cinema-frame watch-fill",
           ].join(" ")}
         >
           {playing && active?.videoKey ? (
@@ -838,7 +838,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 subtitleLang={subtitleLang}
                 layout={fullView ? "fullscreen" : "frame"}
                 onCaptionTracks={handleCaptionTracks}
-                className="!absolute !inset-0 !h-full !w-full !min-h-full !min-w-full"
+                className="!absolute !inset-0 !h-full !w-full"
               />
 
               {/* Always-visible chrome — safe-area aware in mobile full view */}
