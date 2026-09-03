@@ -16,7 +16,12 @@ import {
   type BillingCycle,
   type PlanKey,
 } from "@/lib/subscription";
-import { loadPaystack, paystackAmount, paystackPublicKey } from "@/lib/paystack";
+import {
+  loadPaystack,
+  paystackAmount,
+  paystackCurrency,
+  paystackPublicKey,
+} from "@/lib/paystack";
 import { readReturnTo, clearReturnTo } from "@/lib/auth/return-to";
 
 function isPlanKey(value: string | null): value is PlanKey {
@@ -54,11 +59,12 @@ function CheckoutInner() {
     try {
       const pop = await loadPaystack();
       const ref = `sv-${plan.key}-${billing}-${Date.now()}`;
+      const currency = paystackCurrency();
       const handler = pop.setup({
         key,
         email: user.email,
-        amount: paystackAmount(price),
-        currency: "USD",
+        amount: paystackAmount(price, currency),
+        currency,
         ref,
         metadata: {
           plan: plan.key,

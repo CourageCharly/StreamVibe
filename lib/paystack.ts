@@ -1,5 +1,17 @@
+const TEST_PUBLIC_KEY =
+  "pk_test_439d03450468cf1c707b0eb9df2df27cd18ba691";
+
 export function paystackPublicKey() {
-  return (process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? "").trim();
+  return (
+    process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY?.trim() || TEST_PUBLIC_KEY
+  );
+}
+
+export function paystackCurrency() {
+  const value = (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY ?? "NGN")
+    .trim()
+    .toUpperCase();
+  return value || "NGN";
 }
 
 type PaystackHandler = {
@@ -53,7 +65,11 @@ export function loadPaystack(): Promise<PaystackPop> {
   });
 }
 
-/** Amount in the smallest currency unit (cents for USD). */
-export function paystackAmount(usd: number) {
+/** Amount in the smallest currency unit (kobo for NGN, cents for USD). */
+export function paystackAmount(usd: number, currency = paystackCurrency()) {
+  if (currency === "NGN") {
+    // UI prices are USD; charge the same figures in naira for test (9.99 → ₦999).
+    return Math.round(usd * 100 * 100);
+  }
   return Math.round(usd * 100);
 }
