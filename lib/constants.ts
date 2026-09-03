@@ -343,6 +343,7 @@ export const FAQS: {
 
 export const PLANS = [
   {
+    key: "basic",
     name: "Basic Plan",
     shortName: "Basic",
     description:
@@ -364,6 +365,7 @@ export const PLANS = [
     },
   },
   {
+    key: "standard",
     name: "Standard Plan",
     shortName: "Standard",
     description:
@@ -385,6 +387,7 @@ export const PLANS = [
     },
   },
   {
+    key: "premium",
     name: "Premium Plan",
     shortName: "Premium",
     description:

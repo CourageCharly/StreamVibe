@@ -64,15 +64,17 @@ export function LoginPage() {
   const fromAuth = params.get("from") === "auth";
 
   if (status === "authenticated") {
+    const next = returnTo;
     clearReturnTo();
-    router.replace("/");
+    router.replace(next);
     return <HomeSkeleton />;
   }
 
   async function done() {
     await refresh();
+    const next = returnTo;
     clearReturnTo();
-    router.replace("/");
+    router.replace(next);
   }
 
   return (

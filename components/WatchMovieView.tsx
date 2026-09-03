@@ -27,8 +27,10 @@ import ReviewsSection from "@/components/ReviewsSection";
 import SeasonsAndEpisodes from "@/components/SeasonsAndEpisodes";
 import WatchPlayer, { CaptionTrack } from "@/components/WatchPlayer";
 import AuthPrompt from "@/components/auth/AuthPrompt";
+import DailyLimitModal from "@/components/DailyLimitModal";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
+import { canStartWatch, recordWatchStart } from "@/lib/subscription";
 import { useRouter } from "next/navigation";
 import {
   addWatchHistory,
@@ -305,10 +307,25 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
 
   const { status } = useAuth();
   const canPlay = status === "authenticated";
+  const watchKind = movie.mediaType === "tv" ? "tv" : "movie";
+  const watchPath = `${watchKind === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
+
+  const gateWatch = useCallback(() => {
+    if (!canStartWatch(movie.id, watchKind)) {
+      rememberReturnTo(watchPath);
+      setLimitOpen(true);
+      setPlaying(false);
+      return false;
+    }
+    recordWatchStart(movie.id, watchKind);
+    return true;
+  }, [movie.id, watchKind, watchPath]);
   const [authOpen, setAuthOpen] = useState(false);
   const router = useRouter();
   // Watch route is the play screen — start on the player, not the static hero
-  const [playing, setPlaying] = useState(() => Boolean(playKey));
+  const [playing, setPlaying] = useState(false);
+  const [limitOpen, setLimitOpen] = useState(false);
+  const autoWatchTried = useRef(false);
   const [active, setActive] = useState<Playable | null>(defaultPlayable);
   const [muted, setMuted] = useState(false);
   // Subtitles on by default (web + mobile + full view)
@@ -445,15 +462,21 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     }
   }, [playing, active, movie.id, movie.mediaType]);
 
+  useEffect(() => {
+    autoWatchTried.current = false;
+  }, [movie.id]);
+
   // Keep the player up after auth; guests still get the login gate
   useEffect(() => {
     if (!playKey && !firstEpisodePlayable) return;
     if (status === "loading") return;
-    const watchPath = `${movie.mediaType === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
     if (!canPlay) {
       setPlaying(false);
       return;
     }
+    if (autoWatchTried.current) return;
+    autoWatchTried.current = true;
+    if (!gateWatch()) return;
     setPlaying(true);
     if (!active?.videoKey) {
       setActive(
@@ -474,10 +497,11 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     firstEpisodePlayable,
     movie.title,
     movie.id,
-    movie.mediaType,
     canPlay,
     status,
     active?.videoKey,
+    gateWatch,
+    watchPath,
   ]);
 
   useEffect(() => {
@@ -741,6 +765,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       setAuthOpen(true);
       return;
     }
+    if (!gateWatch()) return;
     setActive(
       firstEpisodePlayable ?? {
         id: "main",
@@ -749,7 +774,6 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       },
     );
     setPlaying(true);
-    // User gesture — can unmute for full movie watch
     setMuted(false);
     addWatchHistory({
       id: movie.id,
@@ -763,6 +787,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     movie.id,
     movie.mediaType,
     canPlay,
+    gateWatch,
   ]);
 
   const playEpisode = useCallback(
@@ -780,6 +805,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         movie.videos?.find((v) => v.key)?.key ||
         null;
       if (!key) return;
+      if (!gateWatch()) return;
       setActive({
         id: `s${season.seasonNumber}e${ep.episodeNumber}`,
         title: ep.title,
@@ -792,7 +818,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
-    [playKey, movie.videos, canPlay, movie.mediaType, movie.id],
+    [playKey, movie.videos, canPlay, movie.mediaType, movie.id, gateWatch],
   );
 
   return (
@@ -1200,6 +1226,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
         onAuthenticated={() => {
           setAuthOpen(false);
           if (!playKey && !firstEpisodePlayable) return;
+          if (!gateWatch()) return;
           setActive(
             firstEpisodePlayable ?? {
               id: "main",
@@ -1214,6 +1241,10 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
             path: `${isShow ? "/shows" : "/movies"}/${movie.id}/watch`,
           });
         }}
+      />
+      <DailyLimitModal
+        open={limitOpen}
+        onClose={() => setLimitOpen(false)}
       />
     </div>
   );

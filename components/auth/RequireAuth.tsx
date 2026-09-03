@@ -26,7 +26,8 @@ export default function RequireAuth({
       router.replace("/");
       return;
     }
-    const next = sanitizeReturnTo(pathname);
+    const path = `${window.location.pathname}${window.location.search}`;
+    const next = sanitizeReturnTo(path);
     rememberReturnTo(next);
     router.replace(`/login?returnTo=${encodeURIComponent(next)}`);
   }, [status, pathname, router]);

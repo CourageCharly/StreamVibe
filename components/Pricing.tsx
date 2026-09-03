@@ -2,16 +2,11 @@
 
 import { useState } from "react";
 import { PLANS } from "@/lib/constants";
+import { checkoutHref, type BillingCycle } from "@/lib/subscription";
 import SectionHeading from "./SectionHeading";
 import Button from "@/components/ui/Button";
 
 type Props = {
-  /**
-   * Choose Plan destination.
-   * Home: `/subscriptions?from=pricing` → back to /#pricing.
-   * Nav / subscriptions page: plain `/subscriptions` (no arrow).
-   */
-  choosePlanHref?: string | null;
   /**
    * Start Free Trial destination.
    * Home: `/movies?from=pricing` or `/movies?from=free-trial` → section back.
@@ -30,7 +25,6 @@ type Props = {
  * Design matches Subscription Page - Laptop.png / homepage pricing.
  */
 export default function Pricing({
-  choosePlanHref = "/subscriptions",
   trialHref = "/movies",
   billing: billingProp,
   onBillingChange,
@@ -39,7 +33,7 @@ export default function Pricing({
   const [internalBilling, setInternalBilling] = useState<"monthly" | "yearly">(
     "monthly",
   );
-  const billing = billingProp ?? internalBilling;
+  const billing: BillingCycle = billingProp ?? internalBilling;
   const setBilling = onBillingChange ?? setInternalBilling;
 
   return (
@@ -125,14 +119,9 @@ export default function Pricing({
                   Start Free Trial
                 </Button>
                 <Button
-                  href={choosePlanHref || undefined}
+                  href={checkoutHref(plan.key, billing)}
                   variant="primary"
-                  className={[
-                    "!w-full min-w-0 max-w-none shrink sm:!w-[149px]",
-                    !choosePlanHref ? "!cursor-default pointer-events-none" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
+                  className="!w-full min-w-0 max-w-none shrink sm:!w-[149px]"
                 >
                   Choose Plan
                 </Button>

@@ -38,10 +38,7 @@ export default async function HomePage() {
       <Categories categoryMovies={categories} />
       <Devices />
       <FAQ askHref="/support?from=faq#contact" />
-      <Pricing
-        choosePlanHref="/subscriptions?from=pricing"
-        trialHref="/movies?from=pricing"
-      />
+      <Pricing trialHref="/movies?from=pricing" />
       <FreeTrialBanner
         posters={bannerPosters}
         ctaHref="/movies?from=free-trial"
