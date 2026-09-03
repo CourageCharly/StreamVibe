@@ -131,7 +131,7 @@ function CheckoutInner() {
             {plan.description}
           </p>
           <p className="mt-5 text-[24px] font-bold text-white sm:text-[28px]">
-            ₦{price.toFixed(2)}
+            ₦ {price.toFixed(2)}
             <span className="ml-1 text-[14px] font-normal text-[#999999]">
               /{period}
             </span>

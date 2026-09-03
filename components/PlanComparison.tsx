@@ -19,7 +19,7 @@ function planValue(
   if (key === "price") {
     const price =
       billing === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-    return `₦${price.toFixed(2)}/${period}`;
+    return `₦ ${price.toFixed(2)}/${period}`;
   }
   return plan.features[key];
 }
