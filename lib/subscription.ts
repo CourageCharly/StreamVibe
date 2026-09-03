@@ -27,6 +27,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 const SUB_KEY = "streamvibe:subscription";
 const WATCH_DAY_KEY = "streamvibe:watch-day";
+const WATCH_QUOTA_KEY = "sv-daily-watch-v3";
+
+type QuotaStore = Record<string, DayWatchLog>;
+
+let quotaMem: QuotaStore | null = null;
 
 function emit() {
   if (typeof window === "undefined") return;
@@ -100,34 +105,79 @@ function emptyLog(): DayWatchLog {
   return { startedAt: 0, resetAt: 0, ids: [] };
 }
 
+function quotaUid(userId?: string | null) {
+  return (userId ?? "").trim() || storageUserId() || "anon";
+}
+
+function readQuotaStore(): QuotaStore {
+  if (quotaMem) return quotaMem;
+  if (typeof window === "undefined") return {};
+  try {
+    const raw =
+      localStorage.getItem(WATCH_QUOTA_KEY) ||
+      sessionStorage.getItem(WATCH_QUOTA_KEY);
+    quotaMem = raw ? (JSON.parse(raw) as QuotaStore) : {};
+    if (!quotaMem || typeof quotaMem !== "object") quotaMem = {};
+    return quotaMem;
+  } catch {
+    quotaMem = {};
+    return quotaMem;
+  }
+}
+
+function writeQuotaStore(store: QuotaStore) {
+  quotaMem = store;
+  if (typeof window === "undefined") return;
+  const raw = JSON.stringify(store);
+  try {
+    localStorage.setItem(WATCH_QUOTA_KEY, raw);
+  } catch {
+    /* private mode */
+  }
+  try {
+    sessionStorage.setItem(WATCH_QUOTA_KEY, raw);
+  } catch {
+    /* private mode */
+  }
+}
+
+function normalizeLog(parsed: DayWatchLog & { date?: string }): DayWatchLog {
+  const ids = Array.isArray(parsed.ids)
+    ? parsed.ids.filter((id) => typeof id === "string")
+    : [];
+  let startedAt = Number(parsed.startedAt) || 0;
+  let resetAt = Number(parsed.resetAt) || 0;
+  if (!startedAt && parsed.date) {
+    const start = new Date(`${parsed.date}T00:00:00`).getTime();
+    if (Number.isFinite(start)) {
+      startedAt = start;
+      resetAt = start + DAY_MS;
+    }
+  }
+  if (!startedAt || !resetAt || Date.now() >= resetAt) return emptyLog();
+  return { startedAt, resetAt, ids };
+}
+
 function readDayLog(userId?: string | null): DayWatchLog {
   const empty = emptyLog();
   if (typeof window === "undefined") return empty;
+  const uid = quotaUid(userId);
+  const store = readQuotaStore();
+  if (store[uid]) return normalizeLog(store[uid]);
   try {
-    const raw = localStorage.getItem(scoped(WATCH_DAY_KEY, userId));
-    if (!raw) return empty;
-    const parsed = JSON.parse(raw) as DayWatchLog & { date?: string };
-    const ids = Array.isArray(parsed.ids)
-      ? parsed.ids.filter((id) => typeof id === "string")
-      : [];
-    let startedAt = Number(parsed.startedAt) || 0;
-    let resetAt = Number(parsed.resetAt) || 0;
-    if (!startedAt && parsed.date) {
-      const start = new Date(`${parsed.date}T00:00:00`).getTime();
-      if (Number.isFinite(start)) {
-        startedAt = start;
-        resetAt = start + DAY_MS;
-      }
-    }
-    if (!startedAt || !resetAt) return empty;
-    if (Date.now() >= resetAt) return empty;
-    return { startedAt, resetAt, ids };
+    const legacy = localStorage.getItem(scoped(WATCH_DAY_KEY, userId));
+    if (!legacy) return empty;
+    return normalizeLog(JSON.parse(legacy) as DayWatchLog & { date?: string });
   } catch {
     return empty;
   }
 }
 
 function writeDayLog(log: DayWatchLog, userId?: string | null) {
+  const uid = quotaUid(userId);
+  const store = readQuotaStore();
+  store[uid] = log;
+  writeQuotaStore(store);
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(scoped(WATCH_DAY_KEY, userId), JSON.stringify(log));
@@ -153,7 +203,6 @@ export function canStartWatch(
   kind: "movie" | "tv",
   userId?: string | null,
 ) {
-  if (hasActiveSubscription(userId)) return true;
   const log = readDayLog(userId);
   const key = titleKey(id, kind);
   if (log.ids.includes(key)) return true;
@@ -165,7 +214,6 @@ export function recordWatchStart(
   kind: "movie" | "tv",
   userId?: string | null,
 ) {
-  if (hasActiveSubscription(userId)) return;
   const log = readDayLog(userId);
   const key = titleKey(id, kind);
   if (log.ids.includes(key)) return;

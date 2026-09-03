@@ -84,6 +84,7 @@ type Props = {
   /** frame = in-page theater; fullscreen = viewport — both fill actual box size */
   layout?: "frame" | "fullscreen";
   onEnded?: () => void;
+  onPlaybackStart?: () => void;
   onCaptionTracks?: (tracks: CaptionTrack[]) => void;
   /** CC / language / mute / expand — hides with the progress bar */
   chrome?: ReactNode;
@@ -117,6 +118,7 @@ export default function WatchPlayer({
   className = "",
   layout = "frame",
   onEnded,
+  onPlaybackStart,
   onCaptionTracks,
   chrome,
   keepChrome = false,
@@ -127,6 +129,7 @@ export default function WatchPlayer({
   const readyRef = useRef(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onEndedRef = useRef(onEnded);
+  const onPlaybackStartRef = useRef(onPlaybackStart);
   const onTracksRef = useRef(onCaptionTracks);
   const mutedRef = useRef(muted);
   const subtitlesOnRef = useRef(subtitlesOn);
@@ -152,6 +155,9 @@ export default function WatchPlayer({
   useEffect(() => {
     onEndedRef.current = onEnded;
   }, [onEnded]);
+  useEffect(() => {
+    onPlaybackStartRef.current = onPlaybackStart;
+  }, [onPlaybackStart]);
   useEffect(() => {
     onTracksRef.current = onCaptionTracks;
   }, [onCaptionTracks]);
@@ -360,6 +366,7 @@ export default function WatchPlayer({
               else e.target.unMute();
               e.target.playVideo();
               setIsPlaying(true);
+              onPlaybackStartRef.current?.();
               if (coverBoxRef.current) {
                 const box = coverBoxRef.current;
                 const width = box.clientWidth;
@@ -388,6 +395,7 @@ export default function WatchPlayer({
             if (cancelled) return;
             if (e.data === YT_PLAYING) {
               setIsPlaying(true);
+              onPlaybackStartRef.current?.();
               try {
                 if (mutedRef.current) e.target.mute();
                 else e.target.unMute();

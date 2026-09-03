@@ -30,6 +30,7 @@ import AuthPrompt from "@/components/auth/AuthPrompt";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useWatchLimit } from "@/components/WatchLimitProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
+import { recordWatchStart } from "@/lib/subscription";
 import { useRouter } from "next/navigation";
 import {
   addWatchHistory,
@@ -304,7 +305,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       ? { id: "main", title: movie.title, videoKey: playKey }
       : null;
 
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   const { tryWatch } = useWatchLimit();
   const canPlay = status === "authenticated";
   const watchKind = movie.mediaType === "tv" ? "tv" : "movie";
@@ -877,6 +878,9 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
                 subtitlesOn={subtitlesOn}
                 subtitleLang={subtitleLang}
                 layout={fullView ? "fullscreen" : "frame"}
+                onPlaybackStart={() =>
+                  recordWatchStart(movie.id, watchKind, user?.id)
+                }
                 onCaptionTracks={handleCaptionTracks}
                 className="!absolute !inset-0 !h-full !w-full"
                 keepChrome={langMenuOpen}
