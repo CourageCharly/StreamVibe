@@ -18,9 +18,12 @@ export type SavedSubscription = {
 };
 
 type DayWatchLog = {
-  date: string;
+  startedAt: number;
+  resetAt: number;
   ids: string[];
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const SUB_KEY = "streamvibe:subscription";
 const WATCH_DAY_KEY = "streamvibe:watch-day";
@@ -28,14 +31,6 @@ const WATCH_DAY_KEY = "streamvibe:watch-day";
 function emit() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new Event(SUB_EVENT));
-}
-
-function todayStamp() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
 }
 
 function titleKey(id: number, kind: "movie" | "tv") {
@@ -100,19 +95,32 @@ export function saveSubscription(sub: SavedSubscription) {
   }
 }
 
+function emptyLog(): DayWatchLog {
+  return { startedAt: 0, resetAt: 0, ids: [] };
+}
+
 function readDayLog(): DayWatchLog {
-  const empty: DayWatchLog = { date: todayStamp(), ids: [] };
+  const empty = emptyLog();
   if (typeof window === "undefined") return empty;
   try {
     const raw = localStorage.getItem(scoped(WATCH_DAY_KEY));
     if (!raw) return empty;
-    const parsed = JSON.parse(raw) as DayWatchLog;
-    if (!parsed?.date || !Array.isArray(parsed.ids)) return empty;
-    if (parsed.date !== todayStamp()) return empty;
-    return {
-      date: parsed.date,
-      ids: parsed.ids.filter((id) => typeof id === "string"),
-    };
+    const parsed = JSON.parse(raw) as DayWatchLog & { date?: string };
+    const ids = Array.isArray(parsed.ids)
+      ? parsed.ids.filter((id) => typeof id === "string")
+      : [];
+    let startedAt = Number(parsed.startedAt) || 0;
+    let resetAt = Number(parsed.resetAt) || 0;
+    if (!startedAt && parsed.date) {
+      const start = new Date(`${parsed.date}T00:00:00`).getTime();
+      if (Number.isFinite(start)) {
+        startedAt = start;
+        resetAt = start + DAY_MS;
+      }
+    }
+    if (!startedAt || !resetAt) return empty;
+    if (Date.now() >= resetAt) return empty;
+    return { startedAt, resetAt, ids };
   } catch {
     return empty;
   }
@@ -131,12 +139,11 @@ export function todayWatchCount() {
   return readDayLog().ids.length;
 }
 
-/** Paid users are unlimited. Free users may start a title already counted today, or a new one under the cap. */
-export function canStartWatch(id: number, kind: "movie" | "tv") {
+/** Paid users are unlimited. At 10/10, every watch is blocked until the 24h reset. */
+export function canStartWatch(_id: number, _kind: "movie" | "tv") {
   if (hasActiveSubscription()) return true;
   const log = readDayLog();
-  const key = titleKey(id, kind);
-  if (log.ids.includes(key)) return true;
+  if (!log.startedAt) return true;
   return log.ids.length < DAILY_WATCH_LIMIT;
 }
 
@@ -144,12 +151,33 @@ export function recordWatchStart(id: number, kind: "movie" | "tv") {
   if (hasActiveSubscription()) return;
   const log = readDayLog();
   const key = titleKey(id, kind);
-  if (log.ids.includes(key)) return;
   if (log.ids.length >= DAILY_WATCH_LIMIT) return;
-  writeDayLog({ date: todayStamp(), ids: [...log.ids, key] });
+  if (log.ids.includes(key)) return;
+  const now = Date.now();
+  const startedAt = log.startedAt || now;
+  writeDayLog({
+    startedAt,
+    resetAt: log.resetAt || startedAt + DAY_MS,
+    ids: [...log.ids, key],
+  });
+}
+
+export function watchLimitResetAt() {
+  return readDayLog().resetAt || 0;
+}
+
+export function formatResetRemaining(ms: number) {
+  if (ms <= 0) return "soon";
+  const totalMin = Math.max(1, Math.ceil(ms / 60000));
+  const hours = Math.floor(totalMin / 60);
+  const minutes = totalMin % 60;
+  const hourLabel = hours === 1 ? "hour" : "hours";
+  const minLabel = minutes === 1 ? "minute" : "minutes";
+  if (hours > 0 && minutes > 0) return `${hours} ${hourLabel} ${minutes} ${minLabel}`;
+  if (hours > 0) return `${hours} ${hourLabel}`;
+  return `${minutes} ${minLabel}`;
 }
 
 export function subscriptionExpiresInMs(billing: BillingCycle) {
-  const day = 24 * 60 * 60 * 1000;
-  return Date.now() + (billing === "yearly" ? 365 : 30) * day;
+  return Date.now() + (billing === "yearly" ? 365 : 30) * DAY_MS;
 }

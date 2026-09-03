@@ -1,8 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import { useLockBodyScroll } from "@/lib/use-lock-body";
+import {
+  formatResetRemaining,
+  watchLimitResetAt,
+} from "@/lib/subscription";
 
 type Props = {
   open: boolean;
@@ -11,7 +16,20 @@ type Props = {
 
 export default function DailyLimitModal({ open, onClose }: Props) {
   const router = useRouter();
+  const [remaining, setRemaining] = useState("");
   useLockBodyScroll(open);
+
+  useEffect(() => {
+    if (!open) return;
+    const tick = () => {
+      const ms = watchLimitResetAt() - Date.now();
+      setRemaining(formatResetRemaining(ms));
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -42,6 +60,11 @@ export default function DailyLimitModal({ open, onClose }: Props) {
           You&apos;ve reached your daily limit of 10 movies and shows. Upgrade
           your plan to continue enjoying more movies and shows.
         </p>
+        {remaining ? (
+          <p className="mt-2 text-[14px] leading-relaxed text-[#999999] sm:text-[16px]">
+            Resets in {remaining}.
+          </p>
+        ) : null}
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button
             type="button"
