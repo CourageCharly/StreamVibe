@@ -287,7 +287,7 @@ export const FAQS: {
     id: "02",
     question: "How much does StreamVibe cost?",
     answer:
-      "StreamVibe offers flexible plans starting at $9.99/month for Basic, $12.99/month for Standard, and $14.99/month for Premium. Yearly plans include additional savings.",
+      "StreamVibe offers flexible plans starting at ₦9.99/month for Basic, ₦12.99/month for Standard, and ₦14.99/month for Premium. Yearly plans include additional savings.",
   },
   {
     id: "03",
