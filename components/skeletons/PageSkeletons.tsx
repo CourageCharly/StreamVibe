@@ -453,7 +453,7 @@ export function ReviewSkeleton() {
 export function CheckoutSkeleton() {
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container py-8 sm:py-10">
+      <div className="page-container pt-8 sm:pt-10 pb-[calc(var(--section-y)*2)]">
         <Pulse className="h-4 w-20" />
         <Pulse className="mt-2 h-7 w-64 sm:h-8" />
         <Pulse className="mt-2 h-4 w-full max-w-md" />

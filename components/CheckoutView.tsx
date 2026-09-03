@@ -99,7 +99,7 @@ function CheckoutInner() {
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
-      <div className="page-container py-8 sm:py-10">
+      <div className="page-container pt-8 sm:pt-10 pb-[calc(var(--section-y)*2)]">
         <div className="mb-2 flex min-w-0 items-center gap-2">
           <BackLink
             href={backHref}
