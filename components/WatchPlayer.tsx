@@ -38,29 +38,12 @@ function sizeVideoLayer(
   return { w: height * videoRatio, h: height };
 }
 
-/** Mobile full screen: larger than contain, short of full cover crop. */
-function sizeMobileFullscreen(
-  width: number,
-  height: number,
-): { w: number; h: number } {
-  const contain = sizeVideoLayer(width, height, "contain");
-  const cover = sizeVideoLayer(width, height, "cover");
-  const targetH = Math.min(height * 0.64, cover.h);
-  const scale = Math.max(1, targetH / contain.h);
-  return { w: contain.w * scale, h: contain.h * scale };
-}
-
 function fitWatchLayer(
   width: number,
   height: number,
-  layout: "frame" | "fullscreen",
   mobile: boolean,
 ): { w: number; h: number } {
-  if (mobile && layout === "fullscreen") {
-    return sizeMobileFullscreen(width, height);
-  }
-  if (mobile) return sizeVideoLayer(width, height, "contain");
-  return sizeVideoLayer(width, height, "cover");
+  return sizeVideoLayer(width, height, mobile ? "contain" : "cover");
 }
 
 type YTPlayer = YouTubePlayerInstance;
@@ -189,7 +172,7 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const mobile = window.matchMedia("(max-width: 1023px)").matches;
-      setCoverSize(fitWatchLayer(width, height, layout, mobile));
+      setCoverSize(fitWatchLayer(width, height, mobile));
     };
 
     apply();
@@ -369,7 +352,7 @@ export default function WatchPlayer({
                 const height = box.clientHeight;
                 if (width > 0 && height > 0) {
                   const mobile = window.matchMedia("(max-width: 1023px)").matches;
-                  setCoverSize(fitWatchLayer(width, height, layout, mobile));
+                  setCoverSize(fitWatchLayer(width, height, mobile));
                 }
               }
               // Retry captions — tracks often appear after a short delay
@@ -556,15 +539,10 @@ export default function WatchPlayer({
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
             : isMobile
-              ? layout === "fullscreen"
-                ? {
-                    width: "calc(64cqh * 16 / 9)",
-                    height: "64cqh",
-                  }
-                : {
-                    width: "min(100cqw, 177.78cqh)",
-                    height: "min(100cqh, 56.25cqw)",
-                  }
+              ? {
+                  width: "min(100cqw, 177.78cqh)",
+                  height: "min(100cqh, 56.25cqw)",
+                }
               : {
                   width: "max(100cqw, 177.78cqh)",
                   height: "max(100cqh, 56.25cqw)",
