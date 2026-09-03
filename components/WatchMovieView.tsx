@@ -305,21 +305,21 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       ? { id: "main", title: movie.title, videoKey: playKey }
       : null;
 
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   const canPlay = status === "authenticated";
   const watchKind = movie.mediaType === "tv" ? "tv" : "movie";
   const watchPath = `${watchKind === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
 
   const gateWatch = useCallback(() => {
-    if (!canStartWatch(movie.id, watchKind)) {
+    if (!canStartWatch(movie.id, watchKind, user?.id)) {
       rememberReturnTo(watchPath);
       setLimitOpen(true);
       setPlaying(false);
       return false;
     }
-    recordWatchStart(movie.id, watchKind);
+    recordWatchStart(movie.id, watchKind, user?.id);
     return true;
-  }, [movie.id, watchKind, watchPath]);
+  }, [movie.id, watchKind, watchPath, user?.id]);
   const [authOpen, setAuthOpen] = useState(false);
   const router = useRouter();
   // Watch route is the play screen — start on the player, not the static hero

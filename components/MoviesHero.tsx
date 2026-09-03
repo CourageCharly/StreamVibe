@@ -1,8 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaPlay } from "react-icons/fa";
+import { useAuth } from "@/components/auth/AuthProvider";
+import DailyLimitModal from "@/components/DailyLimitModal";
+import { rememberReturnTo } from "@/lib/auth/return-to";
+import { canStartWatch, recordWatchStart } from "@/lib/subscription";
 import { backdropUrl } from "@/lib/media";
 import {
   getLikes,
@@ -42,6 +47,9 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
     return map;
   }, [trailers]);
 
+  const router = useRouter();
+  const { status, user } = useAuth();
+  const [limitOpen, setLimitOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -141,6 +149,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
   );
 
   return (
+    <>
     <section
       className="cinema-frame"
       onMouseEnter={() => setPaused(true)}
@@ -227,8 +236,23 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
 
           <div className="mt-6 flex w-full max-w-2xl flex-wrap items-center justify-center gap-3 sm:w-auto sm:max-w-none">
             <Button
-              href={movieId != null ? `/movies/${movieId}/watch` : "/movies"}
               className="!w-full max-w-2xl gap-2 px-8 sm:!w-auto sm:min-w-[140px] sm:max-w-none sm:px-6"
+              onClick={() => {
+                if (movieId == null) {
+                  router.push("/movies");
+                  return;
+                }
+                const href = `/movies/${movieId}/watch`;
+                rememberReturnTo(href);
+                if (status === "authenticated") {
+                  if (!canStartWatch(movieId, "movie", user?.id)) {
+                    setLimitOpen(true);
+                    return;
+                  }
+                  recordWatchStart(movieId, "movie", user?.id);
+                }
+                router.push(href);
+              }}
             >
               <FaPlay className="h-3 w-3" />
               Play Now
@@ -301,5 +325,7 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
         </div>
       </div>
     </section>
+    <DailyLimitModal open={limitOpen} onClose={() => setLimitOpen(false)} />
+    </>
   );
 }

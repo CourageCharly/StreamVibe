@@ -37,8 +37,9 @@ function titleKey(id: number, kind: "movie" | "tv") {
   return `${kind}:${id}`;
 }
 
-function scoped(base: string) {
-  return `${base}:${storageUserId()}`;
+function scoped(base: string, userId?: string | null) {
+  const id = (userId ?? "").trim() || storageUserId();
+  return `${base}:${id}`;
 }
 
 export function getPlan(key: string | null | undefined) {
@@ -67,10 +68,10 @@ export function checkoutBackHref(from: string | null | undefined) {
   return from === "pricing" ? "/#pricing" : "/subscriptions";
 }
 
-export function readSubscription(): SavedSubscription | null {
+export function readSubscription(userId?: string | null): SavedSubscription | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(scoped(SUB_KEY));
+    const raw = localStorage.getItem(scoped(SUB_KEY, userId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as SavedSubscription;
     if (!parsed?.planKey || !parsed.expiresAt) return null;
@@ -80,15 +81,15 @@ export function readSubscription(): SavedSubscription | null {
   }
 }
 
-export function hasActiveSubscription() {
-  const sub = readSubscription();
+export function hasActiveSubscription(userId?: string | null) {
+  const sub = readSubscription(userId);
   return Boolean(sub && sub.expiresAt > Date.now());
 }
 
-export function saveSubscription(sub: SavedSubscription) {
+export function saveSubscription(sub: SavedSubscription, userId?: string | null) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(scoped(SUB_KEY), JSON.stringify(sub));
+    localStorage.setItem(scoped(SUB_KEY, userId), JSON.stringify(sub));
     emit();
   } catch {
     /* private mode */
@@ -99,11 +100,11 @@ function emptyLog(): DayWatchLog {
   return { startedAt: 0, resetAt: 0, ids: [] };
 }
 
-function readDayLog(): DayWatchLog {
+function readDayLog(userId?: string | null): DayWatchLog {
   const empty = emptyLog();
   if (typeof window === "undefined") return empty;
   try {
-    const raw = localStorage.getItem(scoped(WATCH_DAY_KEY));
+    const raw = localStorage.getItem(scoped(WATCH_DAY_KEY, userId));
     if (!raw) return empty;
     const parsed = JSON.parse(raw) as DayWatchLog & { date?: string };
     const ids = Array.isArray(parsed.ids)
@@ -126,44 +127,59 @@ function readDayLog(): DayWatchLog {
   }
 }
 
-function writeDayLog(log: DayWatchLog) {
+function writeDayLog(log: DayWatchLog, userId?: string | null) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(scoped(WATCH_DAY_KEY), JSON.stringify(log));
+    localStorage.setItem(scoped(WATCH_DAY_KEY, userId), JSON.stringify(log));
   } catch {
     /* private mode */
   }
 }
 
-export function todayWatchCount() {
-  return readDayLog().ids.length;
+export function todayWatchCount(userId?: string | null) {
+  return readDayLog(userId).ids.length;
 }
 
-/** Paid users are unlimited. At 10/10, every watch is blocked until the 24h reset. */
-export function canStartWatch(_id: number, _kind: "movie" | "tv") {
-  if (hasActiveSubscription()) return true;
-  const log = readDayLog();
-  if (!log.startedAt) return true;
+/**
+ * Free users share one cap of 10 titles (movies, shows, or both) per 24h.
+ * Already-started titles can be opened again. A new 11th title is blocked.
+ */
+export function canStartWatch(
+  id: number,
+  kind: "movie" | "tv",
+  userId?: string | null,
+) {
+  if (hasActiveSubscription(userId)) return true;
+  const log = readDayLog(userId);
+  const key = titleKey(id, kind);
+  if (log.ids.includes(key)) return true;
   return log.ids.length < DAILY_WATCH_LIMIT;
 }
 
-export function recordWatchStart(id: number, kind: "movie" | "tv") {
-  if (hasActiveSubscription()) return;
-  const log = readDayLog();
+export function recordWatchStart(
+  id: number,
+  kind: "movie" | "tv",
+  userId?: string | null,
+) {
+  if (hasActiveSubscription(userId)) return;
+  const log = readDayLog(userId);
   const key = titleKey(id, kind);
-  if (log.ids.length >= DAILY_WATCH_LIMIT) return;
   if (log.ids.includes(key)) return;
+  if (log.ids.length >= DAILY_WATCH_LIMIT) return;
   const now = Date.now();
   const startedAt = log.startedAt || now;
-  writeDayLog({
-    startedAt,
-    resetAt: log.resetAt || startedAt + DAY_MS,
-    ids: [...log.ids, key],
-  });
+  writeDayLog(
+    {
+      startedAt,
+      resetAt: log.resetAt || startedAt + DAY_MS,
+      ids: [...log.ids, key],
+    },
+    userId,
+  );
 }
 
-export function watchLimitResetAt() {
-  return readDayLog().resetAt || 0;
+export function watchLimitResetAt(userId?: string | null) {
+  return readDayLog(userId).resetAt || 0;
 }
 
 export function formatResetRemaining(ms: number) {

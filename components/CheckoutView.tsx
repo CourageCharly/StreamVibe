@@ -74,13 +74,16 @@ function CheckoutInner() {
           billing,
         },
         callback: (response) => {
-          saveSubscription({
-            planKey: plan.key as PlanKey,
-            billing,
-            reference: response.reference || ref,
-            paidAt: Date.now(),
-            expiresAt: subscriptionExpiresInMs(billing),
-          });
+          saveSubscription(
+            {
+              planKey: plan.key as PlanKey,
+              billing,
+              reference: response.reference || ref,
+              paidAt: Date.now(),
+              expiresAt: subscriptionExpiresInMs(billing),
+            },
+            user?.id,
+          );
           toast.success("Payment successful. Your plan is active.");
           const next = readReturnTo("/");
           clearReturnTo();
