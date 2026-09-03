@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PLANS } from "@/lib/constants";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
+  SUB_EVENT,
   checkoutHref,
+  readSubscription,
   type BillingCycle,
   type CheckoutFrom,
+  type SavedSubscription,
 } from "@/lib/subscription";
 import SectionHeading from "./SectionHeading";
 import Button from "@/components/ui/Button";
@@ -37,11 +41,22 @@ export default function Pricing({
   className = "",
   checkoutFrom,
 }: Props) {
+  const { user } = useAuth();
   const [internalBilling, setInternalBilling] = useState<"monthly" | "yearly">(
     "monthly",
   );
   const billing: BillingCycle = billingProp ?? internalBilling;
   const setBilling = onBillingChange ?? setInternalBilling;
+  const [subscription, setSubscription] = useState<SavedSubscription | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const sync = () => setSubscription(readSubscription(user?.id));
+    sync();
+    window.addEventListener(SUB_EVENT, sync);
+    return () => window.removeEventListener(SUB_EVENT, sync);
+  }, [user?.id]);
 
   return (
     <section
@@ -95,6 +110,11 @@ export default function Pricing({
           const price =
             billing === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
           const period = billing === "monthly" ? "month" : "year";
+          const isCurrent =
+            !!subscription &&
+            subscription.expiresAt > Date.now() &&
+            subscription.planKey === plan.key &&
+            subscription.billing === billing;
 
           return (
             <article
@@ -125,13 +145,24 @@ export default function Pricing({
                 >
                   Start Free Trial
                 </Button>
-                <Button
-                  href={checkoutHref(plan.key, billing, checkoutFrom)}
-                  variant="primary"
-                  className="!w-full min-w-0 max-w-none shrink sm:!w-[149px]"
-                >
-                  Choose Plan
-                </Button>
+                {isCurrent ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    disabled
+                    className="!w-full min-w-0 max-w-none shrink pointer-events-none sm:!w-[149px]"
+                  >
+                    Current Plan
+                  </Button>
+                ) : (
+                  <Button
+                    href={checkoutHref(plan.key, billing, checkoutFrom)}
+                    variant="primary"
+                    className="!w-full min-w-0 max-w-none shrink sm:!w-[149px]"
+                  >
+                    Choose Plan
+                  </Button>
+                )}
               </div>
             </article>
           );
