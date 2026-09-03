@@ -126,7 +126,7 @@ export default function WatchPlayer({
   const keepChromeRef = useRef(keepChrome);
   const draggingRef = useRef(dragging);
   const isMobile = useIsMobile();
-  const containMobileFs = layout === "fullscreen" && isMobile;
+  const containMobile = isMobile;
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -164,12 +164,8 @@ export default function WatchPlayer({
       const width = el.clientWidth;
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
-      const mobileFs =
-        layout === "fullscreen" &&
-        window.matchMedia("(max-width: 1023px)").matches;
-      setCoverSize(
-        sizeVideoLayer(width, height, mobileFs ? "contain" : "cover"),
-      );
+      const mobile = window.matchMedia("(max-width: 1023px)").matches;
+      setCoverSize(sizeVideoLayer(width, height, mobile ? "contain" : "cover"));
     };
 
     apply();
@@ -348,15 +344,9 @@ export default function WatchPlayer({
                 const width = box.clientWidth;
                 const height = box.clientHeight;
                 if (width > 0 && height > 0) {
-                  const mobileFs =
-                    layout === "fullscreen" &&
-                    window.matchMedia("(max-width: 1023px)").matches;
+                  const mobile = window.matchMedia("(max-width: 1023px)").matches;
                   setCoverSize(
-                    sizeVideoLayer(
-                      width,
-                      height,
-                      mobileFs ? "contain" : "cover",
-                    ),
+                    sizeVideoLayer(width, height, mobile ? "contain" : "cover"),
                   );
                 }
               }
@@ -534,7 +524,7 @@ export default function WatchPlayer({
           "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
           "[&_iframe]:!h-full [&_iframe]:!w-full",
           "[&_iframe]:!max-h-none [&_iframe]:!max-w-none",
-          containMobileFs
+          containMobile
             ? "[&_iframe]:!min-h-0 [&_iframe]:!min-w-0"
             : "[&_iframe]:!min-h-full [&_iframe]:!min-w-full",
           "[&_iframe]:!border-0",
@@ -543,7 +533,7 @@ export default function WatchPlayer({
         style={
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
-            : containMobileFs
+            : containMobile
               ? {
                   width: "min(100cqw, 177.78cqh)",
                   height: "min(100cqh, 56.25cqw)",
