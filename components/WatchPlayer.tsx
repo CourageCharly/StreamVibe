@@ -17,6 +17,26 @@ import {
   youtubeIframeReady,
   type YouTubePlayerInstance,
 } from "@/lib/youtube-iframe";
+import { useIsMobile } from "@/lib/use-mobile";
+
+function sizeVideoLayer(
+  width: number,
+  height: number,
+  mode: "cover" | "contain",
+): { w: number; h: number } {
+  const videoRatio = 16 / 9;
+  const boxRatio = width / height;
+  if (mode === "contain") {
+    if (boxRatio > videoRatio) {
+      return { w: height * videoRatio, h: height };
+    }
+    return { w: width, h: width / videoRatio };
+  }
+  if (boxRatio > videoRatio) {
+    return { w: width, h: width / videoRatio };
+  }
+  return { w: height * videoRatio, h: height };
+}
 
 type YTPlayer = YouTubePlayerInstance;
 
@@ -105,6 +125,8 @@ export default function WatchPlayer({
   );
   const keepChromeRef = useRef(keepChrome);
   const draggingRef = useRef(dragging);
+  const isMobile = useIsMobile();
+  const containMobileFs = layout === "fullscreen" && isMobile;
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -142,18 +164,12 @@ export default function WatchPlayer({
       const width = el.clientWidth;
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
-      const videoRatio = 16 / 9;
-      const boxRatio = width / height;
-      let w: number;
-      let h: number;
-      if (boxRatio > videoRatio) {
-        w = width;
-        h = width / videoRatio;
-      } else {
-        h = height;
-        w = height * videoRatio;
-      }
-      setCoverSize({ w, h });
+      const mobileFs =
+        layout === "fullscreen" &&
+        window.matchMedia("(max-width: 1023px)").matches;
+      setCoverSize(
+        sizeVideoLayer(width, height, mobileFs ? "contain" : "cover"),
+      );
     };
 
     apply();
@@ -171,7 +187,7 @@ export default function WatchPlayer({
       window.clearTimeout(t1);
       window.clearTimeout(t2);
     };
-  }, [mounted, videoKey, layout]);
+  }, [mounted, videoKey, layout, isMobile]);
 
   const bumpControls = useCallback(() => {
     setShowControls(true);
@@ -332,18 +348,16 @@ export default function WatchPlayer({
                 const width = box.clientWidth;
                 const height = box.clientHeight;
                 if (width > 0 && height > 0) {
-                  const videoRatio = 16 / 9;
-                  const boxRatio = width / height;
-                  let w: number;
-                  let h: number;
-                  if (boxRatio > videoRatio) {
-                    w = width;
-                    h = width / videoRatio;
-                  } else {
-                    h = height;
-                    w = height * videoRatio;
-                  }
-                  setCoverSize({ w, h });
+                  const mobileFs =
+                    layout === "fullscreen" &&
+                    window.matchMedia("(max-width: 1023px)").matches;
+                  setCoverSize(
+                    sizeVideoLayer(
+                      width,
+                      height,
+                      mobileFs ? "contain" : "cover",
+                    ),
+                  );
                 }
               }
               // Retry captions — tracks often appear after a short delay
@@ -519,17 +533,25 @@ export default function WatchPlayer({
           "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
           "[&_iframe]:!h-full [&_iframe]:!w-full",
-          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none [&_iframe]:!min-h-full [&_iframe]:!min-w-full",
+          "[&_iframe]:!max-h-none [&_iframe]:!max-w-none",
+          containMobileFs
+            ? "[&_iframe]:!min-h-0 [&_iframe]:!min-w-0"
+            : "[&_iframe]:!min-h-full [&_iframe]:!min-w-full",
           "[&_iframe]:!border-0",
           "[&_iframe]:!pointer-events-none",
         ].join(" ")}
         style={
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
-            : {
-                width: "max(100cqw, 177.78cqh)",
-                height: "max(100cqh, 56.25cqw)",
-              }
+            : containMobileFs
+              ? {
+                  width: "min(100cqw, 177.78cqh)",
+                  height: "min(100cqh, 56.25cqw)",
+                }
+              : {
+                  width: "max(100cqw, 177.78cqh)",
+                  height: "max(100cqh, 56.25cqw)",
+                }
         }
       >
         <div
