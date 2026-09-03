@@ -164,6 +164,12 @@ section {
   border-radius: 0.75rem;
 }
 
+@media (max-width: 639px) {
+  .cinema-frame.watch-fill {
+    height: min(100vw, 560px);
+  }
+}
+
 @media (min-width: 640px) {
   .cinema-frame,
   .cinema-frame.watch-fill {

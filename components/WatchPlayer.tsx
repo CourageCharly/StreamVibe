@@ -38,6 +38,17 @@ function sizeVideoLayer(
   return { w: height * videoRatio, h: height };
 }
 
+function sizeMobileInPage(
+  width: number,
+  height: number,
+): { w: number; h: number } {
+  const contain = sizeVideoLayer(width, height, "contain");
+  const cover = sizeVideoLayer(width, height, "cover");
+  const targetH = Math.min(height * 0.92, cover.h);
+  const scale = Math.max(1, targetH / contain.h);
+  return { w: contain.w * scale, h: contain.h * scale };
+}
+
 function fitWatchLayer(
   width: number,
   height: number,
@@ -45,7 +56,7 @@ function fitWatchLayer(
   fullscreen: boolean,
 ): { w: number; h: number } {
   if (mobile && fullscreen) return sizeVideoLayer(width, height, "cover");
-  if (mobile) return sizeVideoLayer(width, height, "contain");
+  if (mobile) return sizeMobileInPage(width, height);
   return sizeVideoLayer(width, height, "cover");
 }
 
