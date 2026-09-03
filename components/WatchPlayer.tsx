@@ -38,6 +38,31 @@ function sizeVideoLayer(
   return { w: height * videoRatio, h: height };
 }
 
+/** Mobile full screen: larger than contain, short of full cover crop. */
+function sizeMobileFullscreen(
+  width: number,
+  height: number,
+): { w: number; h: number } {
+  const contain = sizeVideoLayer(width, height, "contain");
+  const cover = sizeVideoLayer(width, height, "cover");
+  const targetH = Math.min(height * 0.64, cover.h);
+  const scale = Math.max(1, targetH / contain.h);
+  return { w: contain.w * scale, h: contain.h * scale };
+}
+
+function fitWatchLayer(
+  width: number,
+  height: number,
+  layout: "frame" | "fullscreen",
+  mobile: boolean,
+): { w: number; h: number } {
+  if (mobile && layout === "fullscreen") {
+    return sizeMobileFullscreen(width, height);
+  }
+  if (mobile) return sizeVideoLayer(width, height, "contain");
+  return sizeVideoLayer(width, height, "cover");
+}
+
 type YTPlayer = YouTubePlayerInstance;
 
 const YT_PLAYING = 1;
@@ -126,7 +151,6 @@ export default function WatchPlayer({
   const keepChromeRef = useRef(keepChrome);
   const draggingRef = useRef(dragging);
   const isMobile = useIsMobile();
-  const containMobile = isMobile;
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -165,7 +189,7 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const mobile = window.matchMedia("(max-width: 1023px)").matches;
-      setCoverSize(sizeVideoLayer(width, height, mobile ? "contain" : "cover"));
+      setCoverSize(fitWatchLayer(width, height, layout, mobile));
     };
 
     apply();
@@ -345,9 +369,7 @@ export default function WatchPlayer({
                 const height = box.clientHeight;
                 if (width > 0 && height > 0) {
                   const mobile = window.matchMedia("(max-width: 1023px)").matches;
-                  setCoverSize(
-                    sizeVideoLayer(width, height, mobile ? "contain" : "cover"),
-                  );
+                  setCoverSize(fitWatchLayer(width, height, layout, mobile));
                 }
               }
               // Retry captions — tracks often appear after a short delay
@@ -524,7 +546,7 @@ export default function WatchPlayer({
           "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
           "[&_iframe]:!h-full [&_iframe]:!w-full",
           "[&_iframe]:!max-h-none [&_iframe]:!max-w-none",
-          containMobile
+          isMobile
             ? "[&_iframe]:!min-h-0 [&_iframe]:!min-w-0"
             : "[&_iframe]:!min-h-full [&_iframe]:!min-w-full",
           "[&_iframe]:!border-0",
@@ -533,11 +555,16 @@ export default function WatchPlayer({
         style={
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
-            : containMobile
-              ? {
-                  width: "min(100cqw, 177.78cqh)",
-                  height: "min(100cqh, 56.25cqw)",
-                }
+            : isMobile
+              ? layout === "fullscreen"
+                ? {
+                    width: "calc(64cqh * 16 / 9)",
+                    height: "64cqh",
+                  }
+                : {
+                    width: "min(100cqw, 177.78cqh)",
+                    height: "min(100cqh, 56.25cqw)",
+                  }
               : {
                   width: "max(100cqw, 177.78cqh)",
                   height: "max(100cqh, 56.25cqw)",
