@@ -310,8 +310,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
   // Watch route is the play screen — start on the player, not the static hero
   const [playing, setPlaying] = useState(() => Boolean(playKey));
   const [active, setActive] = useState<Playable | null>(defaultPlayable);
-  // Start muted so browser autoplay policies allow the movie to start
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   // Subtitles on by default (web + mobile + full view)
   const [subtitlesOn, setSubtitlesOn] = useState(true);
   const [myList, setMyList] = useState<number[]>([]);
