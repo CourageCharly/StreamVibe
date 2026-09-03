@@ -15,8 +15,7 @@ import BackLink from "@/components/BackLink";
 import ReviewsSection from "@/components/ReviewsSection";
 import { rememberReturnTo } from "@/lib/auth/return-to";
 import { useAuth } from "@/components/auth/AuthProvider";
-import DailyLimitModal from "@/components/DailyLimitModal";
-import { canStartWatch, recordWatchStart } from "@/lib/subscription";
+import { useWatchLimit } from "@/components/WatchLimitProvider";
 import type { Movie } from "@/lib/types";
 import {
   getLikes,
@@ -257,8 +256,8 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
   /** Page/section the user opened this title from (genre, row, home, …) */
   const [returnHref, setReturnHref] = useState("/movies");
   const router = useRouter();
-  const { status, user } = useAuth();
-  const [limitOpen, setLimitOpen] = useState(false);
+  const { status } = useAuth();
+  const { tryWatch } = useWatchLimit();
 
   useEffect(() => {
     setHydrated(true);
@@ -396,12 +395,8 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
                 onClick={() => {
                   rememberReturnTo(watchHref);
                   const kind = movie.mediaType === "tv" ? "tv" : "movie";
-                  if (status === "authenticated") {
-                    if (!canStartWatch(movie.id, kind, user?.id)) {
-                      setLimitOpen(true);
-                      return;
-                    }
-                    recordWatchStart(movie.id, kind, user?.id);
+                  if (status === "authenticated" && !tryWatch(movie.id, kind)) {
+                    return;
                   }
                   router.push(watchHref);
                 }}
@@ -587,7 +582,7 @@ export default function MovieDetailView({ movie, relatedPosters = [] }: Props) {
       </div>
 
       <FreeTrialBanner posters={relatedPosters.slice(0, 12)} />
-      <DailyLimitModal open={limitOpen} onClose={() => setLimitOpen(false)} />
+
     </div>
   );
 }

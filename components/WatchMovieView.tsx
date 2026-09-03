@@ -27,10 +27,9 @@ import ReviewsSection from "@/components/ReviewsSection";
 import SeasonsAndEpisodes from "@/components/SeasonsAndEpisodes";
 import WatchPlayer, { CaptionTrack } from "@/components/WatchPlayer";
 import AuthPrompt from "@/components/auth/AuthPrompt";
-import DailyLimitModal from "@/components/DailyLimitModal";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useWatchLimit } from "@/components/WatchLimitProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
-import { canStartWatch, recordWatchStart } from "@/lib/subscription";
 import { useRouter } from "next/navigation";
 import {
   addWatchHistory,
@@ -305,26 +304,24 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       ? { id: "main", title: movie.title, videoKey: playKey }
       : null;
 
-  const { status, user } = useAuth();
+  const { status } = useAuth();
+  const { tryWatch } = useWatchLimit();
   const canPlay = status === "authenticated";
   const watchKind = movie.mediaType === "tv" ? "tv" : "movie";
   const watchPath = `${watchKind === "tv" ? "/shows" : "/movies"}/${movie.id}/watch`;
 
   const gateWatch = useCallback(() => {
-    if (!canStartWatch(movie.id, watchKind, user?.id)) {
+    if (!tryWatch(movie.id, watchKind)) {
       rememberReturnTo(watchPath);
-      setLimitOpen(true);
       setPlaying(false);
       return false;
     }
-    recordWatchStart(movie.id, watchKind, user?.id);
     return true;
-  }, [movie.id, watchKind, watchPath, user?.id]);
+  }, [movie.id, watchKind, watchPath, tryWatch]);
   const [authOpen, setAuthOpen] = useState(false);
   const router = useRouter();
   // Watch route is the play screen — start on the player, not the static hero
   const [playing, setPlaying] = useState(false);
-  const [limitOpen, setLimitOpen] = useState(false);
   const autoWatchTried = useRef(false);
   const [active, setActive] = useState<Playable | null>(defaultPlayable);
   const [muted, setMuted] = useState(false);
@@ -1242,10 +1239,7 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
           });
         }}
       />
-      <DailyLimitModal
-        open={limitOpen}
-        onClose={() => setLimitOpen(false)}
-      />
+
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NavigationTracker from "@/components/NavigationTracker";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { WatchLimitProvider } from "@/components/WatchLimitProvider";
 import ReviewApprovalWatcher from "@/components/ReviewApprovalWatcher";
 import Toaster from "@/components/Toaster";
 import "./globals.css";
@@ -43,6 +44,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
+          <WatchLimitProvider>
           <Toaster />
           <ReviewApprovalWatcher />
           <Header />
@@ -56,6 +58,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          </WatchLimitProvider>
         </AuthProvider>
       </body>
     </html>

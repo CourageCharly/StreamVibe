@@ -140,6 +140,10 @@ export function todayWatchCount(userId?: string | null) {
   return readDayLog(userId).ids.length;
 }
 
+export function getWatchLog(userId?: string | null) {
+  return readDayLog(userId);
+}
+
 /**
  * Free users share one cap of 10 titles (movies, shows, or both) per 24h.
  * Already-started titles can be opened again. A new 11th title is blocked.

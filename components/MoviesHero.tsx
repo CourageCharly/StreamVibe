@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaPlay } from "react-icons/fa";
 import { useAuth } from "@/components/auth/AuthProvider";
-import DailyLimitModal from "@/components/DailyLimitModal";
+import { useWatchLimit } from "@/components/WatchLimitProvider";
 import { rememberReturnTo } from "@/lib/auth/return-to";
-import { canStartWatch, recordWatchStart } from "@/lib/subscription";
 import { backdropUrl } from "@/lib/media";
 import {
   getLikes,
@@ -48,8 +47,8 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
   }, [trailers]);
 
   const router = useRouter();
-  const { status, user } = useAuth();
-  const [limitOpen, setLimitOpen] = useState(false);
+  const { status } = useAuth();
+  const { tryWatch } = useWatchLimit();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -149,7 +148,6 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
   );
 
   return (
-    <>
     <section
       className="cinema-frame"
       onMouseEnter={() => setPaused(true)}
@@ -244,12 +242,8 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
                 }
                 const href = `/movies/${movieId}/watch`;
                 rememberReturnTo(href);
-                if (status === "authenticated") {
-                  if (!canStartWatch(movieId, "movie", user?.id)) {
-                    setLimitOpen(true);
-                    return;
-                  }
-                  recordWatchStart(movieId, "movie", user?.id);
+                if (status === "authenticated" && !tryWatch(movieId, "movie")) {
+                  return;
                 }
                 router.push(href);
               }}
@@ -325,7 +319,5 @@ export default function MoviesHero({ movies, trailers = [] }: Props) {
         </div>
       </div>
     </section>
-    <DailyLimitModal open={limitOpen} onClose={() => setLimitOpen(false)} />
-    </>
   );
 }

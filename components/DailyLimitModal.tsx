@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import { useLockBodyScroll } from "@/lib/use-lock-body";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
   formatResetRemaining,
   watchLimitResetAt,
@@ -16,19 +17,20 @@ type Props = {
 
 export default function DailyLimitModal({ open, onClose }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
   const [remaining, setRemaining] = useState("");
   useLockBodyScroll(open);
 
   useEffect(() => {
     if (!open) return;
     const tick = () => {
-      const ms = watchLimitResetAt() - Date.now();
+      const ms = watchLimitResetAt(user?.id) - Date.now();
       setRemaining(formatResetRemaining(ms));
     };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [open]);
+  }, [open, user?.id]);
 
   if (!open) return null;
 
