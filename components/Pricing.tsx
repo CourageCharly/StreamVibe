@@ -11,7 +11,7 @@ type Props = {
    * Home: `/subscriptions?from=pricing` → back to /#pricing.
    * Nav / subscriptions page: plain `/subscriptions` (no arrow).
    */
-  choosePlanHref?: string;
+  choosePlanHref?: string | null;
   /**
    * Start Free Trial destination.
    * Home: `/movies?from=pricing` or `/movies?from=free-trial` → section back.
@@ -125,9 +125,14 @@ export default function Pricing({
                   Start Free Trial
                 </Button>
                 <Button
-                  href={choosePlanHref}
+                  href={choosePlanHref || undefined}
                   variant="primary"
-                  className="!w-full min-w-0 max-w-none shrink sm:!w-[149px]"
+                  className={[
+                    "!w-full min-w-0 max-w-none shrink sm:!w-[149px]",
+                    !choosePlanHref ? "!cursor-default pointer-events-none" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
                   Choose Plan
                 </Button>
