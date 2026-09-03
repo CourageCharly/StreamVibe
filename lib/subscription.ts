@@ -57,8 +57,19 @@ export function planPrice(key: PlanKey, billing: BillingCycle) {
   return billing === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
 }
 
-export function checkoutHref(planKey: PlanKey, billing: BillingCycle) {
-  return `/checkout?plan=${planKey}&billing=${billing}`;
+export type CheckoutFrom = "pricing" | "subscriptions";
+
+export function checkoutHref(
+  planKey: PlanKey,
+  billing: BillingCycle,
+  from?: CheckoutFrom,
+) {
+  const path = `/checkout?plan=${planKey}&billing=${billing}`;
+  return from ? `${path}&from=${from}` : path;
+}
+
+export function checkoutBackHref(from: string | null | undefined) {
+  return from === "pricing" ? "/#pricing" : "/subscriptions";
 }
 
 export function readSubscription(): SavedSubscription | null {

@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { PLANS } from "@/lib/constants";
-import { checkoutHref, type BillingCycle } from "@/lib/subscription";
+import {
+  checkoutHref,
+  type BillingCycle,
+  type CheckoutFrom,
+} from "@/lib/subscription";
 import SectionHeading from "./SectionHeading";
 import Button from "@/components/ui/Button";
 
@@ -18,6 +22,8 @@ type Props = {
   onBillingChange?: (v: "monthly" | "yearly") => void;
   /** Extra section classes (e.g. tighter top under page back row) */
   className?: string;
+  /** Where checkout should return: home pricing or subscriptions */
+  checkoutFrom?: CheckoutFrom;
 };
 
 /**
@@ -29,6 +35,7 @@ export default function Pricing({
   billing: billingProp,
   onBillingChange,
   className = "",
+  checkoutFrom,
 }: Props) {
   const [internalBilling, setInternalBilling] = useState<"monthly" | "yearly">(
     "monthly",
@@ -119,7 +126,7 @@ export default function Pricing({
                   Start Free Trial
                 </Button>
                 <Button
-                  href={checkoutHref(plan.key, billing)}
+                  href={checkoutHref(plan.key, billing, checkoutFrom)}
                   variant="primary"
                   className="!w-full min-w-0 max-w-none shrink sm:!w-[149px]"
                 >

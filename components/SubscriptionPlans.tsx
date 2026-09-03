@@ -13,7 +13,11 @@ export default function SubscriptionPlans() {
 
   return (
     <>
-      <Pricing billing={billing} onBillingChange={setBilling} />
+      <Pricing
+        billing={billing}
+        onBillingChange={setBilling}
+        checkoutFrom="subscriptions"
+      />
       <PlanComparison billing={billing} />
     </>
   );

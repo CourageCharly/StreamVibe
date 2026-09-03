@@ -9,6 +9,7 @@ import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { CheckoutSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
+  checkoutBackHref,
   getPlan,
   planPrice,
   saveSubscription,
@@ -36,6 +37,8 @@ function CheckoutInner() {
 
   const planKey = params.get("plan");
   const billingParam = params.get("billing");
+  const from = params.get("from");
+  const backHref = checkoutBackHref(from);
   const billing: BillingCycle =
     billingParam === "yearly" ? "yearly" : "monthly";
 
@@ -99,9 +102,13 @@ function CheckoutInner() {
       <div className="page-container py-8 sm:py-10">
         <div className="mb-2 flex min-w-0 items-center gap-2">
           <BackLink
-            href="/subscriptions"
-            fallbackHref="/subscriptions"
-            aria-label="Back to subscriptions"
+            href={backHref}
+            fallbackHref={backHref}
+            aria-label={
+              from === "pricing"
+                ? "Back to home plans"
+                : "Back to subscriptions"
+            }
           />
           <p className="text-sm font-medium text-cta">Checkout</p>
         </div>
@@ -142,7 +149,7 @@ function CheckoutInner() {
               type="button"
               variant="secondary"
               className="!w-full"
-              href="/subscriptions"
+              href={backHref}
             >
               Change plan
             </Button>
