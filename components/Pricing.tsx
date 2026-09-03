@@ -130,7 +130,7 @@ export default function Pricing({
               </p>
               <p className="mt-3 flex min-h-0 flex-wrap items-baseline gap-x-1 sm:mt-6 sm:min-h-[2.75rem]">
                 <span className="text-[24px] font-bold tabular-nums text-white sm:text-[28px]">
-                  ${price.toFixed(2)}
+                  ₦{price.toFixed(2)}
                 </span>
                 <span className="text-[14px] font-normal text-[#999999]">
                   /{period}
