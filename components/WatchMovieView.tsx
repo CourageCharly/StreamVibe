@@ -543,9 +543,20 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     document.documentElement.classList.add("watch-full");
+    const orientation = screen.orientation as ScreenOrientation & {
+      lock?: (type: string) => Promise<void>;
+    };
+    void orientation.lock?.("landscape").catch(() => {
+      /* iOS / unsupported — CSS rotate still fills sideways */
+    });
     return () => {
       document.body.style.overflow = prev;
       document.documentElement.classList.remove("watch-full");
+      try {
+        orientation.unlock?.();
+      } catch {
+        /* ignore */
+      }
     };
   }, [fullView]);
 
@@ -571,30 +582,47 @@ export default function WatchMovieView({ movie, relatedPosters = [] }: Props) {
       el.style.margin = "";
       el.style.borderRadius = "";
       el.style.zIndex = "";
+      el.style.transform = "";
+      el.style.transformOrigin = "";
     };
 
     const apply = () => {
-      if (document.fullscreenElement === el) {
-        clearFsLayout();
-        return;
-      }
       const vv = window.visualViewport;
       const w = Math.max(1, Math.round(vv?.width ?? window.innerWidth));
       const h = Math.max(1, Math.round(vv?.height ?? window.innerHeight));
       const top = Math.round(vv?.offsetTop ?? 0);
       const left = Math.round(vv?.offsetLeft ?? 0);
+      const mobile = window.matchMedia("(max-width: 1023px)").matches;
+      const portrait = h >= w;
+
       el.style.position = "fixed";
-      el.style.top = `${top}px`;
-      el.style.left = `${left}px`;
       el.style.right = "auto";
       el.style.bottom = "auto";
+      el.style.margin = "0";
+      el.style.borderRadius = "0";
+      el.style.zIndex = "200";
+
+      // Mobile: play sideways and fill the phone (landscape).
+      if (mobile && portrait) {
+        el.style.width = `${h}px`;
+        el.style.height = `${w}px`;
+        el.style.maxWidth = `${h}px`;
+        el.style.maxHeight = `${w}px`;
+        el.style.top = `${top + h / 2}px`;
+        el.style.left = `${left + w / 2}px`;
+        el.style.transform = "translate(-50%, -50%) rotate(90deg)";
+        el.style.transformOrigin = "center center";
+        return;
+      }
+
       el.style.width = `${w}px`;
       el.style.height = `${h}px`;
       el.style.maxWidth = `${w}px`;
       el.style.maxHeight = `${h}px`;
-      el.style.margin = "0";
-      el.style.borderRadius = "0";
-      el.style.zIndex = "200";
+      el.style.top = `${top}px`;
+      el.style.left = `${left}px`;
+      el.style.transform = "";
+      el.style.transformOrigin = "";
     };
 
     apply();

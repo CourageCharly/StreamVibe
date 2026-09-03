@@ -42,8 +42,11 @@ function fitWatchLayer(
   width: number,
   height: number,
   mobile: boolean,
+  fullscreen: boolean,
 ): { w: number; h: number } {
-  return sizeVideoLayer(width, height, mobile ? "contain" : "cover");
+  if (mobile && fullscreen) return sizeVideoLayer(width, height, "cover");
+  if (mobile) return sizeVideoLayer(width, height, "contain");
+  return sizeVideoLayer(width, height, "cover");
 }
 
 type YTPlayer = YouTubePlayerInstance;
@@ -172,7 +175,7 @@ export default function WatchPlayer({
       const height = el.clientHeight;
       if (width <= 0 || height <= 0) return;
       const mobile = window.matchMedia("(max-width: 1023px)").matches;
-      setCoverSize(fitWatchLayer(width, height, mobile));
+      setCoverSize(fitWatchLayer(width, height, mobile, layout === "fullscreen"));
     };
 
     apply();
@@ -352,7 +355,7 @@ export default function WatchPlayer({
                 const height = box.clientHeight;
                 if (width > 0 && height > 0) {
                   const mobile = window.matchMedia("(max-width: 1023px)").matches;
-                  setCoverSize(fitWatchLayer(width, height, mobile));
+                  setCoverSize(fitWatchLayer(width, height, mobile, layout === "fullscreen"));
                 }
               }
               // Retry captions — tracks often appear after a short delay
@@ -529,7 +532,7 @@ export default function WatchPlayer({
           "[&_iframe]:!absolute [&_iframe]:!left-0 [&_iframe]:!top-0",
           "[&_iframe]:!h-full [&_iframe]:!w-full",
           "[&_iframe]:!max-h-none [&_iframe]:!max-w-none",
-          isMobile
+          isMobile && layout !== "fullscreen"
             ? "[&_iframe]:!min-h-0 [&_iframe]:!min-w-0"
             : "[&_iframe]:!min-h-full [&_iframe]:!min-w-full",
           "[&_iframe]:!border-0",
@@ -539,10 +542,15 @@ export default function WatchPlayer({
           coverSize
             ? { width: coverSize.w, height: coverSize.h }
             : isMobile
-              ? {
-                  width: "min(100cqw, 177.78cqh)",
-                  height: "min(100cqh, 56.25cqw)",
-                }
+              ? layout === "fullscreen"
+                ? {
+                    width: "max(100cqw, 177.78cqh)",
+                    height: "max(100cqh, 56.25cqw)",
+                  }
+                : {
+                    width: "min(100cqw, 177.78cqh)",
+                    height: "min(100cqh, 56.25cqw)",
+                  }
               : {
                   width: "max(100cqw, 177.78cqh)",
                   height: "max(100cqh, 56.25cqw)",
