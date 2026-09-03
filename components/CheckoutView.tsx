@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Button from "@/components/ui/Button";
+import BackLink from "@/components/BackLink";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { CheckoutSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -90,7 +91,14 @@ function CheckoutInner() {
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden pt-[var(--header-h)]">
       <div className="page-container py-8 sm:py-10">
-        <p className="text-sm font-medium text-cta">Checkout</p>
+        <div className="mb-2 flex min-w-0 items-center gap-2">
+          <BackLink
+            href="/subscriptions"
+            fallbackHref="/subscriptions"
+            aria-label="Back to subscriptions"
+          />
+          <p className="text-sm font-medium text-cta">Checkout</p>
+        </div>
         <h1 className="mt-2 text-[20px] font-bold leading-tight text-white sm:text-[28px]">
           Complete your payment
         </h1>
